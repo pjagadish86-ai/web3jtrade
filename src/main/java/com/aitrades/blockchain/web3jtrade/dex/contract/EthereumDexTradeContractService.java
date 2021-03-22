@@ -32,9 +32,9 @@ public class EthereumDexTradeContractService {
 		return factory.getInstance(route).approve(credentials, contractAddress, customGasProvider, gasModeEnum);
 	};
 	
-	public BigDecimal getAmountsIn(String route, Credentials credentials, BigDecimal inputEthers, StrategyGasProvider customGasProvider, GasModeEnum gasModeEnum, 
+	public BigInteger getAmountsIn(String route, Credentials credentials, BigDecimal inputEthers, BigDecimal slipage, StrategyGasProvider customGasProvider, GasModeEnum gasModeEnum, 
 								   List<String> memoryPathAddress){
-		return factory.getInstance(route).getAmountsIn(credentials, inputEthers, customGasProvider, gasModeEnum, memoryPathAddress);
+		return factory.getInstance(route).getAmountsIn(credentials, inputEthers, slipage, customGasProvider, gasModeEnum, memoryPathAddress);
 	};
 	
 	public String swapETHForTokens(String route, Credentials credentials, BigInteger inputEthers,BigInteger outputTokens, StrategyGasProvider customGasProvider,  GasModeEnum gasModeEnum,  
@@ -42,9 +42,9 @@ public class EthereumDexTradeContractService {
 		return factory.getInstance(route).swapETHForTokens(credentials, inputEthers, outputTokens, customGasProvider, gasModeEnum, deadLine, memoryPathAddress, hasFee);
 	};
 	
-	public BigDecimal getAmountsOut(String route, Credentials credentials,BigDecimal inputTokens, StrategyGasProvider customGasProvider, GasModeEnum gasModeEnum,
+	public BigInteger getAmountsOut(String route, Credentials credentials,BigDecimal inputTokens,BigDecimal slipage, StrategyGasProvider customGasProvider, GasModeEnum gasModeEnum,
 									List<String> memoryPathAddress){
-		return factory.getInstance(route).getAmountsOut(credentials, inputTokens, customGasProvider, gasModeEnum, memoryPathAddress);
+		return factory.getInstance(route).getAmountsOut(credentials, inputTokens, slipage, customGasProvider, gasModeEnum, memoryPathAddress);
 	};
 	
 	public String swapTokenForETH(String route, Credentials credentials, BigInteger inputTokens, BigInteger outputEthers, StrategyGasProvider customGasProvider, 

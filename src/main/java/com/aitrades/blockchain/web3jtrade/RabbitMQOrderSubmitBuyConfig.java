@@ -14,10 +14,10 @@ import org.springframework.context.annotation.Configuration;
 public class RabbitMQOrderSubmitBuyConfig {
 
 	@Value("${aitrades.order.submit.buy.rabbitmq.queue}")
-	String orderSubmitBuyQueueName;
+	private String orderSubmitBuyQueueName;
 
 	@Value("${aitrades.order.submit.buy.rabbitmq.exchange}")
-	String orderSubmitBuyExchangeName;
+	private String orderSubmitBuyExchangeName;
 
 	@Value("${aitrades.order.submit.buy.rabbitmq.routingkey}")
 	private String orderSubmitBuyRoutingkey;

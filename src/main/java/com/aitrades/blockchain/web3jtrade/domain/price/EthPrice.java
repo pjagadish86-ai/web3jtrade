@@ -1,10 +1,18 @@
 package com.aitrades.blockchain.web3jtrade.domain.price;
 
 import java.math.BigDecimal;
+import java.math.RoundingMode;
 
 public class EthPrice {
 
 	public Data data;
+
+	public EthPrice() {
+	}
+
+	public EthPrice(Data data) {
+		this.data = data;
+	}
 
 	public Data getData() {
 		return data;
@@ -14,9 +22,16 @@ public class EthPrice {
 		this.data = data;
 	}
 
-	public class Data {
+	public static class Data {
 
 		public Bundle bundle;
+		
+		public Data() {
+		}
+
+		public Data(Bundle bundle) {
+			this.bundle = bundle;
+		}
 
 		public Bundle getBundle() {
 			return bundle;
@@ -26,16 +41,24 @@ public class EthPrice {
 			this.bundle = bundle;
 		}
 
-		public class Bundle {
+		public static class Bundle {
 
 			public String ethPrice;
+
+			public Bundle() {
+				// TODO Auto-generated constructor stub
+			}
+
+			public Bundle(String ethPrice) {
+				this.ethPrice = ethPrice;
+			}
 
 			public String getEthPrice() {
 				return ethPrice;
 			}
 
 			public BigDecimal getEthPriceAsBigDecimal() {
-				return new BigDecimal(ethPrice);
+				return new BigDecimal(ethPrice).setScale(8, RoundingMode.UP);
 			}
 
 			public void setEthPrice(String ethPrice) {

@@ -31,6 +31,7 @@ public class OrderSnipeExecuteIntegrationConfig {
 	public IntegrationFlow snipeTrade() {
 		return IntegrationFlows.from(Amqp.inboundAdapter(rabbitMQOrderSubmitSnipeConfig.orderSubmitSnipeMessageListenerContainer(connectionFactory)))
 							   .handle("orderSnipeExecuteGatewayEndpoint", "pairCreatedEventChannel")
+							   .handle("orderSnipeExecuteGatewayEndpoint", "pairCreatedEventChannel")
 							   .handle("orderSnipeExecuteGatewayEndpoint", "getReservesEventChannel")
 							   .handle("orderSnipeExecuteGatewayEndpoint", "addLiquidityEvent")
 							   .handle("orderSnipeExecuteGatewayEndpoint", "orderSubmitRabbitMqBuyOrSellChannel")

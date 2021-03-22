@@ -1,63 +1,68 @@
 package com.aitrades.blockchain.web3jtrade.integration.buy;
 
-import java.math.BigDecimal;
 import java.math.BigInteger;
-import java.util.List;
 import java.util.Map;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.integration.annotation.ServiceActivator;
-import org.web3j.crypto.Credentials;
 
 import com.aitrades.blockchain.web3jtrade.dex.contract.EthereumDexTradeContractService;
 import com.aitrades.blockchain.web3jtrade.domain.GasModeEnum;
 import com.aitrades.blockchain.web3jtrade.domain.StrategyGasProvider;
+import com.aitrades.blockchain.web3jtrade.domain.TransactionRequest;
 
 public class OrderBuyExecuteGatewayEndpoint {
+
+	private static final String OUTPUT_TOKENS = "OUTPUT_TOKENS";
+	private static final String TRANSACTION_REQUEST = "TRANSACTION_REQUEST";
 	
 	@Autowired
-	private EthereumDexTradeContractService ethereumDexTradeService;
+	public StrategyGasProvider strategyGasProvider;
+	
+	@Autowired
+	protected EthereumDexTradeContractService ethereumDexTradeService;
 	
 	@ServiceActivator(inputChannel = "approveChannel", outputChannel = "amountsInChannel")
 	public Map<String, Object> approveChannel(Map<String, Object> tradeOrderMap){
-		String route= null;
-		Credentials credentials= null;
-		StrategyGasProvider customGasProvider= null;
-		GasModeEnum gasModeEnum= null;
-		String contractAddress= null;
-		ethereumDexTradeService.approve(route, credentials, contractAddress, customGasProvider, gasModeEnum);
-		// add amounts out into map;
+		
+		TransactionRequest transactionRequest = (TransactionRequest) tradeOrderMap.get(TRANSACTION_REQUEST);
+		
+		String hash = ethereumDexTradeService.approve(transactionRequest.getRoute(), 
+							   				 transactionRequest.getCredentials(),
+											 transactionRequest.getToAddress(), 
+											 strategyGasProvider,
+											 GasModeEnum.fromValue(transactionRequest.getGasMode()));
 		return tradeOrderMap;
 		
 	}
 	
 	@ServiceActivator(inputChannel = "amountsInChannel", outputChannel = "swapETHForTokensChannel")
 	public Map<String, Object> amountsInChannel(Map<String, Object> tradeOrderMap){
-		String route= null;
-		Credentials credentials= null;
-		BigDecimal inputTokens= null;
-		StrategyGasProvider customGasProvider= null;
-		GasModeEnum gasModeEnum= null;
-		List<String> memoryPathAddress= null;
-		ethereumDexTradeService.getAmountsIn(route, credentials, inputTokens, customGasProvider, gasModeEnum, memoryPathAddress);
-		// add amounts out into map;
-		// this should be calculated with slippage tolearanc
+		TransactionRequest transactionRequest = (TransactionRequest) tradeOrderMap.get(TRANSACTION_REQUEST);
+		BigInteger outputTokens = ethereumDexTradeService.getAmountsIn(transactionRequest.getRoute(),
+													     transactionRequest.getCredentials(), 
+													     transactionRequest.getInputTokenValueAmountAsBigDecimal(),
+													     transactionRequest.getSlipage(),
+													     strategyGasProvider, 
+													     GasModeEnum.fromValue(transactionRequest.getGasMode()),
+													     transactionRequest.getMemoryPath());
+		tradeOrderMap.put(OUTPUT_TOKENS, outputTokens);
 		return tradeOrderMap;
 	}
 	
 	@ServiceActivator(inputChannel = "swapETHForTokensChannel")
 	public Map<String, Object> swapETHForTokensChannel(Map<String, Object> tradeOrderMap){
-		String route= null;
-		Credentials credentials= null;
-		BigInteger inputEthers= null;
-		StrategyGasProvider customGasProvider= null;
-		GasModeEnum gasModeEnum= null;
-		List<String> memoryPathAddress= null;
-		long deadLine = 0;
-		boolean hasFee = false;
-		BigInteger outPutTokens = null;// this nothign but amoutnsin
-		ethereumDexTradeService.swapETHForTokens(route, credentials, inputEthers, outPutTokens, customGasProvider, gasModeEnum, deadLine, memoryPathAddress, hasFee);
-		// add amounts out into map;
+		TransactionRequest transactionRequest = (TransactionRequest) tradeOrderMap.get(TRANSACTION_REQUEST);
+		BigInteger outputTokens = (BigInteger)tradeOrderMap.get(OUTPUT_TOKENS);
+		String hash = ethereumDexTradeService.swapETHForTokens(transactionRequest.getRoute(),
+																transactionRequest.getCredentials(), 
+																transactionRequest.getInputTokenValueAmountAsBigInteger(),
+																outputTokens, 
+																strategyGasProvider, 
+																GasModeEnum.fromValue(transactionRequest.getGasMode()), 
+																1234211,
+																transactionRequest.getMemoryPath(), 
+																false);
 		return tradeOrderMap;
 	}
 }

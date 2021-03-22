@@ -35,11 +35,11 @@ public interface EthereumDexContractService {
 	
 	public String approve(Credentials credentials, String contractAddress, StrategyGasProvider customGasProvider, GasModeEnum gasModeEnum);
 	
-	public BigDecimal getAmountsIn(Credentials credentials, BigDecimal inputEthers, StrategyGasProvider customGasProvider, GasModeEnum gasModeEnum, List<String> memoryPathAddress);
+	public BigInteger getAmountsIn(Credentials credentials, BigDecimal inputEthers, BigDecimal slipage, StrategyGasProvider customGasProvider, GasModeEnum gasModeEnum, List<String> memoryPathAddress);
 	
 	public String swapETHForTokens(Credentials credentials, BigInteger inputEthers, BigInteger outPutTokens, StrategyGasProvider customGasProvider,  GasModeEnum gasModeEnum,  long deadLine, List<String> memoryPathAddress, boolean hasFee);
 	
-	public BigDecimal getAmountsOut(Credentials credentials,BigDecimal inputTokens, StrategyGasProvider customGasProvider, GasModeEnum gasModeEnum,  List<String> memoryPathAddress);
+	public BigInteger getAmountsOut(Credentials credentials,BigDecimal inputTokens, BigDecimal slipage, StrategyGasProvider customGasProvider, GasModeEnum gasModeEnum,  List<String> memoryPathAddress);
 	
 	public String swapTokenForETH(Credentials credentials, BigInteger inputTokens, BigInteger outputEthers, StrategyGasProvider customGasProvider, GasModeEnum gasModeEnum, long deadLine, List<String> memoryPathAddress, boolean hasFee);
 	

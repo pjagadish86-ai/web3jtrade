@@ -2,6 +2,7 @@ package com.aitrades.blockchain.web3jtrade.dex.uniswap;
 
 import java.math.BigDecimal;
 import java.math.BigInteger;
+import java.math.RoundingMode;
 import java.time.Instant;
 import java.time.temporal.ChronoUnit;
 import java.util.Arrays;
@@ -105,7 +106,7 @@ public class UniswapServiceImpl implements EthereumDexContractService {
 	}
 
 	@Override
-	public BigDecimal getAmountsIn(Credentials credentials, BigDecimal inputEthers, 
+	public BigInteger getAmountsIn(Credentials credentials, BigDecimal inputEthers, BigDecimal slipage,
 								   StrategyGasProvider customGasProvider,
 								   GasModeEnum gasModeEnum, List<String> memoryPathAddress) {
 
@@ -113,13 +114,16 @@ public class UniswapServiceImpl implements EthereumDexContractService {
 																	web3jServiceClient.getWeb3j(), 
 																	credentials, 
 																	customGasProvider);
-		BigInteger amountsIn = (BigInteger) uniswapV2Contract.getAmountsIn(Convert.toWei(inputEthers, Convert.Unit.ETHER).toBigInteger(), memoryPathAddress)
-															 .flowable()
-															 .blockingSingle()
-															 .parallelStream()
-															 .findFirst()
-															 .get();
-		return Convert.fromWei(new BigDecimal(amountsIn), Convert.Unit.ETHER);
+		BigInteger amountsOut = (BigInteger) uniswapV2Contract.getAmountsIn(Convert.toWei(inputEthers, Convert.Unit.ETHER).toBigInteger(), memoryPathAddress)
+															  .flowable()
+															  .blockingSingle()
+															  .parallelStream()
+															  .findFirst()
+															  .get();
+
+		BigDecimal outputTokens  =  Convert.fromWei(amountsOut.toString(), Convert.Unit.ETHER).setScale(0, RoundingMode.DOWN);
+		BigDecimal outputTokensWithSlipage = (outputTokens.subtract(outputTokens.multiply(slipage))).setScale(0, RoundingMode.DOWN);
+		return Convert.fromWei(outputTokensWithSlipage, Convert.Unit.ETHER).toBigInteger();
 	}
 
 	@Override
@@ -157,7 +161,7 @@ public class UniswapServiceImpl implements EthereumDexContractService {
 	}
 
 	@Override
-	public BigDecimal getAmountsOut(Credentials credentials, BigDecimal inputTokens,
+	public BigInteger getAmountsOut(Credentials credentials, BigDecimal inputTokens, BigDecimal slipage, 
 								    StrategyGasProvider customGasProvider, GasModeEnum gasModeEnum, 
 								    List<String> memoryPathAddress) {
 
@@ -172,8 +176,9 @@ public class UniswapServiceImpl implements EthereumDexContractService {
 															 .parallelStream()
 															 .findFirst()
 															 .get();
-		
-		return Convert.fromWei(new BigDecimal(amountsIn), Convert.Unit.ETHER);
+		BigDecimal inputTokensOut  =  Convert.fromWei(amountsIn.toString(), Convert.Unit.ETHER).setScale(0, RoundingMode.DOWN);
+		BigDecimal inputTokensOutWithSlipage = (inputTokensOut.subtract(inputTokensOut.multiply(slipage))).setScale(0, RoundingMode.DOWN);
+		return Convert.fromWei(inputTokensOutWithSlipage, Convert.Unit.ETHER).toBigInteger();
 	}
 
 	@Override

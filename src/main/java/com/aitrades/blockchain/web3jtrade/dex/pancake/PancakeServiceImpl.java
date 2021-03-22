@@ -103,7 +103,7 @@ public class PancakeServiceImpl implements EthereumDexContractService {
 	}
 
 	@Override
-	public BigDecimal getAmountsIn(Credentials credentials, BigDecimal inputEthers, 
+	public BigInteger getAmountsIn(Credentials credentials, BigDecimal inputEthers, BigDecimal slipage,
 								   StrategyGasProvider customGasProvider,
 								   GasModeEnum gasModeEnum, List<String> memoryPathAddress) {
 
@@ -117,7 +117,7 @@ public class PancakeServiceImpl implements EthereumDexContractService {
 															 .parallelStream()
 															 .findFirst()
 															 .get();
-		return Convert.fromWei(new BigDecimal(amountsIn), Convert.Unit.ETHER);
+		return Convert.fromWei(new BigDecimal(amountsIn), Convert.Unit.ETHER).toBigInteger();
 	}
 
 	@Override
@@ -155,7 +155,7 @@ public class PancakeServiceImpl implements EthereumDexContractService {
 	}
 
 	@Override
-	public BigDecimal getAmountsOut(Credentials credentials, BigDecimal inputTokens,
+	public BigInteger getAmountsOut(Credentials credentials, BigDecimal inputTokens, BigDecimal slipage,
 								    StrategyGasProvider customGasProvider, GasModeEnum gasModeEnum, 
 								    List<String> memoryPathAddress) {
 
@@ -171,7 +171,7 @@ public class PancakeServiceImpl implements EthereumDexContractService {
 															 .findFirst()
 															 .get();
 		
-		return Convert.fromWei(new BigDecimal(amountsIn), Convert.Unit.ETHER);
+		return Convert.fromWei(new BigDecimal(amountsIn), Convert.Unit.ETHER).toBigInteger();
 	}
 
 	@Override

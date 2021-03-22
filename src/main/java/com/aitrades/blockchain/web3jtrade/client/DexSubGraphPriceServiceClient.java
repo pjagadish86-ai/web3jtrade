@@ -2,6 +2,7 @@ package com.aitrades.blockchain.web3jtrade.client;
 
 import java.io.IOException;
 import java.math.BigDecimal;
+import java.math.RoundingMode;
 import java.util.Map;
 
 import javax.annotation.Resource;
@@ -9,21 +10,28 @@ import javax.annotation.Resource;
 import org.apache.http.client.methods.HttpPost;
 import org.apache.http.entity.StringEntity;
 import org.apache.http.impl.client.CloseableHttpClient;
-import org.apache.http.util.EntityUtils;
+import org.apache.http.impl.client.HttpClients;
 import org.springframework.stereotype.Service;
 
 import com.aitrades.blockchain.web3jtrade.domain.price.EthPrice;
 import com.aitrades.blockchain.web3jtrade.domain.price.PairPrice;
+import com.fasterxml.jackson.databind.ObjectReader;
 import com.google.common.collect.ImmutableMap;
-import com.jsoniter.JsonIterator;
 
+import io.reactivex.BackpressureStrategy;
 import io.reactivex.Flowable;
-import io.reactivex.schedulers.Schedulers;
 @Service
+//TODO: come back to  re-factor the ugliest code in universe. wtf you wrote. :-(
 public class DexSubGraphPriceServiceClient implements DexSubGraphPriceClient {
 
-	@Resource(name="uniswapPriceHttpClient")
+	@Resource(name="graphHqlPriceHttpClient")
 	public CloseableHttpClient closeableHttpClient;
+	
+	@Resource(name="pairPriceObjectReader")
+	private ObjectReader pairPriceObjectReader;
+	
+	@Resource(name="ethPriceObjectReader")
+	private ObjectReader ethPriceObjectReader;
 	
 	private static final String SUSHI = "SUSHI";
 	private static final String UNISWAP = "UNISWAP";
@@ -31,8 +39,7 @@ public class DexSubGraphPriceServiceClient implements DexSubGraphPriceClient {
 	private static final String UNISWAP_SUBGRAPH_URL = "https://api.thegraph.com/subgraphs/name/uniswap/uniswap-v2";
 	private static final String SUSHISWAP_SUBGRAPH_URL = "https://api.thegraph.com/subgraphs/name/sushiswap/exchange";
 
-	private static Map<String, String> DEX_PRICE_URL = ImmutableMap.of(UNISWAP, UNISWAP_SUBGRAPH_URL, SUSHI, SUSHISWAP_SUBGRAPH_URL);
-
+	private static final Map<String, String> DEX_PRICE_URL = ImmutableMap.of(UNISWAP, UNISWAP_SUBGRAPH_URL, SUSHI, SUSHISWAP_SUBGRAPH_URL);
 	
 	private static final String QUERY_PAIR_DATA_0= "{	\"query\": \"{ pair(id: ";
 	private static final String QUERY_PAIR_DATA_1 = "\\"+ "\"";
@@ -41,35 +48,42 @@ public class DexSubGraphPriceServiceClient implements DexSubGraphPriceClient {
 			+ "    token1Price     volumeUSD     txCount }}" +"\",";
 	private static final String QUERY_PAIR_DATA_4 = "	\"variables\": null}";
 	
-	private static final String QUERY_ETH_PRICE ="{\"query\":\"{\\n bundle(id: \\\"1\\\" ) {\\n   ethPrice\\n }\\n}\",\"variables\":null}";
-	
+	private static final String QUERY_ETH_PRICE ="{\"query\":\"{ bundle(id: \\\"1\\\" ) {   ethPrice }}\",\"variables\":null}";
 	
 	public BigDecimal getPriceOfTicker(String pairAddress) {
-		return Flowable.zip(getPairData(pairAddress), getEthPrice(), this :: calculateTickerPrice)
-					   .subscribeOn(Schedulers.io())
-					   .blockingSingle();
+		PairPrice pairPrice = null;
+		EthPrice ethPrice = null;
+		try {
+			pairPrice = getPairDataFromUniswap(pairAddress);
+			ethPrice = getEthPriceFrmGraph();
+		} catch (IOException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		return calculateTickerPrice(pairPrice, ethPrice);
 	}
 	
 	//token price = ETH RESR * ETH PRICE / UPI  RESR
-	public BigDecimal calculateTickerPrice(PairPrice pairPriceUniswap, EthPrice ethPriceUniswap) {
-		return pairPriceUniswap.getData().getPair().getReserve1AsBigDecimal()
-				.multiply(ethPriceUniswap.getData().getBundle().getEthPriceAsBigDecimal())
-				.divide(pairPriceUniswap.getData().getPair().getReserve0AsBigDecimal());
+	public BigDecimal calculateTickerPrice(PairPrice pairPrice, EthPrice ethPrice) {
+		return pairPrice.getData().getPair().getReserve1AsBigDecimal()
+				.multiply(ethPrice.getData().getBundle().getEthPriceAsBigDecimal()).setScale(8, RoundingMode.HALF_UP)
+				.divide(pairPrice.getData().getPair().getReserve0AsBigDecimal(), 8, RoundingMode.HALF_UP);
 	}
 	
 	public Flowable<PairPrice> getPairData(final String pairAddress) {
-	    return Flowable.fromCallable(()-> getPairDataFromUniswap(pairAddress));
+	    return Flowable.create(subscribe -> getPairDataFromUniswap(pairAddress), BackpressureStrategy.BUFFER);
 	}
 	
 	public Flowable<EthPrice> getEthPrice() {
-	    return Flowable.fromCallable(()-> getEthPriceFrmSubGraphbox());
+	    return Flowable.create(subscribe -> getEthPriceFrmGraph(), BackpressureStrategy.BUFFER);
 	}
 	
-	private EthPrice getEthPriceFrmSubGraphbox() throws IOException {
+	private EthPrice getEthPriceFrmGraph() throws IOException {
+		CloseableHttpClient ethHttpClient =HttpClients.createMinimal();
 		HttpPost post = new HttpPost(UNISWAP_SUBGRAPH_URL);
         post.setEntity(new StringEntity(QUERY_ETH_PRICE));
         try {
-            return JsonIterator.deserialize(EntityUtils.toString(closeableHttpClient.execute(post).getEntity()),EthPrice.class);
+            return ethPriceObjectReader.readValue(ethHttpClient.execute(post).getEntity().getContent());
         }catch (Exception e) {
         	e.printStackTrace();
 		}
@@ -77,6 +91,7 @@ public class DexSubGraphPriceServiceClient implements DexSubGraphPriceClient {
 	}
 	//TODO: ugly code
 	private PairPrice getPairDataFromUniswap(String pairAddress) throws IOException {
+		CloseableHttpClient pairPriceHttpClient =HttpClients.createMinimal();
 		StringBuffer builder = new StringBuffer();
 		builder.append(QUERY_PAIR_DATA_0);
 		builder.append(QUERY_PAIR_DATA_1);
@@ -86,7 +101,7 @@ public class DexSubGraphPriceServiceClient implements DexSubGraphPriceClient {
         HttpPost post = new HttpPost(UNISWAP_SUBGRAPH_URL);
         post.setEntity(new StringEntity(builder.toString()));
         try {
-            return JsonIterator.deserialize(EntityUtils.toString(closeableHttpClient.execute(post).getEntity()), PairPrice.class);
+			return pairPriceObjectReader.readValue(pairPriceHttpClient.execute(post).getEntity().getContent());
         }catch (Exception e) {
         	e.printStackTrace();
 		}

@@ -6,6 +6,8 @@ import java.net.URISyntaxException;
 import java.time.Duration;
 import java.util.concurrent.TimeUnit;
 
+import org.apache.http.impl.client.CloseableHttpClient;
+import org.apache.http.impl.client.HttpClients;
 import org.springframework.amqp.core.AmqpTemplate;
 import org.springframework.amqp.rabbit.connection.ConnectionFactory;
 import org.springframework.amqp.rabbit.core.RabbitTemplate;
@@ -128,10 +130,15 @@ public class Application {
 	}
 	
 	//TODO: async rabitamq
-	@Bean("orderSubmitRabbitTemplate")
+	@Bean(name = "orderSubmitRabbitTemplate")
 	public AmqpTemplate postorderRabbitTemplate(ConnectionFactory connectionFactory) {
 		final RabbitTemplate rabbitTemplate = new RabbitTemplate(connectionFactory);
 		rabbitTemplate.setMessageConverter(jsonMessageConverter());
 		return rabbitTemplate;
+	}
+	
+	@Bean(name ="graphHqlPriceHttpClient")
+	public CloseableHttpClient uniswapPriceHttpClient() {
+		return HttpClients.createMinimal();	
 	}
 }
