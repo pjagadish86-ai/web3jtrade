@@ -28,10 +28,10 @@ public class OrderBuyExecuteGatewayEndpoint {
 		TransactionRequest transactionRequest = (TransactionRequest) tradeOrderMap.get(TRANSACTION_REQUEST);
 		
 		String hash = ethereumDexTradeService.approve(transactionRequest.getRoute(), 
-							   				 transactionRequest.getCredentials(),
-											 transactionRequest.getToAddress(), 
-											 strategyGasProvider,
-											 GasModeEnum.fromValue(transactionRequest.getGasMode()));
+									   				  transactionRequest.getCredentials(),
+													  transactionRequest.getToAddress(), 
+													  strategyGasProvider,
+													  GasModeEnum.fromValue(transactionRequest.getGasMode()));
 		return tradeOrderMap;
 		
 	}

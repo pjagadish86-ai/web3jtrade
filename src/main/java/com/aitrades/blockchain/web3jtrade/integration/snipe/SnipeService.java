@@ -8,8 +8,8 @@ import org.springframework.stereotype.Component;
 
 import com.aitrades.blockchain.web3jtrade.dex.contract.EthereumDexTradeContractService;
 import com.aitrades.blockchain.web3jtrade.domain.GasModeEnum;
+import com.aitrades.blockchain.web3jtrade.domain.SnipeTransactionRequest;
 import com.aitrades.blockchain.web3jtrade.domain.StrategyGasProvider;
-import com.aitrades.blockchain.web3jtrade.domain.TransactionRequest;
 
 @Component
 public class SnipeService {
@@ -21,10 +21,11 @@ public class SnipeService {
 	
 	@Autowired
 	private EthereumDexTradeContractService tradeContractService;
-	
+	// this needs serious refactor wtf is this code its so ugly
 	public String snipe(Map<String, Object> tradeOrderMap) {
 		try {
-			TransactionRequest transactionRequest = (TransactionRequest) tradeOrderMap.get(TRANSACTION_REQUEST);
+			SnipeTransactionRequest transactionRequest = (SnipeTransactionRequest) tradeOrderMap.get(TRANSACTION_REQUEST);
+			
 			tradeContractService.approve(transactionRequest.getRoute(), 
 										 transactionRequest.getCredentials(),
 										 transactionRequest.getToAddress(), 
@@ -32,12 +33,12 @@ public class SnipeService {
 										 GasModeEnum.fromValue(transactionRequest.getGasMode()));
 			
 			BigInteger outputTokens = tradeContractService.getAmountsIn(transactionRequest.getRoute(),
-																     transactionRequest.getCredentials(), 
-																     transactionRequest.getInputTokenValueAmountAsBigDecimal(),
-																     transactionRequest.getSlipage(),
-																     strategyGasProvider, 
-																     GasModeEnum.fromValue(transactionRequest.getGasMode()),
-																     transactionRequest.getMemoryPath());
+																        transactionRequest.getCredentials(), 
+																        transactionRequest.getInputTokenValueAmountAsBigDecimal(),
+																        transactionRequest.getSlipage(),
+																        strategyGasProvider, 
+																        GasModeEnum.fromValue(transactionRequest.getGasMode()),
+																        transactionRequest.getMemoryPath());
 			
 			String hash = tradeContractService.swapETHForTokens(transactionRequest.getRoute(),
 																transactionRequest.getCredentials(), 

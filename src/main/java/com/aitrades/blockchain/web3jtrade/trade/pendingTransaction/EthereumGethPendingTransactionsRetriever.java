@@ -1,4 +1,4 @@
-package com.aitrades.blockchain.web3jtrade.trade.snipe;
+package com.aitrades.blockchain.web3jtrade.trade.pendingTransaction;
 
 import java.math.BigInteger;
 import java.util.Objects;
@@ -29,28 +29,22 @@ import io.reactivex.schedulers.Schedulers;
 
 @Component
 @SuppressWarnings("unused")
-public class EthereumParityPendingTransactionsRetriever {
+public class EthereumGethPendingTransactionsRetriever {
 
-	private static final String PANCAKE = "PANCAKE";
-	private static final String SUSHI = "SUSHI";
-	private static final String UNISWAP = "UNISWAP";
 	public static final String UNISWAP_FACTORY_ADDRESS = "0x5c69bee701ef814a2b6a3edd4b1652cb9cc5aa6f";
     public static final String UNISWAP_ROUTER_ADDRESS = "0x7a250d5630B4cF539739dF2C5dAcb4c659F2488D";
     public static final Pattern pattern = Pattern.compile("");
     
-    private static final Set<String> UNISWAP_TRADE_METHODS =  Set.of("0x7ff36ab5","0x18cbafe5");
+    private static final Set<String> methodNames =  Set.of("0x7ff36ab5","0x18cbafe5");
     
-    private static final Set<String> UNISWAP_LIQUID_METHODS =  Set.of("0x7ff36ab5","0x18cbafe5");
-
 	@Autowired
 	public Parity parity;
 	
 	@Resource(name = "web3jServiceClient")
 	private Web3jServiceClient web3jServiceClient;
 
-	// Find a solution between frontrunning which needs a subscription and single 78
-	public BigInteger pendingTransactionsFrontRunnerFilter(String route, boolean isFrontRun, boolean hasLiquidityAdded, BigInteger gas, String contractAddress) {
-		EQ fromAddress = getRoute(route);
+	private BigInteger pendingTransactionsFrontRunnerFilter(BigInteger gas, String contractAddress) {
+		EQ fromAddress = new EQ(UNISWAP_ROUTER_ADDRESS);
 		Iterable<BigInteger> gasIterables =	parity.parityPendingTransactions(null, new ParityPendingTranscationFilter(fromAddress, 
 																													    null, 
 																													    null, 
@@ -63,31 +57,19 @@ public class EthereumParityPendingTransactionsRetriever {
 												          .sequential()
 												          .map(ParityPendingTransactionResponse :: getResult)
 												          .flatMapIterable(resp -> resp)
-												          .map(trans-> filterContractAndCollectGas(trans, contractAddress, hasLiquidityAdded))
+												          .map(trans-> filterContractAndCollectGas(trans, contractAddress))
 												          .filter(Objects :: nonNull)
 												          .blockingIterable();
 		return Ordering.natural().max(gasIterables);
 	}
-
-	private EQ getRoute(String route) {
-		if(StringUtils.equalsIgnoreCase(route, UNISWAP)) {
-			return new EQ(UNISWAP_ROUTER_ADDRESS);	
-		}else if(StringUtils.equalsIgnoreCase(route, SUSHI)) {
-			return new EQ(UNISWAP_ROUTER_ADDRESS);	
-		}else if(StringUtils.equalsIgnoreCase(route, PANCAKE)) {
-			return new EQ(UNISWAP_ROUTER_ADDRESS);	
-		}
-		return null;
+	
+	private BigInteger filterContractAndCollectGas(Transaction transaction, String contractAddress) {
+		return iftheGivenContractIsInTheData(transaction.getInput(), contractAddress) ? transaction.getGas() : null;
 	}
 	
-	private BigInteger filterContractAndCollectGas(Transaction transaction, String contractAddress, boolean hasLiquidityAdded) {
-		return isContractMatch(transaction.getInput(), contractAddress, hasLiquidityAdded) ? transaction.getGas() : null;
-	}
-	
-	private boolean isContractMatch(String input, String contractAddress, boolean hasLiquidityAdded) {
+	private boolean iftheGivenContractIsInTheData(String input, String contractAddress) {
 		final String inputStr  = input.substring(0, 10);
-		boolean hasValidEventMethod = hasLiquidityAdded ? UNISWAP_TRADE_METHODS.contains(inputStr) : UNISWAP_LIQUID_METHODS.contains(inputStr);
-		if(hasValidEventMethod) {
+		if(methodNames.contains(inputStr)) {
 			final String pendingTranscationCntr = getContractAddress(inputStr);
 			return StringUtils.equalsIgnoreCase(pendingTranscationCntr, contractAddress);
 		}
