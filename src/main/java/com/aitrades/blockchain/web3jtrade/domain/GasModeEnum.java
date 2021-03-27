@@ -1,11 +1,11 @@
 package com.aitrades.blockchain.web3jtrade.domain;
 
 public enum GasModeEnum {
-	SNIP("SNIP",1), 
-	FASTEST("RAPID",2), 	
-	FAST("FAST",3), 
-	STANDARD("AVERAGE",4), 	
-	SAFELOW("SLOW",5);
+	ULTRA("ultra",1), 
+	FASTEST("fastest",2), 	
+	FAST("fast",3), 
+	STANDARD("standard",4), 	
+	SAFELOW("safelow",5);
 	
 	private final String value;
 	private final Integer sortorder;
@@ -24,21 +24,21 @@ public enum GasModeEnum {
 	
 	public static GasModeEnum fromValue(String value) {
 		for (final GasModeEnum gasMode : GasModeEnum.values()) {
-			if (gasMode.value.equals(value)) {
+			if (gasMode.value.equalsIgnoreCase(value)) {
 				return gasMode;
 			}
 		}
-		throw new IllegalArgumentException(value);
+		return GasModeEnum.STANDARD;
 	}
 
 	public static GasModeEnum fromName(String name) {
 
 		for (final GasModeEnum gasMode : GasModeEnum.values()) {
-			if (gasMode.name().equals(name)) {
+			if (gasMode.name().equalsIgnoreCase(name)) {
 				return gasMode;
 			}
 		}
-		throw new IllegalArgumentException(name);
+		return GasModeEnum.STANDARD;
 
 	}
 }

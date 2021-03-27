@@ -34,9 +34,10 @@ public class OrderSnipeExecuteIntegrationConfig {
 							   .handle("orderSnipeExecuteGatewayEndpoint", "pairCreatedEventChannel")
 							   .handle("orderSnipeExecuteGatewayEndpoint", "getReservesEventChannel")
 							   .handle("orderSnipeExecuteGatewayEndpoint", "addLiquidityEvent")
-							   .handle("orderSnipeExecuteGatewayEndpoint", "approveChannel")
-							   .handle("orderSnipeExecuteGatewayEndpoint", "approveChannel")
+							//   .handle("orderSnipeExecuteGatewayEndpoint", "approveChannel")
+							   .handle("orderSnipeExecuteGatewayEndpoint", "amountsInChannel")
 							   .handle("orderSnipeExecuteGatewayEndpoint", "swapETHForTokensChannel")
+							   .handle("orderSnipeExecuteGatewayEndpoint", "updateOrDeleteSnipeOrderChannel")
 							   .channel(IntegrationContextUtils.NULL_CHANNEL_BEAN_NAME)
 							   .get();
 	}

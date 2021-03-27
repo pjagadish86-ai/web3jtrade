@@ -22,7 +22,6 @@ import org.springframework.http.MediaType;
 import org.springframework.http.client.reactive.ReactorClientHttpConnector;
 import org.springframework.web.client.RestTemplate;
 import org.springframework.web.reactive.function.client.WebClient;
-import org.web3j.crypto.Credentials;
 import org.web3j.protocol.Web3j;
 import org.web3j.protocol.parity.Parity;
 import org.web3j.protocol.websocket.WebSocketClient;
@@ -39,10 +38,11 @@ import reactor.netty.http.client.HttpClient;
 @SpringBootApplication(scanBasePackages = { "com.aitrades.blockchain.web3jtrade" })
 public class Application {
 
-	private static final String ENDPOINT_WSS = "wss://icy-aged-wood.quiknode.pro/13d44d88a3379583681c7871538ad5fe4e6727c7/";
+	private static final String ENDPOINT_WSS = "wss://eth-ropsten.ws.alchemyapi.io/v2/rbcu5rCKQjynzoU_TTGtTvamSnagl9BU";
 	
 	private static final long WEBCLIENT_TIMEOUT= 20l;
 	private static final String ETH_GAS_PRICE_ORACLE ="https://www.etherchain.org/api";
+	private static final String ETH_GAS_STATION ="https://data-api.defipulse.com/api/v1/egs/api/ethgasAPI.json?api-key=2d249b5b77ce8b5d20fdd6a6c09a5ac3a954981252730a2e26dcfbc4a41a";
 	
 	public static void main(String[] args) throws Exception {
 		SpringApplication.run(Application.class, args);
@@ -95,11 +95,6 @@ public class Application {
 		return new Web3jServiceClient(web3j, restTemplate(), objectMapper);
 	}
 	
-	@Bean(name = "credentials")
-	public Credentials credentials() {
-		return Credentials.create("0x03f150fde140188e4de36b962072033c533c297aa8f407d81da96ec598127c44");
-	}
-
 	@Bean
 	public RestTemplate restTemplate() {
 		return new RestTemplate();
@@ -117,11 +112,11 @@ public class Application {
 	@Bean(name = "externalHttpClientCalls")
 	public HttpClient getHttpClient() {
 		return HttpClient.create()
-			    		 .option(ChannelOption.CONNECT_TIMEOUT_MILLIS, 5000)
-			    		 .responseTimeout(Duration.ofMillis(5000))
+			    		 .option(ChannelOption.CONNECT_TIMEOUT_MILLIS, 50000)
+			    		 .responseTimeout(Duration.ofMillis(50000))
 			    		 .doOnConnected(conn -> 
-	    		  						conn.addHandlerLast(new ReadTimeoutHandler(WEBCLIENT_TIMEOUT, TimeUnit.MILLISECONDS))
-	    		  							.addHandlerLast(new WriteTimeoutHandler(WEBCLIENT_TIMEOUT, TimeUnit.MILLISECONDS)));
+	    		  						conn.addHandlerLast(new ReadTimeoutHandler(WEBCLIENT_TIMEOUT, TimeUnit.SECONDS))
+	    		  							.addHandlerLast(new WriteTimeoutHandler(WEBCLIENT_TIMEOUT, TimeUnit.SECONDS)));
 	}
 	
 	@Bean

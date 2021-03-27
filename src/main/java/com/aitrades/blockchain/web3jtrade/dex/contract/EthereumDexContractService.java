@@ -29,18 +29,18 @@ public interface EthereumDexContractService {
     public static final String FUNC_SWAPEXACTTOKENSFORETH = "swapExactTokensForETH";
     public static final String FUNC_SWAPEXACTTOKENSFORETHSUPPORTINGFEEONTRANSFERTOKENS = "swapExactTokensForETHSupportingFeeOnTransferTokens";
     
-	public List<Type> getPair(String tokenA, String tokenB);
+	public List<Type> getPair(String tokenA, String tokenB) throws Exception;
 	
-	public Tuple3<BigInteger, BigInteger, BigInteger> getReserves(String pairAddress, Credentials credentials, StrategyGasProvider customGasProvider);
+	public Tuple3<BigInteger, BigInteger, BigInteger> getReserves(String pairAddress, Credentials credentials, StrategyGasProvider customGasProvider) throws Exception;
 	
-	public String approve(Credentials credentials, String contractAddress, StrategyGasProvider customGasProvider, GasModeEnum gasModeEnum);
+	public String approve(Credentials credentials, String contractAddress, StrategyGasProvider customGasProvider, GasModeEnum gasModeEnum) throws Exception;
 	
-	public BigInteger getAmountsIn(Credentials credentials, BigDecimal inputEthers, BigDecimal slipage, StrategyGasProvider customGasProvider, GasModeEnum gasModeEnum, List<String> memoryPathAddress);
+	public BigInteger getAmountsIn(Credentials credentials, BigDecimal inputEthers, BigDecimal slipage, StrategyGasProvider customGasProvider, GasModeEnum gasModeEnum, List<String> memoryPathAddress) throws Exception;
 	
-	public String swapETHForTokens(Credentials credentials, BigInteger inputEthers, BigInteger outPutTokens, StrategyGasProvider customGasProvider,  GasModeEnum gasModeEnum,  long deadLine, List<String> memoryPathAddress, boolean hasFee);
+	public String swapETHForTokens(Credentials credentials, BigInteger inputEthers, BigInteger outPutTokens, StrategyGasProvider customGasProvider,  GasModeEnum gasModeEnum,  long deadLine, List<String> memoryPathAddress, boolean hasFee) throws Exception;
 	
-	public BigInteger getAmountsOut(Credentials credentials,BigDecimal inputTokens, BigDecimal slipage, StrategyGasProvider customGasProvider, GasModeEnum gasModeEnum,  List<String> memoryPathAddress);
+	public BigInteger getAmountsOut(Credentials credentials,BigDecimal inputTokens, BigDecimal slipage, StrategyGasProvider customGasProvider, GasModeEnum gasModeEnum,  List<String> memoryPathAddress) throws Exception;
 	
-	public String swapTokenForETH(Credentials credentials, BigInteger inputTokens, BigInteger outputEthers, StrategyGasProvider customGasProvider, GasModeEnum gasModeEnum, long deadLine, List<String> memoryPathAddress, boolean hasFee);
+	public String swapTokenForETH(Credentials credentials, BigInteger inputTokens, BigInteger outputEthers, StrategyGasProvider customGasProvider, GasModeEnum gasModeEnum, long deadLine, List<String> memoryPathAddress, boolean hasFee) throws Exception;
 	
 }

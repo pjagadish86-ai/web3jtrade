@@ -51,7 +51,7 @@ public class SushiServiceImpl implements EthereumDexContractService {
 	private Web3jServiceClient web3jServiceClient;
 
 	@Override
-	public List<Type> getPair(String tokenA, String tokenB) {
+	public List<Type> getPair(String tokenA, String tokenB) throws Exception{
 		final Function function = new Function(FUNC_GETPAIR, Arrays.asList(new Address(tokenA), new Address(tokenB)),
 											   Arrays.asList(new TypeReference<Address>() {
 											}));
@@ -67,7 +67,7 @@ public class SushiServiceImpl implements EthereumDexContractService {
 	}
 
 	@Override
-	public Tuple3<BigInteger, BigInteger, BigInteger> getReserves(String pairAddress, Credentials credentials, StrategyGasProvider contractGasProvider) {
+	public Tuple3<BigInteger, BigInteger, BigInteger> getReserves(String pairAddress, Credentials credentials, StrategyGasProvider contractGasProvider) throws Exception{
 		EthereumDexContract uniswapV2Pair = new EthereumDexContract(pairAddress, 
 																web3jServiceClient.getWeb3j(), 
 																credentials,
@@ -77,7 +77,7 @@ public class SushiServiceImpl implements EthereumDexContractService {
 
 	@Override
 	public String approve(Credentials credentials, String contractAddress, StrategyGasProvider customGasProvider,
-						  GasModeEnum gasModeEnum) {
+						  GasModeEnum gasModeEnum) throws Exception{
 
 		final Function approveFunction = new Function(FUNC_APPROVE,
 													  Lists.newArrayList(new Address(SUSHI_ROUTER_ADDRESS), new Uint256(MAX_UINT256)),
@@ -107,7 +107,7 @@ public class SushiServiceImpl implements EthereumDexContractService {
 	@Override
 	public BigInteger getAmountsIn(Credentials credentials, BigDecimal inputEthers, BigDecimal slipage,
 								   StrategyGasProvider customGasProvider,
-								   GasModeEnum gasModeEnum, List<String> memoryPathAddress) {
+								   GasModeEnum gasModeEnum, List<String> memoryPathAddress) throws Exception{
 
 		EthereumDexContract uniswapV2Contract = new EthereumDexContract(SUSHI_ROUTER_ADDRESS,
 																	web3jServiceClient.getWeb3j(), 
@@ -124,7 +124,7 @@ public class SushiServiceImpl implements EthereumDexContractService {
 
 	@Override
 	public String swapETHForTokens(Credentials credentials, BigInteger inputEthers, BigInteger outputTokens, StrategyGasProvider customGasProvider,
-								   GasModeEnum gasModeEnum, long deadLine, List<String> memoryPathAddress, boolean hasFee) {
+								   GasModeEnum gasModeEnum, long deadLine, List<String> memoryPathAddress, boolean hasFee) throws Exception{
 
 		final Function function = new Function(FUNC_SWAPEXACTETHFORTOKENS,
 											   Lists.newArrayList(new Uint256(outputTokens), 
@@ -159,7 +159,7 @@ public class SushiServiceImpl implements EthereumDexContractService {
 	@Override
 	public BigInteger getAmountsOut(Credentials credentials, BigDecimal inputTokens, BigDecimal slipage,
 								    StrategyGasProvider customGasProvider, GasModeEnum gasModeEnum, 
-								    List<String> memoryPathAddress) {
+								    List<String> memoryPathAddress) throws Exception{
 
 		EthereumDexContract uniswapV2Contract = new EthereumDexContract(SUSHI_ROUTER_ADDRESS,
 																	web3jServiceClient.getWeb3j(), 
@@ -179,7 +179,7 @@ public class SushiServiceImpl implements EthereumDexContractService {
 	@Override
 	public String swapTokenForETH(Credentials credentials, BigInteger inputTokens, BigInteger outputEthers,
 								  StrategyGasProvider customGasProvider, GasModeEnum gasModeEnum, long deadLine, List<String> memoryPathAddress,
-								  boolean hasFee) {
+								  boolean hasFee) throws Exception{
 
 		final Function function = new Function(FUNC_SWAPEXACTTOKENSFORETH,
 											   Lists.newArrayList(new Uint256(inputTokens), new Uint256(outputEthers),

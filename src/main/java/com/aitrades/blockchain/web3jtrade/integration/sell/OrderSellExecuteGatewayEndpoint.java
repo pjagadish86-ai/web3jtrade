@@ -26,7 +26,7 @@ public class OrderSellExecuteGatewayEndpoint {
 	protected EthereumDexTradeContractService ethereumDexTradeService;
 	
 	@ServiceActivator(inputChannel = "amountsOutChannel", outputChannel = "swapTokenForETHChannel")
-	public Map<String, Object> amountsOutChannel(Map<String, Object> tradeOrderMap){
+	public Map<String, Object> amountsOutChannel(Map<String, Object> tradeOrderMap) throws Exception{
 		TransactionRequest transactionRequest = (TransactionRequest) tradeOrderMap.get(TRANSACTION_REQUEST);
 		
 		BigInteger outputTokens = ethereumDexTradeService.getAmountsOut(transactionRequest.getRoute(),
@@ -41,7 +41,7 @@ public class OrderSellExecuteGatewayEndpoint {
 	}
 	
 	@ServiceActivator(inputChannel = "swapTokenForETHChannel")
-	public Map<String, Object> swapTokenForETHChannel(Map<String, Object> tradeOrderMap){
+	public Map<String, Object> swapTokenForETHChannel(Map<String, Object> tradeOrderMap) throws Exception{
 		TransactionRequest transactionRequest = (TransactionRequest) tradeOrderMap.get(TRANSACTION_REQUEST);
 		BigInteger outputTokens = (BigInteger)tradeOrderMap.get(INPUT_TOKENS);
 		String hash = ethereumDexTradeService.swapTokenForETH(transactionRequest.getRoute(),

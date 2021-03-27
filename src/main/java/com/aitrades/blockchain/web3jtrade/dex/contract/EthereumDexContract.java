@@ -1,11 +1,14 @@
 package com.aitrades.blockchain.web3jtrade.dex.contract;
 
 import java.math.BigInteger;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.concurrent.Callable;
+import java.util.stream.Collectors;
 
 import org.web3j.abi.TypeReference;
+import org.web3j.abi.datatypes.Address;
 import org.web3j.abi.datatypes.DynamicArray;
 import org.web3j.abi.datatypes.Function;
 import org.web3j.abi.datatypes.Type;
@@ -34,10 +37,9 @@ public class EthereumDexContract extends Contract {
 
 	public RemoteFunctionCall<List> getAmountsOut(BigInteger amountIn, List<String> path) {
         final Function function = new Function(FUNC_GETAMOUNTSOUT, 
-                Arrays.<Type>asList(new org.web3j.abi.datatypes.generated.Uint256(amountIn), 
-                new org.web3j.abi.datatypes.DynamicArray<org.web3j.abi.datatypes.Address>(
-                        org.web3j.abi.datatypes.Address.class,
-                        org.web3j.abi.Utils.typeMap(path, org.web3j.abi.datatypes.Address.class))), 
+                Arrays.<Type>asList(new Uint256(amountIn), 
+                new DynamicArray<Address>(
+                        Address.class, getAddress(path))), 
                 Arrays.<TypeReference<?>>asList(new TypeReference<DynamicArray<Uint256>>() {}));
         return new RemoteFunctionCall<List>(function,
                 new Callable<List>() {
@@ -53,10 +55,8 @@ public class EthereumDexContract extends Contract {
 
 	public RemoteFunctionCall<List> getAmountsIn(BigInteger amountOut, List<String> path) {
         final Function function = new Function(FUNC_GETAMOUNTSIN, 
-                Arrays.<Type>asList(new org.web3j.abi.datatypes.generated.Uint256(amountOut), 
-                new org.web3j.abi.datatypes.DynamicArray<org.web3j.abi.datatypes.Address>(
-                        org.web3j.abi.datatypes.Address.class,
-                        org.web3j.abi.Utils.typeMap(path, org.web3j.abi.datatypes.Address.class))), 
+                Arrays.<Type>asList(new Uint256(amountOut), 
+                new DynamicArray<Address>(Address.class, getAddress(path))), 
                 Arrays.<TypeReference<?>>asList(new TypeReference<DynamicArray<Uint256>>() {}));
         return new RemoteFunctionCall<List>(function,
                 new Callable<List>() {
@@ -68,8 +68,16 @@ public class EthereumDexContract extends Contract {
                 });
     }
 	
+	private List<Address> getAddress(List<String> path) {
+		List<Address>  addresses = new ArrayList<Address>();
+		for(String addr : path) {
+			addresses.add(new Address(addr));
+		}
+		return addresses;
+	}
+
 	public RemoteFunctionCall<Tuple3<BigInteger, BigInteger, BigInteger>> getReserves() {
-        final org.web3j.abi.datatypes.Function function = new org.web3j.abi.datatypes.Function(FUNC_GETRESERVES, 
+        final Function function = new Function(FUNC_GETRESERVES, 
                 Arrays.<Type>asList(), 
                 Arrays.<TypeReference<?>>asList(new TypeReference<Uint112>() {}, new TypeReference<Uint112>() {}, new TypeReference<Uint32>() {}));
         return new RemoteFunctionCall<Tuple3<BigInteger, BigInteger, BigInteger>>(function,
@@ -77,6 +85,9 @@ public class EthereumDexContract extends Contract {
                     @Override
                     public Tuple3<BigInteger, BigInteger, BigInteger> call() throws Exception {
                         List<Type> results = executeCallMultipleValueReturn(function);
+                        if(results == null || results.isEmpty()) {
+                        	return new Tuple3<BigInteger, BigInteger, BigInteger>(BigInteger.ZERO, BigInteger.ZERO, BigInteger.ZERO);
+                        }
                         return new Tuple3<BigInteger, BigInteger, BigInteger>(
                                 (BigInteger) results.get(0).getValue(), 
                                 (BigInteger) results.get(1).getValue(), 

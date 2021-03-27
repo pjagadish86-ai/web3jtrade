@@ -1,5 +1,6 @@
 package com.aitrades.blockchain.web3jtrade.integration.snipe;
 
+import java.math.BigDecimal;
 import java.math.BigInteger;
 import java.util.Map;
 import java.util.Optional;
@@ -7,43 +8,41 @@ import java.util.concurrent.ConcurrentHashMap;
 
 import javax.annotation.Resource;
 
+import org.apache.commons.lang.StringUtils;
 import org.springframework.amqp.core.AmqpTemplate;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.integration.annotation.Filter;
 import org.springframework.integration.annotation.ServiceActivator;
 import org.springframework.integration.annotation.Transformer;
+import org.springframework.scheduling.annotation.Async;
 import org.web3j.abi.datatypes.Type;
-import org.web3j.protocol.core.DefaultBlockParameterName;
+import org.web3j.protocol.core.methods.response.EthLog;
+import org.web3j.protocol.core.methods.response.EthTransaction;
+import org.web3j.protocol.core.methods.response.TransactionReceipt;
 import org.web3j.tuples.generated.Tuple3;
 
 import com.aitrades.blockchain.web3jtrade.client.DexSubGraphPriceFactoryClient;
 import com.aitrades.blockchain.web3jtrade.client.Web3jServiceClient;
 import com.aitrades.blockchain.web3jtrade.dex.contract.EthereumDexTradeContractService;
-import com.aitrades.blockchain.web3jtrade.dex.contract.event.EthereumDexContractEventService;
-import com.aitrades.blockchain.web3jtrade.dex.contract.event.EthereumDexContractEventService.AddLiquidityEventResponse;
-import com.aitrades.blockchain.web3jtrade.domain.StrategyGasProvider;
-import com.aitrades.blockchain.web3jtrade.domain.TransactionRequest;
-import com.aitrades.blockchain.web3jtrade.trade.pendingTransaction.EthereumGethPendingTransactionsRetriever;
-import com.aitrades.blockchain.web3jtrade.trade.pendingTransaction.EthereumParityPendingTransactionsRetriever;
+import com.aitrades.blockchain.web3jtrade.dex.contract.event.EthereumDexEventHandler;
 import com.aitrades.blockchain.web3jtrade.domain.GasModeEnum;
 import com.aitrades.blockchain.web3jtrade.domain.SnipeTransactionRequest;
-import com.jsoniter.JsonIterator;
+import com.aitrades.blockchain.web3jtrade.domain.StrategyGasProvider;
+import com.aitrades.blockchain.web3jtrade.domain.TradeConstants;
+import com.aitrades.blockchain.web3jtrade.repository.SnipeOrderRepository;
+import com.aitrades.blockchain.web3jtrade.trade.pendingTransaction.EthereumGethPendingTransactionsRetriever;
+import com.aitrades.blockchain.web3jtrade.trade.pendingTransaction.EthereumParityPendingTransactionsRetriever;
+import com.fasterxml.jackson.databind.ObjectReader;
 
 import io.reactivex.Flowable;
+import io.reactivex.schedulers.Schedulers;
 @SuppressWarnings({"unused", "rawtypes"})
 //TODO:	// May be we should find a way to send null channel if there no valid movement.
 public class OrderSnipeExecuteGatewayEndpoint{
 	
-	private static final String PAIR_CREATED = "PAIR_CREATED";
-	private static final String HAS_RESERVES = "HAS_RESERVES";
-	private static final String HAS_LIQUIDTY_EVENT = "HAS_LIQUIDTY_EVENT";
-	private static final String OUTPUT_TOKENS = "OUTPUT_TOKENS";
-	
 	@Resource(name="web3jServiceClient")
 	private Web3jServiceClient web3jServiceClient;
-	// TODO: strict support only one front run either parity or geth.
-	private static final String TRANSACTION_REQUEST = "TRANSACTION_REQUEST";
-	private static final String ORDER_DECISION = "ORDER_DECISION";
-	
+	// TODO: strict support only one front run either parity or geth. future thought
 	@Autowired
 	private SnipeService snipeService;
 	
@@ -60,101 +59,136 @@ public class OrderSnipeExecuteGatewayEndpoint{
 	public StrategyGasProvider strategyGasProvider;
 	
 	@Autowired
-	private DexSubGraphPriceFactoryClient graphPriceFactoryClient;
+	private DexSubGraphPriceFactoryClient subGraphPriceClient;
+	
+	@Resource(name="snipeTransactionRequestObjectReader")
+	private ObjectReader snipeTransactionRequestObjectReader;
 	
 	@Autowired
 	private EthereumDexTradeContractService ethereumDexTradeService;
+	
+	@Autowired
+	private SnipeOrderRepository snipeOrderRepository;
 
 	@Transformer(inputChannel = "rabbitMqSubmitOrderConsumer", outputChannel = "pairCreatedEventChannel")
-	public Map<String, Object> rabbitMqSubmitOrderConsumer(byte[] message){
-		String orderstr = new String(message);
-		SnipeTransactionRequest transactionRequest  = JsonIterator.deserialize(orderstr, SnipeTransactionRequest.class);
+	public Map<String, Object> rabbitMqSubmitOrderConsumer(byte[] message) throws Exception{
+		SnipeTransactionRequest snipeTransactionRequest  = snipeTransactionRequestObjectReader.readValue(message);
+		if(!snipeTransactionRequest.isSnipe()) {
+			throw new Exception("Order has already been sniped, if need any other please place new order");
+		}
 		Map<String, Object> aitradesMap = new ConcurrentHashMap<String, Object>();
-		aitradesMap.put(TRANSACTION_REQUEST, transactionRequest);
+		aitradesMap.put(TradeConstants.SNIPETRANSACTIONREQUEST, snipeTransactionRequest);
 		return aitradesMap;
 	}
 	
+	
 	@ServiceActivator(inputChannel = "pairCreatedEventChannel", outputChannel = "getReservesEventChannel")
-	public Map<String, Object> pairCreatedEventChannel(Map<String, Object> tradeOrderMap){
-		SnipeTransactionRequest transactionRequest = (SnipeTransactionRequest)tradeOrderMap.get(TRANSACTION_REQUEST);
-		Optional<Type> pairAddress  = ethereumDexTradeService.getPairAddress(transactionRequest.getRoute(), transactionRequest.getFromAddress(), transactionRequest.getToAddress())
-												          .parallelStream()
-												          .findFirst();
-		if(pairAddress.isPresent()) {
-			tradeOrderMap.put(PAIR_CREATED, Boolean.TRUE);
-			transactionRequest.setPairAddress((String)pairAddress.get().getValue());
+	public Map<String, Object> pairCreatedEventChannel(Map<String, Object> tradeOrderMap) throws Exception{
+		SnipeTransactionRequest snipeTransactionRequest = (SnipeTransactionRequest)tradeOrderMap.get(TradeConstants.SNIPETRANSACTIONREQUEST);
+		Optional<Type> pairAddress  = ethereumDexTradeService.getPairAddress(snipeTransactionRequest.getRoute(), snipeTransactionRequest.getFromAddress(), snipeTransactionRequest.getToAddress())
+												             .parallelStream()
+												             .findFirst();
+		if(pairAddress.isPresent() && !StringUtils.startsWithIgnoreCase((String)pairAddress.get().getValue(), "0x000000")) {
+			tradeOrderMap.put(TradeConstants.PAIR_CREATED, Boolean.TRUE);
+			snipeTransactionRequest.setPairAddress((String)pairAddress.get().getValue());
 		}
 		return tradeOrderMap;
 	}
 	
 	@ServiceActivator(inputChannel = "getReservesEventChannel", outputChannel = "addLiquidityEvent")
-	public Map<String, Object> getReservesEventChannel(Map<String, Object> tradeOrderMap){
-		if(tradeOrderMap.get(HAS_RESERVES) == null) {
-			SnipeTransactionRequest transactionRequest = (SnipeTransactionRequest)tradeOrderMap.get(TRANSACTION_REQUEST);
-			Tuple3<BigInteger, BigInteger, BigInteger> response = ethereumDexTradeService.getReservesOfPair(transactionRequest.getRoute(), transactionRequest.getPairAddress(), transactionRequest.getCredentials(), strategyGasProvider);
-			if(response.component1().compareTo(BigInteger.ZERO) > 0 && response.component2().compareTo(BigInteger.ZERO) > 0) {
-				tradeOrderMap.put(HAS_RESERVES, Boolean.TRUE);
+	public Map<String, Object> getReservesEventChannel(Map<String, Object> tradeOrderMap) throws Exception{
+		
+		if(tradeOrderMap.get(TradeConstants.PAIR_CREATED) != null) {
+			
+			SnipeTransactionRequest snipeTransactionRequest = (SnipeTransactionRequest)tradeOrderMap.get(TradeConstants.SNIPETRANSACTIONREQUEST);
+			subGraphPriceClient.getRoute(snipeTransactionRequest.getRoute()).getPairData(snipeTransactionRequest.getPairAddress()).subscribeOn(Schedulers.io()).subscribe(resp -> {
+				if(resp != null && resp.getData() != null && resp.getData().getPair() != null && resp.getData().getPair().getReserve0AsBigDecimal().compareTo(BigDecimal.ZERO) > 0 && resp.getData().getPair().getReserve1AsBigDecimal().compareTo(BigDecimal.ZERO) > 0) {
+					 tradeOrderMap.put(TradeConstants.HAS_LIQUIDTY_EVENT, Boolean.TRUE);
+					 return;
+				}
+			});
+			
+			if(tradeOrderMap.get(TradeConstants.HAS_RESERVES) == null) {
+				Tuple3<BigInteger, BigInteger, BigInteger> reservers = ethereumDexTradeService.getReservesOfPair(snipeTransactionRequest.getRoute(), snipeTransactionRequest.getPairAddress(), snipeTransactionRequest.getCredentials(), strategyGasProvider);
+				if (reservers != null) {
+					if (reservers.component1().compareTo(BigInteger.ZERO) > 0
+							&& reservers.component2().compareTo(BigInteger.ZERO) > 0) {
+						tradeOrderMap.put(TradeConstants.HAS_RESERVES, Boolean.TRUE);
+					} 
+				}
 			}
 		}
 		return tradeOrderMap;
 	}
 	
-	@ServiceActivator(inputChannel = "addLiquidityEvent", outputChannel = "approveChannel")
-	public Map<String, Object> addLiquidityEvent(Map<String, Object> tradeOrderMap){
-		if(tradeOrderMap.get(HAS_LIQUIDTY_EVENT) == null) {
-			SnipeTransactionRequest SnipeTransactionRequest = (SnipeTransactionRequest)tradeOrderMap.get(TRANSACTION_REQUEST);
-			EthereumDexContractEventService ethereumDexContractEventService = EthereumDexContractEventService.load(SnipeTransactionRequest.getToAddress(), web3jServiceClient.getWeb3j(), SnipeTransactionRequest.getCredentials(), strategyGasProvider);
-			Flowable<AddLiquidityEventResponse> addLiquidityEventResponseFlowable = ethereumDexContractEventService.addLiquidityEventFlowable(DefaultBlockParameterName.PENDING, DefaultBlockParameterName.PENDING);
-			AddLiquidityEventResponse response = addLiquidityEventResponseFlowable.blockingSingle();
-			if(response != null) {
-				tradeOrderMap.put(HAS_LIQUIDTY_EVENT, Boolean.TRUE);
+	@ServiceActivator(inputChannel = "addLiquidityEvent", outputChannel = "amountsInChannel")
+	public Map<String, Object> addLiquidityEvent(Map<String, Object> tradeOrderMap) throws Exception{
+		SnipeTransactionRequest snipeTransactionRequest = (SnipeTransactionRequest)tradeOrderMap.get(TradeConstants.SNIPETRANSACTIONREQUEST);
+		if(tradeOrderMap.get(TradeConstants.HAS_RESERVES) != null) {
+			try {
+				Flowable<EthLog> flowable = EthereumDexEventHandler.mintEventFlowables(web3jServiceClient.getWeb3j(), 
+																					   snipeTransactionRequest.getPairAddress(), 
+																					   TradeConstants.ROUTER_MAP.get(snipeTransactionRequest.getRoute()));
+				flowable.subscribeOn(Schedulers.computation())
+						.subscribe(resp -> {
+					if(resp != null) {
+						 tradeOrderMap.put(TradeConstants.HAS_LIQUIDTY_EVENT, Boolean.TRUE);
+						 return;
+					}
+				});
+			} catch (Exception e) {
 			}
-		// save to db? 
 		}
 		return tradeOrderMap;
-	}
-	
-	@ServiceActivator(inputChannel = "approveChannel", outputChannel = "amountsInChannel")
-	public Map<String, Object> approveChannel(Map<String, Object> tradeOrderMap){
-		
-		TransactionRequest transactionRequest = (TransactionRequest) tradeOrderMap.get(TRANSACTION_REQUEST);
-		
-		String hash = ethereumDexTradeService.approve(transactionRequest.getRoute(), 
-									   				  transactionRequest.getCredentials(),
-													  transactionRequest.getToAddress(), 
-													  strategyGasProvider,
-													  GasModeEnum.fromValue(transactionRequest.getGasMode()));
-		return tradeOrderMap;
-		
 	}
 	
 	@ServiceActivator(inputChannel = "amountsInChannel", outputChannel = "swapETHForTokensChannel")
-	public Map<String, Object> amountsInChannel(Map<String, Object> tradeOrderMap){
-		TransactionRequest transactionRequest = (TransactionRequest) tradeOrderMap.get(TRANSACTION_REQUEST);
-		BigInteger outputTokens = ethereumDexTradeService.getAmountsIn(transactionRequest.getRoute(),
-																       transactionRequest.getCredentials(), 
-																       transactionRequest.getInputTokenValueAmountAsBigDecimal(),
-																       transactionRequest.getSlipage(),
-																       strategyGasProvider, 
-																       GasModeEnum.fromValue(transactionRequest.getGasMode()),
-																       transactionRequest.getMemoryPath());
-		tradeOrderMap.put(OUTPUT_TOKENS, outputTokens);
+	public Map<String, Object> amountsInChannel(Map<String, Object> tradeOrderMap) throws Exception{
+		SnipeTransactionRequest snipeTransactionRequest = (SnipeTransactionRequest) tradeOrderMap.get(TradeConstants.SNIPETRANSACTIONREQUEST);
+		if(tradeOrderMap.get(TradeConstants.HAS_LIQUIDTY_EVENT) != null) {
+			BigInteger outputTokens = ethereumDexTradeService.getAmountsIn(snipeTransactionRequest.getRoute(),
+																	       snipeTransactionRequest.getCredentials(), 
+																	       snipeTransactionRequest.getInputTokenValueAmountAsBigDecimal(),
+																	       snipeTransactionRequest.slipageInBips(),
+																	       strategyGasProvider, 
+																	       GasModeEnum.fromValue(snipeTransactionRequest.getGasMode()),
+																	       snipeTransactionRequest.getMemoryPath());
+			if(outputTokens != null && outputTokens.compareTo(BigInteger.ZERO) > 0 ) {
+				snipeTransactionRequest.setOuputTokenValueAmounttAsBigInteger(outputTokens);
+			}
+		}
 		return tradeOrderMap;
 	}
 	
 	@ServiceActivator(inputChannel = "swapETHForTokensChannel")
-	public Map<String, Object> swapETHForTokensChannel(Map<String, Object> tradeOrderMap){
-		TransactionRequest transactionRequest = (TransactionRequest) tradeOrderMap.get(TRANSACTION_REQUEST);
-		BigInteger outputTokens = (BigInteger)tradeOrderMap.get(OUTPUT_TOKENS);
-		String hash = ethereumDexTradeService.swapETHForTokens(transactionRequest.getRoute(),
-															   transactionRequest.getCredentials(), 
-															   transactionRequest.getInputTokenValueAmountAsBigInteger(),
-															   outputTokens, 
-															   strategyGasProvider, 
-															   GasModeEnum.fromValue(transactionRequest.getGasMode()), 
-															   1234211,
-															   transactionRequest.getMemoryPath(), 
-															   false);
+	public Map<String, Object> swapETHForTokensChannel(Map<String, Object> tradeOrderMap) throws Exception{
+		SnipeTransactionRequest snipeTransactionRequest = (SnipeTransactionRequest) tradeOrderMap.get(TradeConstants.SNIPETRANSACTIONREQUEST);
+		if(snipeTransactionRequest.getOuputTokenValueAmounttAsBigInteger() != null && snipeTransactionRequest.getOuputTokenValueAmounttAsBigInteger().compareTo(BigInteger.ZERO) > 0) {
+			String hash = ethereumDexTradeService.swapETHForTokens(snipeTransactionRequest.getRoute(),
+																   snipeTransactionRequest.getCredentials(), 
+																   snipeTransactionRequest.getInputTokenValueAmountAsBigInteger(),
+																   snipeTransactionRequest.getOuputTokenValueAmounttAsBigInteger(), 
+																   strategyGasProvider, 
+																   GasModeEnum.fromValue(snipeTransactionRequest.getGasMode()), 
+																   snipeTransactionRequest.getDeadLine(),
+																   snipeTransactionRequest.getMemoryPath(), 
+																   false);
+			if(StringUtils.isNotBlank(hash)) {
+				tradeOrderMap.put(TradeConstants.SWAP_ETH_FOR_TOKEN_HASH, true);
+				snipeTransactionRequest.setSnipe(true);
+			}
+		}
+		
+		return tradeOrderMap;
+	}
+	
+	@ServiceActivator(inputChannel = "updateOrDeleteSnipeOrderChannel")
+	@Async
+	public Map<String, Object> updateOrDeleteSnipeOrderChannel(Map<String, Object> tradeOrderMap) throws Exception{
+		if(tradeOrderMap.get(TradeConstants.SWAP_ETH_FOR_TOKEN_HASH) != null) {
+			SnipeTransactionRequest snipeTransactionRequest = (SnipeTransactionRequest) tradeOrderMap.get(TradeConstants.SNIPETRANSACTIONREQUEST);
+			snipeOrderRepository.delete(snipeTransactionRequest);
+		}
 		return tradeOrderMap;
 	}
 	

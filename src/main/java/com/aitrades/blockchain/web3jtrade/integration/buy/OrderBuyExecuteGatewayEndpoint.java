@@ -23,7 +23,7 @@ public class OrderBuyExecuteGatewayEndpoint {
 	protected EthereumDexTradeContractService ethereumDexTradeService;
 	
 	@ServiceActivator(inputChannel = "approveChannel", outputChannel = "amountsInChannel")
-	public Map<String, Object> approveChannel(Map<String, Object> tradeOrderMap){
+	public Map<String, Object> approveChannel(Map<String, Object> tradeOrderMap) throws Exception{
 		
 		TransactionRequest transactionRequest = (TransactionRequest) tradeOrderMap.get(TRANSACTION_REQUEST);
 		
@@ -37,7 +37,7 @@ public class OrderBuyExecuteGatewayEndpoint {
 	}
 	
 	@ServiceActivator(inputChannel = "amountsInChannel", outputChannel = "swapETHForTokensChannel")
-	public Map<String, Object> amountsInChannel(Map<String, Object> tradeOrderMap){
+	public Map<String, Object> amountsInChannel(Map<String, Object> tradeOrderMap) throws Exception{
 		TransactionRequest transactionRequest = (TransactionRequest) tradeOrderMap.get(TRANSACTION_REQUEST);
 		BigInteger outputTokens = ethereumDexTradeService.getAmountsIn(transactionRequest.getRoute(),
 													     transactionRequest.getCredentials(), 
@@ -51,7 +51,7 @@ public class OrderBuyExecuteGatewayEndpoint {
 	}
 	
 	@ServiceActivator(inputChannel = "swapETHForTokensChannel")
-	public Map<String, Object> swapETHForTokensChannel(Map<String, Object> tradeOrderMap){
+	public Map<String, Object> swapETHForTokensChannel(Map<String, Object> tradeOrderMap) throws Exception{
 		TransactionRequest transactionRequest = (TransactionRequest) tradeOrderMap.get(TRANSACTION_REQUEST);
 		BigInteger outputTokens = (BigInteger)tradeOrderMap.get(OUTPUT_TOKENS);
 		String hash = ethereumDexTradeService.swapETHForTokens(transactionRequest.getRoute(),
