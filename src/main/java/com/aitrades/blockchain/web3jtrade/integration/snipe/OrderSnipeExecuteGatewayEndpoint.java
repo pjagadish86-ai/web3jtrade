@@ -11,14 +11,11 @@ import javax.annotation.Resource;
 import org.apache.commons.lang.StringUtils;
 import org.springframework.amqp.core.AmqpTemplate;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.integration.annotation.Filter;
 import org.springframework.integration.annotation.ServiceActivator;
 import org.springframework.integration.annotation.Transformer;
-import org.springframework.scheduling.annotation.Async;
+import org.springframework.stereotype.Repository;
 import org.web3j.abi.datatypes.Type;
 import org.web3j.protocol.core.methods.response.EthLog;
-import org.web3j.protocol.core.methods.response.EthTransaction;
-import org.web3j.protocol.core.methods.response.TransactionReceipt;
 import org.web3j.tuples.generated.Tuple3;
 
 import com.aitrades.blockchain.web3jtrade.client.DexSubGraphPriceFactoryClient;
@@ -29,6 +26,7 @@ import com.aitrades.blockchain.web3jtrade.domain.GasModeEnum;
 import com.aitrades.blockchain.web3jtrade.domain.SnipeTransactionRequest;
 import com.aitrades.blockchain.web3jtrade.domain.StrategyGasProvider;
 import com.aitrades.blockchain.web3jtrade.domain.TradeConstants;
+import com.aitrades.blockchain.web3jtrade.repository.SnipeOrderHistoryRepository;
 import com.aitrades.blockchain.web3jtrade.repository.SnipeOrderRepository;
 import com.aitrades.blockchain.web3jtrade.trade.pendingTransaction.EthereumGethPendingTransactionsRetriever;
 import com.aitrades.blockchain.web3jtrade.trade.pendingTransaction.EthereumParityPendingTransactionsRetriever;
@@ -69,11 +67,14 @@ public class OrderSnipeExecuteGatewayEndpoint{
 	
 	@Autowired
 	private SnipeOrderRepository snipeOrderRepository;
+	
+	@Autowired
+	public SnipeOrderHistoryRepository snipeOrderHistoryRepository;
 
 	@Transformer(inputChannel = "rabbitMqSubmitOrderConsumer", outputChannel = "pairCreatedEventChannel")
 	public Map<String, Object> rabbitMqSubmitOrderConsumer(byte[] message) throws Exception{
 		SnipeTransactionRequest snipeTransactionRequest  = snipeTransactionRequestObjectReader.readValue(message);
-		if(!snipeTransactionRequest.isSnipe()) {
+		if(snipeTransactionRequest.hasSniped()) {
 			throw new Exception("Order has already been sniped, if need any other please place new order");
 		}
 		Map<String, Object> aitradesMap = new ConcurrentHashMap<String, Object>();
@@ -175,6 +176,7 @@ public class OrderSnipeExecuteGatewayEndpoint{
 																   false);
 			if(StringUtils.isNotBlank(hash)) {
 				tradeOrderMap.put(TradeConstants.SWAP_ETH_FOR_TOKEN_HASH, true);
+				snipeTransactionRequest.setSnipeStatus(TradeConstants.FILLED);
 				snipeTransactionRequest.setSnipe(true);
 			}
 		}
@@ -183,10 +185,10 @@ public class OrderSnipeExecuteGatewayEndpoint{
 	}
 	
 	@ServiceActivator(inputChannel = "updateOrDeleteSnipeOrderChannel")
-	@Async
 	public Map<String, Object> updateOrDeleteSnipeOrderChannel(Map<String, Object> tradeOrderMap) throws Exception{
-		if(tradeOrderMap.get(TradeConstants.SWAP_ETH_FOR_TOKEN_HASH) != null) {
-			SnipeTransactionRequest snipeTransactionRequest = (SnipeTransactionRequest) tradeOrderMap.get(TradeConstants.SNIPETRANSACTIONREQUEST);
+		SnipeTransactionRequest snipeTransactionRequest = (SnipeTransactionRequest) tradeOrderMap.get(TradeConstants.SNIPETRANSACTIONREQUEST);
+		if(snipeTransactionRequest.hasSniped() && tradeOrderMap.get(TradeConstants.SWAP_ETH_FOR_TOKEN_HASH) != null) {
+			snipeOrderHistoryRepository.save(snipeTransactionRequest);
 			snipeOrderRepository.delete(snipeTransactionRequest);
 		}
 		return tradeOrderMap;

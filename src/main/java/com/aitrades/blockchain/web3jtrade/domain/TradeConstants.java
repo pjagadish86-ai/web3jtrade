@@ -28,6 +28,12 @@ public final class TradeConstants {
 	public static final Map<String, String> ROUTER_MAP = ImmutableMap.of(UNISWAP, UNISWAP_ROUTERADDRESS);
 	
 	public static final String APPROVE_HASH_ISAVAILABLE = "APPROVE_HASH_ISAVAILABLE";
+
+	public static final String FILLED = "FILLED";
+
+	public static final String ORDER = "ORDER";
+
+	public static final String SWAP_TOKEN_FOR_ETH_HASH = "SWAP_TOKEN_FOR_ETH_HASH";
 	
 	
 }

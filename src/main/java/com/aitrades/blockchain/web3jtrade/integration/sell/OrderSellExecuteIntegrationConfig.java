@@ -30,11 +30,14 @@ public class OrderSellExecuteIntegrationConfig {
 	@Autowired
 	public IntegrationFlow sellTrade() {
 		return IntegrationFlows.from(Amqp.inboundAdapter(rabbitMQOrderSubmitSellConfig.orderSubmitSellMessageListenerContainer(connectionFactory)))
+							   .handle("orderSellExecuteGatewayEndpoint", "transformSellOrderChannel")
+							   .handle("orderSellExecuteGatewayEndpoint", "amountsOutChannel")
 							   .handle("orderSellExecuteGatewayEndpoint", "swapTokenForETHChannel")
+							   .handle("orderSellExecuteGatewayEndpoint", "updateSellOrderChannel")
 							   .channel(IntegrationContextUtils.NULL_CHANNEL_BEAN_NAME)
 							   .get();
 	}
-
+	
 	@Bean
 	public OrderSellExecuteGatewayEndpoint orderSellExecuteGatewayEndpoint() {
 		return new OrderSellExecuteGatewayEndpoint();

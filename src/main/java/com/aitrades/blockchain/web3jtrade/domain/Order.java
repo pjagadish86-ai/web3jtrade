@@ -1,223 +1,131 @@
 package com.aitrades.blockchain.web3jtrade.domain;
 
-import java.math.BigDecimal;
-import java.math.BigInteger;
+import java.util.List;
 
 import org.apache.commons.lang.builder.EqualsBuilder;
 import org.apache.commons.lang.builder.HashCodeBuilder;
 import org.apache.commons.lang.builder.ToStringBuilder;
 import org.springframework.data.annotation.Id;
+import org.web3j.crypto.Credentials;
 
-import com.fasterxml.jackson.annotation.JsonCreator;
-import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonInclude;
-import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonInclude.Include;
-
-@JsonIgnoreProperties(ignoreUnknown = true)
-@JsonInclude(Include.NON_NULL)
-// We need to do the refacotring of this order 
+@JsonInclude(Include.NON_EMPTY)
 public class Order {
-	
+
 	@Id
-	private String id; 
-	private String privateKey;
-	private String publicKey;
+	private String id;
+	private String route;
+	private WalletInfo walletInfo;
+	private TickerEntity from;
+	private TickerEntity to;
+	private String gasMode;
+	private Gas gasPrice;
+	private Gas gasLimit;
+	private Slipage slippage;
+	private PairData pairData;
+	private OrderEntity orderEntity;
+	private EventState eventState;
+	private List<AdditionalProperty> AdditionalProperty;
+	private Integer orderCode;
+	private String orderDecision;
 	
-    private String from;
-    private String to;
-    private BigInteger gasEth;
-    private BigInteger gasPriceEth;
-    private BigInteger quatity;
-    private String data;
-    private BigInteger nonce;
-    private BigInteger gasPremiumEth;
-    private BigInteger feeCapEth;
-
-    private BigInteger gasUSD;
-    private BigInteger gasPriceUSD;
-    private BigInteger gasPremiumUSD;
-    private BigInteger feeCapUSD;
-    
-    private Double slippageTolerance;
-    private String transactionDeadLine;
-    private String side;
-    private String orderType;
-    private String state;
-    private String limitPrice;
-    private String stopPrice;
-    private String traillingStopPercentage;
-    private String adJustedtraillingStopPrice;
-    
-    private boolean limitTrailStopPriceMet;
-    
-	@JsonCreator
-	public Order(@JsonProperty("privateKey") String privateKey, 
-			     @JsonProperty("publicKey") String publicKey,
-				 @JsonProperty("from") String from, 
-				 @JsonProperty("to") String to, 
-				 @JsonProperty("gasEth") BigInteger gasEth, 
-				 @JsonProperty("gasPriceEth") BigInteger gasPriceEth, 
-				 @JsonProperty("quatity") BigInteger quatity, 
-				 @JsonProperty("data") String data,
-				 @JsonProperty("nonce") BigInteger nonce, 
-				 @JsonProperty("gasPremiumEth") BigInteger gasPremiumEth, 
-				 @JsonProperty("feeCapEth") BigInteger feeCapEth, 
-				 @JsonProperty("gasUSD") BigInteger gasUSD, 
-				 @JsonProperty("gasPriceUSD") BigInteger gasPriceUSD,
-				 @JsonProperty("gasPremiumUSD") BigInteger gasPremiumUSD, 
-				 @JsonProperty("feeCapUSD") BigInteger feeCapUSD,
-				 @JsonProperty("slippageTolerance") Double slippageTolerance,
-				 @JsonProperty("side") String side, 
-				 @JsonProperty("orderType") String orderType, 
-				 @JsonProperty("limitPrice") String limitPrice,
-				 @JsonProperty("stopPrice") String stopPrice, 
-				 @JsonProperty("state") String state, 
-				 @JsonProperty("transactionDeadLine") String transactionDeadLine, 
-				 @JsonProperty("traillingStopPercentage") String traillingStopPercentage,
-				 @JsonProperty("adJustedtraillingStopPrice") String adJustedtraillingStopPrice) {
-		this.privateKey = privateKey;
-		this.publicKey = publicKey;
-		this.from = from;
-		this.to = to;
-		this.gasEth = gasEth;
-		this.gasPriceEth = gasPriceEth;
-		this.quatity = quatity;
-		this.data = data;
-		this.nonce = nonce;
-		this.gasPremiumEth = gasPremiumEth;
-		this.feeCapEth = feeCapEth;
-		this.gasUSD = gasUSD;
-		this.gasPriceUSD = gasPriceUSD;
-		this.gasPremiumUSD = gasPremiumUSD;
-		this.feeCapUSD = feeCapUSD;
-		this.slippageTolerance = slippageTolerance;
-		this.side = side;
-		this.orderType = orderType;
-		this.state = state;
-		this.limitPrice = limitPrice;
-		this.stopPrice = stopPrice;
-		this.traillingStopPercentage = traillingStopPercentage;
-
-		this.transactionDeadLine = transactionDeadLine;
-		this.adJustedtraillingStopPrice = adJustedtraillingStopPrice;
-	}
-	public String getFrom() {
-		return from;
-	}
-	public String getTo() {
-		return to;
-	}
-	public BigInteger getGasEth() {
-		return gasEth;
-	}
-	public BigInteger getGasPriceEth() {
-		return gasPriceEth;
-	}
-	public BigInteger getQuatity() {
-		return quatity;
-	}
-	public String getData() {
-		return data;
-	}
-	public BigInteger getNonce() {
-		return nonce;
-	}
-	public BigInteger getGasPremiumEth() {
-		return gasPremiumEth;
-	}
-	public BigInteger getFeeCapEth() {
-		return feeCapEth;
-	}
-	public BigInteger getGasUSD() {
-		return gasUSD;
-	}
-	public BigInteger getGasPriceUSD() {
-		return gasPriceUSD;
-	}
-	public BigInteger getGasPremiumUSD() {
-		return gasPremiumUSD;
-	}
-	public BigInteger getFeeCapUSD() {
-		return feeCapUSD;
-	}
-	public Double getSlippageTolerance() {
-		return slippageTolerance;
-	}
-	
-	public String getState() {
-		return state;
-	}
-	public void setState(String state) {
-		this.state = state;
-	}
 	public String getId() {
 		return id;
 	}
-	
-	public String getPrivateKey() {
-		return privateKey;
-	}
-	public String getPublicKey() {
-		return publicKey;
-	}
-	public String getSide() {
-		return side;
-	}
-	public String getOrderType() {
-		return orderType;
-	}
-	public String getLimitPrice() {
-		return limitPrice;
-	}
-	public BigDecimal getLimitPriceAsBigDecimal() {
-		return new BigDecimal(limitPrice);
+	public void setId(String id) {
+		this.id = id;
 	}
 	
-	public String getStopPrice() {
-		return stopPrice;
+	public String getRoute() {
+		return route;
+	}
+	public void setRoute(String route) {
+		this.route = route;
 	}
 	
-	public BigDecimal getStopPriceAsBigDecimal() {
-		return new BigDecimal(stopPrice);
+	public WalletInfo getWalletInfo() {
+		return walletInfo;
+	}
+	public void setWalletInfo(WalletInfo walletInfo) {
+		this.walletInfo = walletInfo;
+	}
+	public TickerEntity getFrom() {
+		return from;
+	}
+	public void setFrom(TickerEntity from) {
+		this.from = from;
+	}
+	public TickerEntity getTo() {
+		return to;
+	}
+	public void setTo(TickerEntity to) {
+		this.to = to;
+	}
+	public Gas getGasPrice() {
+		return gasPrice;
+	}
+	public void setGasPrice(Gas gasPrice) {
+		this.gasPrice = gasPrice;
+	}
+	public Gas getGasLimit() {
+		return gasLimit;
+	}
+	public void setGasLimit(Gas gasLimit) {
+		this.gasLimit = gasLimit;
+	}
+
+	public Slipage getSlippage() {
+		return slippage;
+	}
+	public void setSlippage(Slipage slippage) {
+		this.slippage = slippage;
+	}
+	public PairData getPairData() {
+		return pairData;
+	}
+	public void setPairData(PairData pairData) {
+		this.pairData = pairData;
+	}
+	public OrderEntity getOrderEntity() {
+		return orderEntity;
+	}
+	public void setOrderEntity(OrderEntity orderEntity) {
+		this.orderEntity = orderEntity;
+	}
+	public EventState getEventState() {
+		return eventState;
+	}
+	public void setEventState(EventState eventState) {
+		this.eventState = eventState;
+	}
+	public List<AdditionalProperty> getAdditionalProperty() {
+		return AdditionalProperty;
+	}
+	public void setAdditionalProperty(List<AdditionalProperty> AdditionalProperty) {
+		this.AdditionalProperty = AdditionalProperty;
+	}
+	public Integer getOrderCode() {
+		return orderCode;
+	}
+	public void setOrderCode(Integer orderCode) {
+		this.orderCode = orderCode;
 	}
 	
-	public String getTraillingStopPercentage() {
-		return traillingStopPercentage;
+	public String getOrderDecision() {
+		return orderDecision;
 	}
-	
-	
-	public BigDecimal getTraillingStopPercentageAsBigDecimal() {
-		return new BigDecimal(traillingStopPercentage);
+	public void setOrderDecision(String orderDecision) {
+		this.orderDecision = orderDecision;
 	}
-	
-	public String getTransactionDeadLine() {
-		return transactionDeadLine;
+	public String getGasMode() {
+		return gasMode;
 	}
-	
-	public String getAdJustedtraillingStopPrice() {
-		return adJustedtraillingStopPrice;
+	public void setGasMode(String gasMode) {
+		this.gasMode = gasMode;
 	}
-	
-	public BigDecimal getAdJustedtraillingStopPriceAsBigDecimal() {
-		return new BigDecimal(adJustedtraillingStopPrice);
-	}
-	
-	public BigDecimal setAdJustedtraillingStopPrice(BigDecimal adJustedtraillingStopPrice) {
-		return null;
-	}
-	
-	public void setAdJustedtraillingStopPrice(String adJustedtraillingStopPrice) {
-		this.adJustedtraillingStopPrice = adJustedtraillingStopPrice;
-	}
-	
-	
-	public boolean isLimitTrailStopPriceMet() {
-		return limitTrailStopPriceMet;
-	}
-	public void setLimitTrailStopPriceMet(boolean limitTrailStopPriceMet) {
-		this.limitTrailStopPriceMet = limitTrailStopPriceMet;
-	}
+
 	@Override
 	public String toString() {
 		return ToStringBuilder.reflectionToString(this);
@@ -232,6 +140,8 @@ public class Order {
 	public int hashCode() {
 		return HashCodeBuilder.reflectionHashCode(this);
 	}
-    
-    
+	@JsonIgnore
+	public Credentials getCredentials() {
+		return Credentials.create(getWalletInfo().getPrivateKey());
+	}
 }

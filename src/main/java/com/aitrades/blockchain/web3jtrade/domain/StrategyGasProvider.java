@@ -38,14 +38,15 @@ public class StrategyGasProvider implements ContractGasProvider{
 	    
 	@SuppressWarnings("unchecked")
 	public BigInteger getGasPrice(GasModeEnum gasModeEnum) throws Exception{
-		Map<String, Double> gasPrices = gasWebClient.get()
+		Map<String, Object> gasPrices = gasWebClient.get()
 													   .uri(GAS_PRICE_ORACLE)
 													   .accept(MediaType.APPLICATION_JSON)
 													   .retrieve()
 													   .bodyToMono(Map.class)
 													   .subscribeOn(Schedulers.fromExecutor(Executors.newCachedThreadPool()))
 													   .block();
-		return Convert.toWei(gasPrices.get(gasModeEnum.getValue()).toString(), Convert.Unit.GWEI).toBigInteger();
+		//return Convert.toWei(gasPrices.get(gasModeEnum.getValue()).toString(), Convert.Unit.GWEI).toBigInteger();
+		return Convert.toWei("6", Convert.Unit.GWEI).toBigInteger();
 	}
 	
 	public BigInteger getGasLimit() {

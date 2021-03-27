@@ -253,6 +253,11 @@ public class SnipeTransactionRequest {
 		return snipe;
 	}
 
+	@JsonIgnore
+	public boolean hasSniped() {
+		return isSnipe();
+	}
+	
 	public void setSnipe(boolean snipe) {
 		this.snipe = snipe;
 	}

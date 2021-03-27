@@ -30,9 +30,10 @@ public class OrderBuyExecuteIntegrationConfig {
 	@Autowired
 	public IntegrationFlow buyTrade() {
 		return IntegrationFlows.from(Amqp.inboundAdapter(rabbitMQOrderSubmitBuyConfig.orderSubmitBuyMessageListenerContainer(connectionFactory)))
-							   .handle("orderBuyExecuteGatewayEndpoint", "approveChannel")
-							   .handle("orderBuyExecuteGatewayEndpoint", "approveChannel")
+							   .handle("orderBuyExecuteGatewayEndpoint", "transformBuyOrderChannel")
+							   .handle("orderBuyExecuteGatewayEndpoint", "amountsInChannel")
 							   .handle("orderBuyExecuteGatewayEndpoint", "swapETHForTokensChannel")
+							   .handle("orderBuyExecuteGatewayEndpoint", "updateBuyOrderChannel")
 							   .channel(IntegrationContextUtils.NULL_CHANNEL_BEAN_NAME)
 							   .get();
 	}

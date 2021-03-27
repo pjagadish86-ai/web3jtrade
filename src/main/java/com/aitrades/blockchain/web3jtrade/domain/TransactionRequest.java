@@ -48,20 +48,19 @@ public class TransactionRequest {
 	private Instant updatedDateTime;
 	
 	private boolean snipe;
-	
-	private boolean hasPairCreated;
-	private boolean hasReserves;
 
 	public TransactionRequest() {
 	}
-	
+
 	public String getRoute() {
 		return route;
 	}
 
+
 	public void setRoute(String route) {
 		this.route = route;
 	}
+
 
 	public String getFromAddress() {
 		return fromAddress;
@@ -210,22 +209,6 @@ public class TransactionRequest {
 
 	public void setSnipe(boolean snipe) {
 		this.snipe = snipe;
-	}
-
-	public boolean isHasPairCreated() {
-		return hasPairCreated;
-	}
-
-	public void setHasPairCreated(boolean hasPairCreated) {
-		this.hasPairCreated = hasPairCreated;
-	}
-
-	public boolean isHasReserves() {
-		return hasReserves;
-	}
-
-	public void setHasReserves(boolean hasReserves) {
-		this.hasReserves = hasReserves;
 	}
 
 	@Override

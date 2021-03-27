@@ -1,4 +1,4 @@
-package com.aitrades.blockchain.web3jtrade.repository;
+package com.aitrades.blockchain.web3jtrade;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
@@ -16,7 +16,7 @@ public class SnipeOrderMongoConfig extends AbstractReactiveMongoConfiguration {
 	
 	@Override
 	protected String getDatabaseName() {
-		return "snipeOrder";
+		return "snipeOrderHistory";
 	}
 
 	@Bean(name = "snipeOrderReactiveMongoTemplate")

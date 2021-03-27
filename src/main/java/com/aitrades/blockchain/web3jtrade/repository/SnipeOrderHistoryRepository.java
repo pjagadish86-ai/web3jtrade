@@ -11,16 +11,16 @@ import com.mongodb.client.result.DeleteResult;
 import reactor.core.publisher.Mono;
 
 @Repository
-public class SnipeOrderRepository {
+public class SnipeOrderHistoryRepository {
 
-	@Resource(name = "snipeOrderReactiveMongoTemplate")
-	public ReactiveMongoTemplate snipeOrderReactiveMongoTemplate;
+	@Resource(name = "snipeOrderHistoryReactiveMongoTemplate")
+	public ReactiveMongoTemplate snipeOrderHistoryReactiveMongoTemplate;
 
 	public Mono<DeleteResult> delete(SnipeTransactionRequest transactionRequest) {
-		return snipeOrderReactiveMongoTemplate.remove(transactionRequest);
+		return snipeOrderHistoryReactiveMongoTemplate.remove(transactionRequest);
 	}
 
 	public void save(SnipeTransactionRequest snipeTransactionRequest) {
-		snipeOrderReactiveMongoTemplate.save(snipeTransactionRequest);
+		snipeOrderHistoryReactiveMongoTemplate.save(snipeTransactionRequest);
 	}
 }
