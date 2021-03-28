@@ -48,7 +48,7 @@ public class PancakeServiceImpl implements EthereumDexContractService {
 	
 	@Resource(name = "web3jBscServiceClient")
 	private Web3jServiceClient web3jServiceClient;
-
+	
 	@Override
 	public List<Type> getPair(String tokenA, String tokenB) throws Exception{
 		final Function function = new Function(FUNC_GETPAIR, Arrays.asList(new Address(tokenA), new Address(tokenB)),
@@ -89,8 +89,8 @@ public class PancakeServiceImpl implements EthereumDexContractService {
 																				  .subscribeOn(Schedulers.io()).blockingSingle();
 
 		RawTransaction rawTransaction = RawTransaction.createTransaction(ethGetTransactionCountFlowable.getTransactionCount(), 
-																		 customGasProvider.getGasPrice(),
-																		 customGasProvider.getGasLimit(), 
+																		 customGasProvider.getGasPricePancake(gasModeEnum), 
+																		 customGasProvider.getGasLimitOfPancake(true),  
 																		 contractAddress, 
 																		 BigInteger.ZERO, 
 																		 data);
@@ -142,8 +142,8 @@ public class PancakeServiceImpl implements EthereumDexContractService {
 																		  .subscribeOn(Schedulers.io()).blockingSingle();
 
 		RawTransaction rawTransaction = RawTransaction.createTransaction(ethGetTransactionCount.getTransactionCount(),
-																		 customGasProvider.getGasPrice(gasModeEnum), 
-																		 customGasProvider.getGasLimit(true), 
+																		 customGasProvider.getGasPricePancake(gasModeEnum), 
+																		 customGasProvider.getGasLimitOfPancake(true), 
 																		 TradeConstants.ROUTER_MAP.get(TradeConstants.PANCAKE), 
 																		 inputEthers,
 																		 data);
@@ -199,8 +199,8 @@ public class PancakeServiceImpl implements EthereumDexContractService {
 																		  .subscribeOn(Schedulers.io()).blockingSingle();
 
 		RawTransaction rawTransaction = RawTransaction.createTransaction(ethGetTransactionCount.getTransactionCount(),
-																		 customGasProvider.getGasPrice(gasModeEnum), 
-																		 customGasProvider.getGasLimit(true), 
+																		 customGasProvider.getGasPricePancake(gasModeEnum), 
+																		 customGasProvider.getGasLimitOfPancake(true),  
 																		 TradeConstants.ROUTER_MAP.get(TradeConstants.PANCAKE),
 																		 BigInteger.ZERO, 
 								  										 data);

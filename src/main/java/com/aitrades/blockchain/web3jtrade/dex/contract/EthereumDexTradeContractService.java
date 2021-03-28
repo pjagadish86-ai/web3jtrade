@@ -19,7 +19,7 @@ public class EthereumDexTradeContractService {
 
 	@Autowired
 	private EthereumDexContractServiceFactory factory;
-
+	
 	public List<Type> getPairAddress(String route, String tokenA, String tokenB) throws Exception{
 		return factory.getInstance(route).getPair(tokenA, tokenB);
 	};

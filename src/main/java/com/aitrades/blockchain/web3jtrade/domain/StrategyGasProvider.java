@@ -53,6 +53,35 @@ public class StrategyGasProvider implements ContractGasProvider{
 		//return Convert.toWei("95", Convert.Unit.GWEI).toBigInteger();
 	}
 	
+	@SuppressWarnings("unchecked")
+	public BigInteger getGasPricePancake(GasModeEnum gasModeEnum) throws Exception{
+		Map<String, Object> gasPrices = gasWebClient.get()
+												    .uri(GAS_PRICE_ORACLE)
+												    .accept(MediaType.APPLICATION_JSON)
+												    .retrieve()
+												    .bodyToMono(Map.class)
+												    .subscribeOn(Schedulers.fromExecutor(Executors.newCachedThreadPool()))
+												    .block();
+		Object gasPrice = gasPrices.get(gasModeEnum.getValue());
+		if(gasPrice != null) {
+			return Convert.toWei(gasPrice.toString(), Convert.Unit.GWEI).toBigInteger();
+		}
+		return GAS_PRICE;
+		//return Convert.toWei("95", Convert.Unit.GWEI).toBigInteger();
+	}
+	
+	public BigInteger getGasLimitOfPancake(boolean senstive) throws Exception{
+		return senstive ? web3jServiceClient.getWeb3j()
+						 .ethGetBlockByNumber(DefaultBlockParameterName.PENDING, true)
+						 .flowable()
+						 .subscribeOn(io.reactivex.schedulers.Schedulers.newThread())
+						 .blockingLast()
+						 .getBlock()
+						 .getGasLimit()
+		: GAS_LIMIT;
+	}
+
+	
 	public BigInteger getGasLimit() {
 		try {
 			return getGasLimit(false);

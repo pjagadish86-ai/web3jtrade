@@ -13,13 +13,11 @@ import org.springframework.amqp.core.AmqpTemplate;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.integration.annotation.ServiceActivator;
 import org.springframework.integration.annotation.Transformer;
-import org.springframework.stereotype.Repository;
 import org.web3j.abi.datatypes.Type;
 import org.web3j.protocol.core.methods.response.EthLog;
 import org.web3j.tuples.generated.Tuple3;
 
 import com.aitrades.blockchain.web3jtrade.client.DexSubGraphPriceFactoryClient;
-import com.aitrades.blockchain.web3jtrade.client.Web3jServiceClient;
 import com.aitrades.blockchain.web3jtrade.dex.contract.EthereumDexTradeContractService;
 import com.aitrades.blockchain.web3jtrade.dex.contract.event.EthereumDexEventHandler;
 import com.aitrades.blockchain.web3jtrade.domain.GasModeEnum;
@@ -28,6 +26,7 @@ import com.aitrades.blockchain.web3jtrade.domain.StrategyGasProvider;
 import com.aitrades.blockchain.web3jtrade.domain.TradeConstants;
 import com.aitrades.blockchain.web3jtrade.repository.SnipeOrderHistoryRepository;
 import com.aitrades.blockchain.web3jtrade.repository.SnipeOrderRepository;
+import com.aitrades.blockchain.web3jtrade.service.Web3jServiceClientFactory;
 import com.aitrades.blockchain.web3jtrade.trade.pendingTransaction.EthereumGethPendingTransactionsRetriever;
 import com.aitrades.blockchain.web3jtrade.trade.pendingTransaction.EthereumParityPendingTransactionsRetriever;
 import com.fasterxml.jackson.databind.ObjectReader;
@@ -38,8 +37,8 @@ import io.reactivex.schedulers.Schedulers;
 //TODO:	// May be we should find a way to send null channel if there no valid movement.
 public class OrderSnipeExecuteGatewayEndpoint{
 	
-	@Resource(name="web3jServiceClient")
-	private Web3jServiceClient web3jServiceClient;
+	@Autowired
+	private Web3jServiceClientFactory web3jServiceClientFactory;
 	// TODO: strict support only one front run either parity or geth. future thought
 	@Autowired
 	private SnipeService snipeService;
@@ -127,7 +126,7 @@ public class OrderSnipeExecuteGatewayEndpoint{
 		SnipeTransactionRequest snipeTransactionRequest = (SnipeTransactionRequest)tradeOrderMap.get(TradeConstants.SNIPETRANSACTIONREQUEST);
 		if(tradeOrderMap.get(TradeConstants.HAS_RESERVES) != null) {
 			try {
-				Flowable<EthLog> flowable = EthereumDexEventHandler.mintEventFlowables(web3jServiceClient.getWeb3j(), 
+				Flowable<EthLog> flowable = EthereumDexEventHandler.mintEventFlowables(web3jServiceClientFactory.getWeb3jMap().get(snipeTransactionRequest.getRoute()).getWeb3j(), 
 																					   snipeTransactionRequest.getPairAddress(), 
 																					   TradeConstants.ROUTER_MAP.get(snipeTransactionRequest.getRoute()));
 				flowable.subscribeOn(Schedulers.computation())
