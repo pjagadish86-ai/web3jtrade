@@ -16,7 +16,7 @@ public class SnipeOrderMongoConfig extends AbstractReactiveMongoConfiguration {
 	
 	@Override
 	protected String getDatabaseName() {
-		return "snipeOrderHistory";
+		return "snipeOrder";
 	}
 
 	@Bean(name = "snipeOrderReactiveMongoTemplate")

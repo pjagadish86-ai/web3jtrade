@@ -7,9 +7,9 @@ import com.google.common.collect.ImmutableMap;
 public final class TradeConstants {
 	
 	public static final String UNISWAP = "UNISWAP";
-	public static final String UNISWAP_FACOTRYADDRESS ="0x5C69bEe701ef814a2B6a3EDD4B1652CB9cc5aA6f";
+	public static final String UNISWAP_FACOTRYADDRESS ="0x5c69bee701ef814a2b6a3edd4b1652cb9cc5aa6f";
 	public static final String UNISWAP_ROUTERADDRESS ="0x7a250d5630B4cF539739dF2C5dAcb4c659F2488D";
-	public static final String UNISWAP_WETH_FACOTRYADDRESS ="0xc02aaa39b223fe8d0a0e5c4f27ead9083c756cc2";
+	public static final String UNISWAP_WETH_FACOTRYADDRESS ="0xc778417E063141139Fce010982780140Aa0cD5Ab";
 
 	
 	public static final String PANCAKE = "PANCAKE";
@@ -40,6 +40,8 @@ public final class TradeConstants {
 	
 	public static final Map<String, String> WETH_MAP = ImmutableMap.of(UNISWAP, UNISWAP_WETH_FACOTRYADDRESS, PANCAKE, PANCAKE_WETH_FACOTRYADDRESS, SUSHI, SUSHI_WETH_FACOTRYADDRESS);
 	
+	public static final String ETH = "0xc02aaa39b223fe8d0a0e5c4f27ead9083c756cc2";
+
 	public static final String APPROVE_HASH_ISAVAILABLE = "APPROVE_HASH_ISAVAILABLE";
 
 	public static final String FILLED = "FILLED";

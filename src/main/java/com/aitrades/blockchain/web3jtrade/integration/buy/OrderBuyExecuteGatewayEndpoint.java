@@ -94,8 +94,8 @@ public class OrderBuyExecuteGatewayEndpoint {
 	public Map<String, Object> updateBuyOrderChannel(Map<String, Object> tradeOrderMap) throws Exception{
 		Order order = (Order) tradeOrderMap.get(TradeConstants.ORDER);
 		if(order.getOrderEntity().getOrderState().equalsIgnoreCase(TradeConstants.FILLED) && tradeOrderMap.get(TradeConstants.SWAP_ETH_FOR_TOKEN_HASH) != null) {
-			orderRepository.delete(order);
 			orderHistoryRepository.insert(order);
+			orderRepository.delete(order);
 		}
 		return tradeOrderMap;
 	}
