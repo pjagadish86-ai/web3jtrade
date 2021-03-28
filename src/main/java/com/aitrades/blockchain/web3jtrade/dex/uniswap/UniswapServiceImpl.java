@@ -38,6 +38,7 @@ import com.aitrades.blockchain.web3jtrade.dex.contract.EthereumDexContract;
 import com.aitrades.blockchain.web3jtrade.dex.contract.EthereumDexContractService;
 import com.aitrades.blockchain.web3jtrade.domain.GasModeEnum;
 import com.aitrades.blockchain.web3jtrade.domain.StrategyGasProvider;
+import com.aitrades.blockchain.web3jtrade.domain.TradeConstants;
 import com.google.common.collect.Lists;
 
 import io.reactivex.schedulers.Schedulers;
@@ -45,9 +46,6 @@ import io.reactivex.schedulers.Schedulers;
 @Service("uniswap")
 @SuppressWarnings({ "rawtypes", "unchecked" })
 public class UniswapServiceImpl implements EthereumDexContractService {
-
-	public static final String UNISWAP_FACTORY_ADDRESS = "0x5c69bee701ef814a2b6a3edd4b1652cb9cc5aa6f";
-	public static final String UNISWAP_ROUTER_ADDRESS = "0x7a250d5630B4cF539739dF2C5dAcb4c659F2488D";
 
 	@Resource(name = "web3jServiceClient")
 	private Web3jServiceClient web3jServiceClient;
@@ -58,7 +56,7 @@ public class UniswapServiceImpl implements EthereumDexContractService {
 											   Arrays.asList(new TypeReference<Address>() {
 											}));
 		String data = FunctionEncoder.encode(function);
-		Transaction transaction = Transaction.createEthCallTransaction(UNISWAP_FACTORY_ADDRESS, UNISWAP_FACTORY_ADDRESS, data);
+		Transaction transaction = Transaction.createEthCallTransaction(TradeConstants.FACTORY_MAP.get(TradeConstants.UNISWAP), TradeConstants.FACTORY_MAP.get(TradeConstants.UNISWAP), data);
 		EthCall ethCall = web3jServiceClient.getWeb3j()
 										    .ethCall(transaction, DefaultBlockParameterName.LATEST)
 										    .flowable()
@@ -90,7 +88,7 @@ public class UniswapServiceImpl implements EthereumDexContractService {
 						  GasModeEnum gasModeEnum) throws Exception {
 
 		final Function approveFunction = new Function(FUNC_APPROVE,
-													  Lists.newArrayList(new Address(UNISWAP_ROUTER_ADDRESS), new Uint256(MAX_UINT256)),
+													  Lists.newArrayList(new Address(TradeConstants.ROUTER_MAP.get(TradeConstants.UNISWAP)), new Uint256(MAX_UINT256)),
 													  Collections.emptyList());
 		
 		String data = FunctionEncoder.encode(approveFunction);
@@ -126,7 +124,7 @@ public class UniswapServiceImpl implements EthereumDexContractService {
 								   StrategyGasProvider customGasProvider,
 								   GasModeEnum gasModeEnum, List<String> memoryPathAddress)  {
 
-		EthereumDexContract uniswapV2Contract = new EthereumDexContract(UNISWAP_ROUTER_ADDRESS,
+		EthereumDexContract uniswapV2Contract = new EthereumDexContract(TradeConstants.ROUTER_MAP.get(TradeConstants.UNISWAP),
 																		web3jServiceClient.getWeb3j(), 
 																	    credentials, 
 																	    customGasProvider);
@@ -164,7 +162,7 @@ public class UniswapServiceImpl implements EthereumDexContractService {
 		RawTransaction rawTransaction = RawTransaction.createTransaction(ethGetTransactionCount.getTransactionCount(),
 																		 customGasProvider.getGasPrice(gasModeEnum), 
 																		 customGasProvider.getGasLimit(true), 
-																		 UNISWAP_ROUTER_ADDRESS, 
+																		 TradeConstants.ROUTER_MAP.get(TradeConstants.UNISWAP), 
 																		 inputEthers,
 																		 data);
 		
@@ -193,7 +191,7 @@ public class UniswapServiceImpl implements EthereumDexContractService {
 								    StrategyGasProvider customGasProvider, GasModeEnum gasModeEnum, 
 								    List<String> memoryPathAddress) throws Exception {
 
-		EthereumDexContract uniswapV2Contract = new EthereumDexContract(UNISWAP_ROUTER_ADDRESS,
+		EthereumDexContract uniswapV2Contract = new EthereumDexContract(TradeConstants.ROUTER_MAP.get(TradeConstants.UNISWAP),
 																	web3jServiceClient.getWeb3j(), 
 																	credentials, 
 																	customGasProvider);
@@ -232,7 +230,7 @@ public class UniswapServiceImpl implements EthereumDexContractService {
 		RawTransaction rawTransaction = RawTransaction.createTransaction(ethGetTransactionCount.getTransactionCount(),
 																		 customGasProvider.getGasPrice(gasModeEnum), 
 																		 customGasProvider.getGasLimit(true), 
-																		 UNISWAP_ROUTER_ADDRESS,
+																		 TradeConstants.ROUTER_MAP.get(TradeConstants.UNISWAP),
 																		 BigInteger.ZERO, 
 																		 data);
 		

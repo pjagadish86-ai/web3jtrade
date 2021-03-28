@@ -38,6 +38,7 @@ import com.aitrades.blockchain.web3jtrade.dex.contract.EthereumDexContract;
 import com.aitrades.blockchain.web3jtrade.dex.contract.EthereumDexContractService;
 import com.aitrades.blockchain.web3jtrade.domain.GasModeEnum;
 import com.aitrades.blockchain.web3jtrade.domain.StrategyGasProvider;
+import com.aitrades.blockchain.web3jtrade.domain.TradeConstants;
 import com.google.common.collect.Lists;
 
 import io.reactivex.schedulers.Schedulers;
@@ -46,9 +47,6 @@ import io.reactivex.schedulers.Schedulers;
 @SuppressWarnings({ "rawtypes", "unchecked" })
 public class SushiServiceImpl implements EthereumDexContractService {
 
-	public static final String SUSHI_FACTORY_ADDRESS = "0x5c69bee701ef814a2b6a3edd4b1652cb9cc5aa6f";
-	public static final String SUSHI_ROUTER_ADDRESS = "0x7a250d5630B4cF539739dF2C5dAcb4c659F2488D";
-	    
 	@Resource(name = "web3jServiceClient")
 	private Web3jServiceClient web3jServiceClient;
 
@@ -61,7 +59,7 @@ public class SushiServiceImpl implements EthereumDexContractService {
 		
 		String data = FunctionEncoder.encode(function);
 		
-		Transaction transaction = Transaction.createEthCallTransaction(SUSHI_FACTORY_ADDRESS, SUSHI_FACTORY_ADDRESS, data);
+		Transaction transaction = Transaction.createEthCallTransaction(TradeConstants.FACTORY_MAP.get(TradeConstants.SUSHI), TradeConstants.FACTORY_MAP.get(TradeConstants.SUSHI), data);
 		
 		EthCall blockingSingle = web3jServiceClient.getWeb3j()
 												   .ethCall(transaction, DefaultBlockParameterName.LATEST)
@@ -87,7 +85,7 @@ public class SushiServiceImpl implements EthereumDexContractService {
 						  GasModeEnum gasModeEnum) throws Exception{
 
 		final Function approveFunction = new Function(FUNC_APPROVE,
-													  Lists.newArrayList(new Address(SUSHI_ROUTER_ADDRESS), new Uint256(MAX_UINT256)),
+													  Lists.newArrayList(new Address(TradeConstants.ROUTER_MAP.get(TradeConstants.SUSHI)), new Uint256(MAX_UINT256)),
 													  Collections.emptyList());
 		String data = FunctionEncoder.encode(approveFunction);
 		
@@ -116,7 +114,7 @@ public class SushiServiceImpl implements EthereumDexContractService {
 								   StrategyGasProvider customGasProvider,
 								   GasModeEnum gasModeEnum, List<String> memoryPathAddress) throws Exception{
 
-		EthereumDexContract sushiContract = new EthereumDexContract(SUSHI_ROUTER_ADDRESS,
+		EthereumDexContract sushiContract = new EthereumDexContract(TradeConstants.ROUTER_MAP.get(TradeConstants.SUSHI),
 																	web3jServiceClient.getWeb3j(), 
 																	credentials, 
 																	customGasProvider);
@@ -152,7 +150,7 @@ public class SushiServiceImpl implements EthereumDexContractService {
 		RawTransaction rawTransaction = RawTransaction.createTransaction(ethGetTransactionCount.getTransactionCount(),
 																		 customGasProvider.getGasPrice(gasModeEnum), 
 																		 customGasProvider.getGasLimit(true), 
-																		 SUSHI_ROUTER_ADDRESS, 
+																		 TradeConstants.ROUTER_MAP.get(TradeConstants.SUSHI), 
 																		 inputEthers,
 																		 data);
 		
@@ -181,7 +179,7 @@ public class SushiServiceImpl implements EthereumDexContractService {
 								    StrategyGasProvider customGasProvider, GasModeEnum gasModeEnum, 
 								    List<String> memoryPathAddress) throws Exception{
 
-		EthereumDexContract sushiContract = new EthereumDexContract(SUSHI_ROUTER_ADDRESS,
+		EthereumDexContract sushiContract = new EthereumDexContract(TradeConstants.ROUTER_MAP.get(TradeConstants.SUSHI),
 																	web3jServiceClient.getWeb3j(), 
 																	credentials, 
 																	customGasProvider);
@@ -220,7 +218,7 @@ public class SushiServiceImpl implements EthereumDexContractService {
 		RawTransaction rawTransaction = RawTransaction.createTransaction(ethGetTransactionCount.getTransactionCount(),
 																		 customGasProvider.getGasPrice(gasModeEnum), 
 																		 customGasProvider.getGasLimit(true), 
-																		 SUSHI_ROUTER_ADDRESS,
+																		 TradeConstants.ROUTER_MAP.get(TradeConstants.SUSHI),
 																		 BigInteger.ZERO, 
 																		 data);
 		

@@ -37,6 +37,7 @@ import com.aitrades.blockchain.web3jtrade.dex.contract.EthereumDexContract;
 import com.aitrades.blockchain.web3jtrade.dex.contract.EthereumDexContractService;
 import com.aitrades.blockchain.web3jtrade.domain.GasModeEnum;
 import com.aitrades.blockchain.web3jtrade.domain.StrategyGasProvider;
+import com.aitrades.blockchain.web3jtrade.domain.TradeConstants;
 import com.google.common.collect.Lists;
 
 import io.reactivex.schedulers.Schedulers;
@@ -44,9 +45,6 @@ import io.reactivex.schedulers.Schedulers;
 @Service("pancake")
 @SuppressWarnings({ "rawtypes", "unchecked" })
 public class PancakeServiceImpl implements EthereumDexContractService {
-	
-	public static final String PANCAKE_FACTORY_ADDRESS = "0x5c69bee701ef814a2b6a3edd4b1652cb9cc5aa6f";
-	public static final String PANCAKE_ROUTER_ADDRESS = "0x7a250d5630B4cF539739dF2C5dAcb4c659F2488D";
 	
 	@Resource(name = "web3jBscServiceClient")
 	private Web3jServiceClient web3jServiceClient;
@@ -57,7 +55,9 @@ public class PancakeServiceImpl implements EthereumDexContractService {
 											   Arrays.asList(new TypeReference<Address>() {
 											}));
 		String data = FunctionEncoder.encode(function);
-		Transaction transaction = Transaction.createEthCallTransaction(PANCAKE_FACTORY_ADDRESS, PANCAKE_FACTORY_ADDRESS, data);
+		Transaction transaction = Transaction.createEthCallTransaction(TradeConstants.FACTORY_MAP.get(TradeConstants.PANCAKE), 
+																	   TradeConstants.FACTORY_MAP.get(TradeConstants.PANCAKE), 
+																	   data);
 		EthCall blockingSingle = web3jServiceClient.getWeb3j()
 												   .ethCall(transaction, DefaultBlockParameterName.LATEST)
 												   .flowable().blockingSingle();
@@ -79,7 +79,7 @@ public class PancakeServiceImpl implements EthereumDexContractService {
 						  GasModeEnum gasModeEnum) throws Exception{
 
 		final Function approveFunction = new Function(FUNC_APPROVE,
-													  Lists.newArrayList(new Address(PANCAKE_ROUTER_ADDRESS), new Uint256(MAX_UINT256)),
+													  Lists.newArrayList(new Address(TradeConstants.ROUTER_MAP.get(TradeConstants.PANCAKE)), new Uint256(MAX_UINT256)),
 													  Collections.emptyList());
 		String data = FunctionEncoder.encode(approveFunction);
 		
@@ -108,10 +108,10 @@ public class PancakeServiceImpl implements EthereumDexContractService {
 								   StrategyGasProvider customGasProvider,
 								   GasModeEnum gasModeEnum, List<String> memoryPathAddress) throws Exception{
 
-		EthereumDexContract pancakeContract = new EthereumDexContract(PANCAKE_ROUTER_ADDRESS,
-																	web3jServiceClient.getWeb3j(), 
-																	credentials, 
-																	customGasProvider);
+		EthereumDexContract pancakeContract = new EthereumDexContract(TradeConstants.ROUTER_MAP.get(TradeConstants.PANCAKE),
+																	  web3jServiceClient.getWeb3j(), 
+																	  credentials, 
+																	  customGasProvider);
 		BigInteger amountsIn = (BigInteger) pancakeContract.getAmountsOut(Convert.toWei(inputTokens, Convert.Unit.ETHER).toBigInteger(), memoryPathAddress)
 														   .flowable()
 														   .blockingSingle()
@@ -144,7 +144,7 @@ public class PancakeServiceImpl implements EthereumDexContractService {
 		RawTransaction rawTransaction = RawTransaction.createTransaction(ethGetTransactionCount.getTransactionCount(),
 																		 customGasProvider.getGasPrice(gasModeEnum), 
 																		 customGasProvider.getGasLimit(true), 
-																		 PANCAKE_ROUTER_ADDRESS, 
+																		 TradeConstants.ROUTER_MAP.get(TradeConstants.PANCAKE), 
 																		 inputEthers,
 																		 data);
 		byte[] signedMessage = TransactionEncoder.signMessage(rawTransaction, credentials);
@@ -164,10 +164,10 @@ public class PancakeServiceImpl implements EthereumDexContractService {
 								    StrategyGasProvider customGasProvider, GasModeEnum gasModeEnum, 
 								    List<String> memoryPathAddress) throws Exception{
 
-		EthereumDexContract pancakeContract = new EthereumDexContract(PANCAKE_ROUTER_ADDRESS,
-																	 web3jServiceClient.getWeb3j(), 
-																	 credentials, 
-																	 customGasProvider);
+		EthereumDexContract pancakeContract = new EthereumDexContract(TradeConstants.ROUTER_MAP.get(TradeConstants.PANCAKE),
+																	  web3jServiceClient.getWeb3j(), 
+																	  credentials, 
+																	  customGasProvider);
 		
 		BigInteger amountsIn = (BigInteger)pancakeContract.getAmountsOut(Convert.toWei(inputTokens, Convert.Unit.ETHER).toBigInteger(), memoryPathAddress)
 														  .flowable()
@@ -201,7 +201,7 @@ public class PancakeServiceImpl implements EthereumDexContractService {
 		RawTransaction rawTransaction = RawTransaction.createTransaction(ethGetTransactionCount.getTransactionCount(),
 																		 customGasProvider.getGasPrice(gasModeEnum), 
 																		 customGasProvider.getGasLimit(true), 
-																		 PANCAKE_ROUTER_ADDRESS,
+																		 TradeConstants.ROUTER_MAP.get(TradeConstants.PANCAKE),
 																		 BigInteger.ZERO, 
 								  										 data);
 		

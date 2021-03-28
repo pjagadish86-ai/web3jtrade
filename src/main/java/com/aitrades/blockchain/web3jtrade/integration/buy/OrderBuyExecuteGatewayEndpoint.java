@@ -22,9 +22,6 @@ import com.google.common.collect.Lists;
 
 public class OrderBuyExecuteGatewayEndpoint {
 
-	private static final String OUTPUT_TOKENS = "OUTPUT_TOKENS";
-	private static final String WETH = "0xc778417E063141139Fce010982780140Aa0cD5Ab";
-	 
 	@Autowired
 	public StrategyGasProvider strategyGasProvider;
 	
@@ -61,10 +58,10 @@ public class OrderBuyExecuteGatewayEndpoint {
 																	   order.getSlippage().getSlipageInBips(),
 															           strategyGasProvider, 
 															           GasModeEnum.fromValue(order.getGasMode()),
-															           Lists.newArrayList(WETH, order.getTo().getTicker().getAddress()));
+															           Lists.newArrayList(TradeConstants.WETH_MAP.get(order.getRoute().toUpperCase()), order.getTo().getTicker().getAddress()));
 		
 		if(outputTokens != null && outputTokens.compareTo(BigInteger.ZERO) > 0 ) {
-			tradeOrderMap.put(OUTPUT_TOKENS, outputTokens);
+			tradeOrderMap.put(TradeConstants.OUTPUT_TOKENS, outputTokens);
 			return tradeOrderMap;
 		}
 		throw new Exception("Amountsin tokens are zero or some error, will retry");
@@ -73,8 +70,8 @@ public class OrderBuyExecuteGatewayEndpoint {
 	@ServiceActivator(inputChannel = "swapETHForTokensChannel", outputChannel = "updateBuyOrderChannel")
 	public Map<String, Object> swapETHForTokensChannel(Map<String, Object> tradeOrderMap) throws Exception{
 		Order order = (Order) tradeOrderMap.get(TradeConstants.ORDER);
-		if (tradeOrderMap.get(OUTPUT_TOKENS) != null) {
-			BigInteger outputTokens = (BigInteger) tradeOrderMap.get(OUTPUT_TOKENS);
+		if (tradeOrderMap.get(TradeConstants.OUTPUT_TOKENS) != null) {
+			BigInteger outputTokens = (BigInteger) tradeOrderMap.get(TradeConstants.OUTPUT_TOKENS);
 			String hash = ethereumDexTradeService.swapETHForTokens(order.getRoute(), 
 															       order.getCredentials(),
 																   order.getFrom().getAmountAsBigInteger(), 
@@ -82,7 +79,7 @@ public class OrderBuyExecuteGatewayEndpoint {
 																   strategyGasProvider,
 																   GasModeEnum.fromValue(order.getGasMode()), 
 																   300l, 
-																   Lists.newArrayList(WETH, order.getTo().getTicker().getAddress()),
+																   Lists.newArrayList( TradeConstants.WETH_MAP.get(order.getRoute().toUpperCase()), order.getTo().getTicker().getAddress()),
 																   false);
 			if (StringUtils.isNotBlank(hash)) {
 				tradeOrderMap.put(TradeConstants.SWAP_ETH_FOR_TOKEN_HASH, true);
