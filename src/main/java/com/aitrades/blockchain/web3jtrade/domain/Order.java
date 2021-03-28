@@ -9,9 +9,11 @@ import org.springframework.data.annotation.Id;
 import org.web3j.crypto.Credentials;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonInclude.Include;
-@JsonInclude(Include.NON_EMPTY)
+@JsonIgnoreProperties(ignoreUnknown = true)	
+@JsonInclude(Include.NON_NULL)
 public class Order {
 
 	@Id
@@ -29,7 +31,7 @@ public class Order {
 	private EventState eventState;
 	private List<AdditionalProperty> AdditionalProperty;
 	private Integer orderCode;
-	private String orderDecision;
+	private String approvedHash;
 	
 	public String getId() {
 		return id;
@@ -113,19 +115,19 @@ public class Order {
 		this.orderCode = orderCode;
 	}
 	
-	public String getOrderDecision() {
-		return orderDecision;
-	}
-	public void setOrderDecision(String orderDecision) {
-		this.orderDecision = orderDecision;
-	}
 	public String getGasMode() {
 		return gasMode;
 	}
 	public void setGasMode(String gasMode) {
 		this.gasMode = gasMode;
 	}
-
+	
+	public String getApprovedHash() {
+		return approvedHash;
+	}
+	public void setApprovedHash(String approvedHash) {
+		this.approvedHash = approvedHash;
+	}
 	@Override
 	public String toString() {
 		return ToStringBuilder.reflectionToString(this);

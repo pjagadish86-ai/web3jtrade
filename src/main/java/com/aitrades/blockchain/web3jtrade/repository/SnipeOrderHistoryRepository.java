@@ -20,7 +20,7 @@ public class SnipeOrderHistoryRepository {
 		return snipeOrderHistoryReactiveMongoTemplate.remove(transactionRequest);
 	}
 
-	public void save(SnipeTransactionRequest snipeTransactionRequest) {
-		snipeOrderHistoryReactiveMongoTemplate.save(snipeTransactionRequest);
+	public void insert(SnipeTransactionRequest snipeTransactionRequest) {
+		snipeOrderHistoryReactiveMongoTemplate.insert(snipeTransactionRequest);
 	}
 }

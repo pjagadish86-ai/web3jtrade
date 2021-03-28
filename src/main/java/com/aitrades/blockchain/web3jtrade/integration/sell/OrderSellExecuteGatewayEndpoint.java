@@ -23,7 +23,8 @@ import com.google.common.collect.Lists;
 public class OrderSellExecuteGatewayEndpoint {
 	
 	private static final String INPUT_TOKENS = "INPUT_TOKENS";
-	
+	private static final String WETH = "0xc778417E063141139Fce010982780140Aa0cD5Ab";
+
 	@Autowired
 	public StrategyGasProvider strategyGasProvider;
 	
@@ -40,7 +41,7 @@ public class OrderSellExecuteGatewayEndpoint {
 	protected EthereumDexTradeContractService ethereumDexTradeService;
 	
 	@Transformer(inputChannel = "transformSellOrderChannel", outputChannel = "amountsOutChannel")
-	public Map<String, Object> transformBuyOrderChannel(byte[] message) throws Exception{
+	public Map<String, Object> transformSellOrderChannel(byte[] message) throws Exception{
 		Order order  = orderRequestObjectReader.readValue(message);
 		if(order.getOrderEntity().getOrderState().equalsIgnoreCase(OrderState.FILLED.name())) {
 			throw new Exception("Order has already been successfull, if need any new order, other please place  order");
@@ -60,7 +61,7 @@ public class OrderSellExecuteGatewayEndpoint {
 																		order.getSlippage().getSlipageInBips(),
 																        strategyGasProvider, 
 																        GasModeEnum.fromValue(order.getGasMode()),
-																        Lists.newArrayList(order.getFrom().getTicker().getAddress(), order.getTo().getTicker().getAddress()));
+																        Lists.newArrayList(order.getFrom().getTicker().getAddress(), WETH));
 		if(inputTokens != null && inputTokens.compareTo(BigInteger.ZERO) > 0 ) {
 			tradeOrderMap.put(INPUT_TOKENS, inputTokens);
 			return tradeOrderMap;
@@ -70,31 +71,33 @@ public class OrderSellExecuteGatewayEndpoint {
 	
 	@ServiceActivator(inputChannel = "swapTokenForETHChannel", outputChannel ="updateSellOrderChannel")
 	public Map<String, Object> swapTokenForETHChannel(Map<String, Object> tradeOrderMap) throws Exception{
-		Order order = (Order) tradeOrderMap.get(TradeConstants.ORDER);
-		BigInteger outputTokens = (BigInteger)tradeOrderMap.get(INPUT_TOKENS);
-		String hash = ethereumDexTradeService.swapTokenForETH(order.getRoute(),
-															  order.getCredentials(), 
-														      order.getFrom().getAmountAsBigInteger(),
-															  outputTokens, 
-															  strategyGasProvider, 
-															  GasModeEnum.fromValue(order.getGasMode()), 
-															  1234211,
-															  Lists.newArrayList(order.getFrom().getTicker().getAddress(), order.getTo().getTicker().getAddress()), 
-															  false);
-		if (StringUtils.isNotBlank(hash)) {
-			tradeOrderMap.put(TradeConstants.SWAP_TOKEN_FOR_ETH_HASH, true);
-			order.getOrderEntity().setOrderState(TradeConstants.FILLED);
-			return tradeOrderMap;
-		} 
+		if (tradeOrderMap.get(INPUT_TOKENS) != null) {
+			Order order = (Order) tradeOrderMap.get(TradeConstants.ORDER);
+			BigInteger outputTokens = (BigInteger) tradeOrderMap.get(INPUT_TOKENS);
+			String hash = ethereumDexTradeService.swapTokenForETH(order.getRoute(), 
+																  order.getCredentials(),
+																  order.getFrom().getAmountAsBigInteger(), 
+																  outputTokens, 
+																  strategyGasProvider,
+																  GasModeEnum.fromValue(order.getGasMode()), 
+																  250l,
+																  Lists.newArrayList(order.getFrom().getTicker().getAddress(), WETH), // TODO populate from Client
+																  false);
+			if (StringUtils.isNotBlank(hash)) {
+				tradeOrderMap.put(TradeConstants.SWAP_TOKEN_FOR_ETH_HASH, true);
+				order.getOrderEntity().setOrderState(TradeConstants.FILLED);
+				return tradeOrderMap;
+			} 
+		}
 		throw new Exception("Unable to SWAP_TOKEN_FOR_ETH_HASH");
 	}
 	
 	@ServiceActivator(inputChannel = "updateSellOrderChannel")
-	public Map<String, Object> updateOrDeleteSnipeOrderChannel(Map<String, Object> tradeOrderMap) throws Exception{
+	public Map<String, Object> updateSellOrderChannel(Map<String, Object> tradeOrderMap) throws Exception{
 		Order order = (Order) tradeOrderMap.get(TradeConstants.ORDER);
 		if(tradeOrderMap.get(TradeConstants.SWAP_TOKEN_FOR_ETH_HASH) != null) {
+			orderHistoryRepository.insert(order);
 			orderRepository.delete(order);
-			orderHistoryRepository.save(order);
 		}
 		return tradeOrderMap;
 	}

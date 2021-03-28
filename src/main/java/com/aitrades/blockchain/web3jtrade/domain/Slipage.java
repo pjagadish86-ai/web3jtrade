@@ -50,6 +50,9 @@ public class Slipage {
 	}
 	
 	public BigDecimal getSlipageInBips() {
+		if(this.slipageInBips.compareTo(BigDecimal.ZERO) <= 0) {
+			slipageInBips = BigDecimal.valueOf(0.05);
+		}
 		return slipageInBips;
 	}
 

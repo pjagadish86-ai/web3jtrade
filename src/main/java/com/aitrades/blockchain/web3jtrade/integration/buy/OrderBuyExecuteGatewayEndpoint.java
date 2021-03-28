@@ -23,8 +23,8 @@ import com.google.common.collect.Lists;
 public class OrderBuyExecuteGatewayEndpoint {
 
 	private static final String OUTPUT_TOKENS = "OUTPUT_TOKENS";
-	private static final String TRANSACTION_REQUEST = "TRANSACTION_REQUEST";
-	
+	private static final String WETH = "0xc778417E063141139Fce010982780140Aa0cD5Ab";
+	 
 	@Autowired
 	public StrategyGasProvider strategyGasProvider;
 	
@@ -54,14 +54,14 @@ public class OrderBuyExecuteGatewayEndpoint {
 	
 	@ServiceActivator(inputChannel = "amountsInChannel", outputChannel = "swapETHForTokensChannel")
 	public Map<String, Object> amountsInChannel(Map<String, Object> tradeOrderMap) throws Exception{
-		Order order = (Order) tradeOrderMap.get(TRANSACTION_REQUEST);
+		Order order = (Order) tradeOrderMap.get(TradeConstants.ORDER);
 		BigInteger outputTokens = ethereumDexTradeService.getAmountsIn(order.getRoute(),
 																	   order.getCredentials(), 
 																	   order.getFrom().getAmountAsBigDecimal(),
 																	   order.getSlippage().getSlipageInBips(),
 															           strategyGasProvider, 
 															           GasModeEnum.fromValue(order.getGasMode()),
-															           Lists.newArrayList(order.getFrom().getTicker().getAddress(), order.getTo().getTicker().getAddress()));
+															           Lists.newArrayList(WETH, order.getTo().getTicker().getAddress()));
 		
 		if(outputTokens != null && outputTokens.compareTo(BigInteger.ZERO) > 0 ) {
 			tradeOrderMap.put(OUTPUT_TOKENS, outputTokens);
@@ -82,9 +82,7 @@ public class OrderBuyExecuteGatewayEndpoint {
 																   strategyGasProvider,
 																   GasModeEnum.fromValue(order.getGasMode()), 
 																   300l, 
-																   Lists.newArrayList(
-																   order.getFrom().getTicker().getAddress(), 
-																   order.getTo().getTicker().getAddress()),
+																   Lists.newArrayList(WETH, order.getTo().getTicker().getAddress()),
 																   false);
 			if (StringUtils.isNotBlank(hash)) {
 				tradeOrderMap.put(TradeConstants.SWAP_ETH_FOR_TOKEN_HASH, true);
@@ -100,7 +98,7 @@ public class OrderBuyExecuteGatewayEndpoint {
 		Order order = (Order) tradeOrderMap.get(TradeConstants.ORDER);
 		if(order.getOrderEntity().getOrderState().equalsIgnoreCase(TradeConstants.FILLED) && tradeOrderMap.get(TradeConstants.SWAP_ETH_FOR_TOKEN_HASH) != null) {
 			orderRepository.delete(order);
-			orderHistoryRepository.save(order);
+			orderHistoryRepository.insert(order);
 		}
 		return tradeOrderMap;
 	}

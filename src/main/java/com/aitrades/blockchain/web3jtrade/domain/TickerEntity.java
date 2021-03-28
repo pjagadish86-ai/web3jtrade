@@ -2,11 +2,13 @@ package com.aitrades.blockchain.web3jtrade.domain;
 
 import java.math.BigDecimal;
 import java.math.BigInteger;
+import java.math.RoundingMode;
 import java.util.List;
 
 import org.apache.commons.lang.builder.EqualsBuilder;
 import org.apache.commons.lang.builder.HashCodeBuilder;
 import org.apache.commons.lang.builder.ToStringBuilder;
+import org.web3j.utils.Convert;
 
 public class TickerEntity {
 	
@@ -33,7 +35,7 @@ public class TickerEntity {
 	}
 
 	public BigInteger getAmountAsBigInteger() {
-		return amountAsBigInteger;
+		return Convert.toWei(getAmount(), Convert.Unit.ETHER).toBigInteger();
 	}
 
 	public void setAmountAsBigInteger(BigInteger amountAsBigInteger) {
@@ -41,7 +43,7 @@ public class TickerEntity {
 	}
 
 	public BigDecimal getAmountAsBigDecimal() {
-		return amountAsBigDecimal;
+		return new BigDecimal(getAmount()).setScale(2, RoundingMode.DOWN);
 	}
 
 	public void setAmountAsBigDecimal(BigDecimal amountAsBigDecimal) {

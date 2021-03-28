@@ -150,7 +150,7 @@ public class UniswapServiceImpl implements EthereumDexContractService {
 											   Lists.newArrayList(new Uint256(outputTokens), 
 													   			  new DynamicArray(Address.class, getAddress(memoryPathAddress)),
 													   			  new Address(credentials.getAddress()), 
-													   			  new Uint256(BigInteger.valueOf(Instant.now().plus(deadLine, ChronoUnit.MINUTES).getEpochSecond()))),
+													   			  new Uint256(BigInteger.valueOf(Instant.now().plus(deadLine, ChronoUnit.SECONDS).getEpochSecond()))),
 											   Collections.emptyList());
 
 		String data = FunctionEncoder.encode(function);
@@ -200,12 +200,12 @@ public class UniswapServiceImpl implements EthereumDexContractService {
 		BigInteger amountsIn = (BigInteger) uniswapV2Contract.getAmountsOut(Convert.toWei(inputTokens, Convert.Unit.ETHER).toBigInteger(), memoryPathAddress)
 															 .flowable()
 															 .blockingSingle()
-															 .parallelStream()
-															 .findFirst()
-															 .get();
-		BigDecimal inputTokensOut  =  Convert.fromWei(amountsIn.toString(), Convert.Unit.ETHER).setScale(0, RoundingMode.DOWN);
-		BigDecimal inputTokensOutWithSlipage = (inputTokensOut.subtract(inputTokensOut.multiply(slipage))).setScale(0, RoundingMode.DOWN);
-		return Convert.fromWei(inputTokensOutWithSlipage, Convert.Unit.ETHER).toBigInteger();
+															 .stream().reduce((first, second) -> second)
+															 .orElse(BigInteger.ZERO);
+		
+		//double slipageWithCal  = amountsIn.doubleValue() * slipage.doubleValue();
+		//BigInteger outputTokensWithSlipage = new BigDecimal(amountsIn.doubleValue() - slipageWithCal).setScale(0, RoundingMode.DOWN).toBigInteger();	
+		return amountsIn;
 	}
 
 	@Override
@@ -214,11 +214,13 @@ public class UniswapServiceImpl implements EthereumDexContractService {
 								  boolean hasFee) throws Exception {
 
 		final Function function = new Function(FUNC_SWAPEXACTTOKENSFORETH,
-											   Lists.newArrayList(new Uint256(inputTokens), new Uint256(outputEthers),
-														new DynamicArray(Address.class, memoryPathAddress), new Address(credentials.getAddress()),
-														new Uint256(BigInteger.valueOf(Instant.now().plus(deadLine, ChronoUnit.MINUTES).getEpochSecond()))),
+											   Lists.newArrayList(new Uint256(inputTokens), 
+													   			  new Uint256(outputEthers),
+																  new DynamicArray(Address.class, getAddress(memoryPathAddress)), 
+																  new Address(credentials.getAddress()),
+																  new Uint256(BigInteger.valueOf(Instant.now().plus(deadLine, ChronoUnit.SECONDS).getEpochSecond()))),
 											   Collections.emptyList());
-		
+
 		String data = FunctionEncoder.encode(function);
 		
 		EthGetTransactionCount ethGetTransactionCount = web3jServiceClient.getWeb3j()

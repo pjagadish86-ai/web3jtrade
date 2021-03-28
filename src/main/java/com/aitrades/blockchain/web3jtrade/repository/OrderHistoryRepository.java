@@ -13,14 +13,14 @@ import reactor.core.publisher.Mono;
 @Repository
 public class OrderHistoryRepository {
 
-	@Resource(name = "orderReactiveMongoTemplate")
-	public ReactiveMongoTemplate orderReactiveMongoTemplate;
+	@Resource(name = "orderHistoryReactiveMongoTemplate")
+	public ReactiveMongoTemplate orderHistoryReactiveMongoTemplate;
 
 	public Mono<DeleteResult> delete(Order order) {
-		return orderReactiveMongoTemplate.remove(order);
+		return orderHistoryReactiveMongoTemplate.remove(order);
 	}
 
-	public void save(Order order) {
-		orderReactiveMongoTemplate.save(order);
+	public void insert(Order order) {
+		orderHistoryReactiveMongoTemplate.insert(order);
 	}
 }
