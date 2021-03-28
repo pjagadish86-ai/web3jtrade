@@ -188,7 +188,7 @@ public class OrderSnipeExecuteGatewayEndpoint{
 	public Map<String, Object> updateOrDeleteSnipeOrderChannel(Map<String, Object> tradeOrderMap) throws Exception{
 		SnipeTransactionRequest snipeTransactionRequest = (SnipeTransactionRequest) tradeOrderMap.get(TradeConstants.SNIPETRANSACTIONREQUEST);
 		if(snipeTransactionRequest.hasSniped() && tradeOrderMap.get(TradeConstants.SWAP_ETH_FOR_TOKEN_HASH) != null) {
-			snipeOrderHistoryRepository.save(snipeTransactionRequest);
+			snipeOrderHistoryRepository.insert(snipeTransactionRequest);
 			snipeOrderRepository.delete(snipeTransactionRequest);
 		}
 		return tradeOrderMap;
