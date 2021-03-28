@@ -21,7 +21,7 @@ public class SnipeOrderHistoryMongoConfig extends AbstractReactiveMongoConfigura
 
 	@Bean(name = "snipeOrderHistoryReactiveMongoTemplate")
 	public ReactiveMongoTemplate snipeOrderHistoryReactiveMongoTemplate(MongoClient mongoClient) {
-		return new ReactiveMongoTemplate(mongoClient, getDatabaseName());
+		return new ReactiveMongoTemplate(mongoClient, "snipeOrderHistory");
 	}
 
 	

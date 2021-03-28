@@ -21,7 +21,7 @@ public class OrderHistoryMongoConfig extends AbstractReactiveMongoConfiguration 
 
 	@Bean(name = "orderHistoryReactiveMongoTemplate")
 	public ReactiveMongoTemplate orderHistoryReactiveMongoTemplate(MongoClient mongoClient) {
-		return new ReactiveMongoTemplate(mongoClient, getDatabaseName());
+		return new ReactiveMongoTemplate(mongoClient, "orderHistory");
 	}
 
 	
