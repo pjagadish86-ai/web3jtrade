@@ -8,19 +8,22 @@ import org.springframework.stereotype.Repository;
 import com.aitrades.blockchain.web3jtrade.domain.Order;
 import com.mongodb.client.result.DeleteResult;
 
-import reactor.core.publisher.Mono;
-
 @Repository
 public class OrderRepository {
 
-	@Resource(name = "orderHistoryReactiveMongoTemplate")
-	public ReactiveMongoTemplate orderHistoryReactiveMongoTemplate;
+	@Resource(name = "orderReactiveMongoTemplate")
+	public ReactiveMongoTemplate orderReactiveMongoTemplate;
 	
-	public Mono<DeleteResult> delete(Order order) {
-		return orderHistoryReactiveMongoTemplate.remove(order);
+	public void delete(Order order) {
+		DeleteResult count  = orderReactiveMongoTemplate.remove(order).block();
+		if(count.getDeletedCount() == 0) {
+			System.out.println("not deleted");
+		}else {
+			System.out.println("deleted");
+		}
 	}
 
 	public void save(Order order) {
-		orderHistoryReactiveMongoTemplate.save(order);
+		orderReactiveMongoTemplate.save(order);
 	}
 }
