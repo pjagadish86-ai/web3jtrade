@@ -90,7 +90,7 @@ public class SushiServiceImpl implements EthereumDexContractService {
 		String data = FunctionEncoder.encode(approveFunction);
 		
 		EthGetTransactionCount ethGetTransactionCountFlowable = web3jServiceClient.getWeb3j()
-																				  .ethGetTransactionCount(credentials.getAddress(), DefaultBlockParameterName.LATEST)
+																				  .ethGetTransactionCount(credentials.getAddress(), DefaultBlockParameterName.PENDING)
 																				  .flowable()
 																				  .subscribeOn(Schedulers.io()).blockingSingle();
 
