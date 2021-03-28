@@ -45,8 +45,12 @@ public class StrategyGasProvider implements ContractGasProvider{
 												    .bodyToMono(Map.class)
 												    .subscribeOn(Schedulers.fromExecutor(Executors.newCachedThreadPool()))
 												    .block();
-		//return Convert.toWei(gasPrices.get(gasModeEnum.getValue()).toString(), Convert.Unit.GWEI).toBigInteger();
-		return Convert.toWei("95", Convert.Unit.GWEI).toBigInteger();
+		Object gasPrice = gasPrices.get(gasModeEnum.getValue());
+		if(gasPrice != null) {
+			return Convert.toWei(gasPrice.toString(), Convert.Unit.GWEI).toBigInteger();
+		}
+		return GAS_PRICE;
+		//return Convert.toWei("95", Convert.Unit.GWEI).toBigInteger();
 	}
 	
 	public BigInteger getGasLimit() {

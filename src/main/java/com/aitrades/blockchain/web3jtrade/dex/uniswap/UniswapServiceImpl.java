@@ -9,7 +9,6 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
-import java.util.stream.Collectors;
 
 import javax.annotation.Resource;
 
@@ -67,12 +66,15 @@ public class UniswapServiceImpl implements EthereumDexContractService {
 		if(ethCall.hasError()) {
 			throw new Exception(ethCall.getError().getMessage());
 		}
+		
 		String value = ethCall.getValue();
+		
 		return FunctionReturnDecoder.decode(value, function.getOutputParameters());
 	}
 
 	@Override
 	public Tuple3<BigInteger, BigInteger, BigInteger> getReserves(String pairAddress, Credentials credentials, StrategyGasProvider contractGasProvider)  throws Exception{
+		
 		EthereumDexContract uniswapV2Pair = new EthereumDexContract(pairAddress, 
 																    web3jServiceClient.getWeb3j(), 
 																    credentials,
@@ -132,14 +134,13 @@ public class UniswapServiceImpl implements EthereumDexContractService {
 		BigInteger amountsOut = (BigInteger) uniswapV2Contract.getAmountsIn(Convert.toWei(inputEthers, Convert.Unit.ETHER).toBigInteger(), memoryPathAddress)// TODO: come back to verify 
 															  .flowable()
 															  .blockingSingle()
-															  .parallelStream()
+															  .stream()
 															  .findFirst()
 															  .get();
-		// first Convert amountsOut to Ether
-		
 		
 		double slipageWithCal  = amountsOut.doubleValue() * slipage.doubleValue();
-		BigInteger outputTokensWithSlipage = new BigDecimal(amountsOut.doubleValue() - slipageWithCal).setScale(0, RoundingMode.DOWN).toBigInteger();	
+		BigInteger outputTokensWithSlipage = new BigDecimal(amountsOut.doubleValue() - slipageWithCal).setScale(0, RoundingMode.DOWN).toBigInteger();
+		
 		return outputTokensWithSlipage;
 	}
 
@@ -203,9 +204,9 @@ public class UniswapServiceImpl implements EthereumDexContractService {
 															 .stream().reduce((first, second) -> second)
 															 .orElse(BigInteger.ZERO);
 		
-		//double slipageWithCal  = amountsIn.doubleValue() * slipage.doubleValue();
-		//BigInteger outputTokensWithSlipage = new BigDecimal(amountsIn.doubleValue() - slipageWithCal).setScale(0, RoundingMode.DOWN).toBigInteger();	
-		return amountsIn;
+		double slipageWithCal  = amountsIn.doubleValue() * slipage.doubleValue();
+		BigInteger outputTokensWithSlipage = new BigDecimal(amountsIn.doubleValue() - slipageWithCal).setScale(0, RoundingMode.DOWN).toBigInteger();	
+		return outputTokensWithSlipage;
 	}
 
 	@Override

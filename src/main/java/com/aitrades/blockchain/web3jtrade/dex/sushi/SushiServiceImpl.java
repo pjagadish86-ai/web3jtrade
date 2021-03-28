@@ -2,8 +2,10 @@ package com.aitrades.blockchain.web3jtrade.dex.sushi;
 
 import java.math.BigDecimal;
 import java.math.BigInteger;
+import java.math.RoundingMode;
 import java.time.Instant;
 import java.time.temporal.ChronoUnit;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
@@ -52,26 +54,31 @@ public class SushiServiceImpl implements EthereumDexContractService {
 
 	@Override
 	public List<Type> getPair(String tokenA, String tokenB) throws Exception{
+		
 		final Function function = new Function(FUNC_GETPAIR, Arrays.asList(new Address(tokenA), new Address(tokenB)),
 											   Arrays.asList(new TypeReference<Address>() {
-											}));
+											   }));
+		
 		String data = FunctionEncoder.encode(function);
+		
 		Transaction transaction = Transaction.createEthCallTransaction(SUSHI_FACTORY_ADDRESS, SUSHI_FACTORY_ADDRESS, data);
+		
 		EthCall blockingSingle = web3jServiceClient.getWeb3j()
 												   .ethCall(transaction, DefaultBlockParameterName.LATEST)
 												   .flowable()
 												   .blockingSingle();
 		
 		String value = blockingSingle.getValue();
+		
 		return FunctionReturnDecoder.decode(value, function.getOutputParameters());
 	}
 
 	@Override
 	public Tuple3<BigInteger, BigInteger, BigInteger> getReserves(String pairAddress, Credentials credentials, StrategyGasProvider contractGasProvider) throws Exception{
 		EthereumDexContract uniswapV2Pair = new EthereumDexContract(pairAddress, 
-																web3jServiceClient.getWeb3j(), 
-																credentials,
-																contractGasProvider);
+																    web3jServiceClient.getWeb3j(), 
+																    credentials,
+																    contractGasProvider);
 		return uniswapV2Pair.getReserves().flowable().blockingLast();
 	}
 
@@ -109,17 +116,18 @@ public class SushiServiceImpl implements EthereumDexContractService {
 								   StrategyGasProvider customGasProvider,
 								   GasModeEnum gasModeEnum, List<String> memoryPathAddress) throws Exception{
 
-		EthereumDexContract uniswapV2Contract = new EthereumDexContract(SUSHI_ROUTER_ADDRESS,
+		EthereumDexContract sushiContract = new EthereumDexContract(SUSHI_ROUTER_ADDRESS,
 																	web3jServiceClient.getWeb3j(), 
 																	credentials, 
 																	customGasProvider);
-		BigInteger amountsIn = (BigInteger) uniswapV2Contract.getAmountsIn(Convert.toWei(inputEthers, Convert.Unit.ETHER).toBigInteger(), memoryPathAddress)
-															 .flowable()
-															 .blockingSingle()
-															 .parallelStream()
-															 .findFirst()
-															 .get();
-		return Convert.fromWei(new BigDecimal(amountsIn), Convert.Unit.ETHER).toBigInteger();
+		BigInteger amountsOut = (BigInteger) sushiContract.getAmountsIn(Convert.toWei(inputEthers, Convert.Unit.ETHER).toBigInteger(), memoryPathAddress)
+														  .flowable()
+														  .blockingSingle()
+														  .parallelStream()
+														  .findFirst()
+														  .get();
+		double calculaterAmountOutsWithSlipage  = amountsOut.doubleValue() * slipage.doubleValue();
+		return new BigDecimal(amountsOut.doubleValue() - calculaterAmountOutsWithSlipage).setScale(0, RoundingMode.DOWN).toBigInteger();
 	}
 
 	@Override
@@ -128,9 +136,9 @@ public class SushiServiceImpl implements EthereumDexContractService {
 
 		final Function function = new Function(FUNC_SWAPEXACTETHFORTOKENS,
 											   Lists.newArrayList(new Uint256(outputTokens), 
-													   			  new DynamicArray(Address.class, memoryPathAddress),
+													   			  new DynamicArray(Address.class, getAddress(memoryPathAddress)),
 													   			  new Address(credentials.getAddress()), 
-													   			  new Uint256(BigInteger.valueOf(Instant.now().plus(deadLine, ChronoUnit.MINUTES).getEpochSecond()))),
+													   			  new Uint256(BigInteger.valueOf(Instant.now().plus(deadLine, ChronoUnit.SECONDS).getEpochSecond()))),
 											   Collections.emptyList());
 
 		String data = FunctionEncoder.encode(function);
@@ -138,7 +146,8 @@ public class SushiServiceImpl implements EthereumDexContractService {
 		EthGetTransactionCount ethGetTransactionCount = web3jServiceClient.getWeb3j()
 																		  .ethGetTransactionCount(credentials.getAddress(), DefaultBlockParameterName.LATEST)
 																		  .flowable()
-																		  .subscribeOn(Schedulers.io()).blockingSingle();
+																		  .subscribeOn(Schedulers.io())
+																		  .blockingSingle();
 
 		RawTransaction rawTransaction = RawTransaction.createTransaction(ethGetTransactionCount.getTransactionCount(),
 																		 customGasProvider.getGasPrice(gasModeEnum), 
@@ -149,11 +158,22 @@ public class SushiServiceImpl implements EthereumDexContractService {
 		
 		byte[] signedMessage = TransactionEncoder.signMessage(rawTransaction, credentials);
 		
-		String hash = web3jServiceClient.getWeb3j()
-										.ethSendRawTransaction(Numeric.toHexString(signedMessage))
-										.flowable()
-										.blockingSingle().getTransactionHash();
-		return hash;
+		EthSendTransaction ethSendTransaction = web3jServiceClient.getWeb3j()
+																  .ethSendRawTransaction(Numeric.toHexString(signedMessage))
+																  .flowable()
+																  .blockingSingle();
+		if(ethSendTransaction.hasError()) {
+			throw new Exception(ethSendTransaction.getError().getMessage());
+		}
+		return ethSendTransaction.getTransactionHash();
+	}
+	
+	private List<Address> getAddress(List<String> path) {
+		List<Address>  addresses = new ArrayList<Address>();
+		for(String addr : path) {
+			addresses.add(new Address(addr));
+		}
+		return addresses;
 	}
 
 	@Override
@@ -161,19 +181,20 @@ public class SushiServiceImpl implements EthereumDexContractService {
 								    StrategyGasProvider customGasProvider, GasModeEnum gasModeEnum, 
 								    List<String> memoryPathAddress) throws Exception{
 
-		EthereumDexContract uniswapV2Contract = new EthereumDexContract(SUSHI_ROUTER_ADDRESS,
+		EthereumDexContract sushiContract = new EthereumDexContract(SUSHI_ROUTER_ADDRESS,
 																	web3jServiceClient.getWeb3j(), 
 																	credentials, 
 																	customGasProvider);
 		
-		BigInteger amountsIn = (BigInteger) uniswapV2Contract.getAmountsOut(Convert.toWei(inputTokens, Convert.Unit.ETHER).toBigInteger(), memoryPathAddress)
-															 .flowable()
-															 .blockingSingle()
-															 .parallelStream()
-															 .findFirst()
-															 .get();
-		
-		return Convert.fromWei(new BigDecimal(amountsIn), Convert.Unit.ETHER).toBigInteger();
+		BigInteger amountsIn = (BigInteger) sushiContract.getAmountsOut(Convert.toWei(inputTokens, Convert.Unit.ETHER).toBigInteger(), memoryPathAddress)
+														 .flowable()
+														 .blockingSingle()
+														 .stream()
+														 .reduce((first, second) -> second)
+														 .orElse(BigInteger.ZERO);
+
+		double slipageWithCal  = amountsIn.doubleValue() * slipage.doubleValue();
+		return new BigDecimal(amountsIn.doubleValue() - slipageWithCal).setScale(0, RoundingMode.DOWN).toBigInteger();	
 	}
 
 	@Override
@@ -182,9 +203,11 @@ public class SushiServiceImpl implements EthereumDexContractService {
 								  boolean hasFee) throws Exception{
 
 		final Function function = new Function(FUNC_SWAPEXACTTOKENSFORETH,
-											   Lists.newArrayList(new Uint256(inputTokens), new Uint256(outputEthers),
-														new DynamicArray(Address.class, memoryPathAddress), new Address(credentials.getAddress()),
-														new Uint256(BigInteger.valueOf(Instant.now().plus(deadLine, ChronoUnit.MINUTES).getEpochSecond()))),
+											   Lists.newArrayList(new Uint256(inputTokens), 
+																  new Uint256(outputEthers),
+																  new DynamicArray(Address.class, getAddress(memoryPathAddress)), 
+																  new Address(credentials.getAddress()),
+																  new Uint256(BigInteger.valueOf(Instant.now().plus(deadLine, ChronoUnit.SECONDS).getEpochSecond()))),
 											   Collections.emptyList());
 		
 		String data = FunctionEncoder.encode(function);
@@ -208,6 +231,9 @@ public class SushiServiceImpl implements EthereumDexContractService {
 																  .flowable()
 																  .subscribeOn(Schedulers.io())
 																  .blockingSingle();
+		if(ethSendTransaction.hasError()) {
+			throw new Exception(ethSendTransaction.getError().getMessage());
+		}
 		return ethSendTransaction.getTransactionHash();
 	}
 
