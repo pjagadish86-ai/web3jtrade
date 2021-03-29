@@ -74,9 +74,6 @@ public class OrderSnipeExecuteGatewayEndpoint{
 	@Transformer(inputChannel = "rabbitMqSubmitOrderConsumer", outputChannel = "pairCreatedEventChannel")
 	public Map<String, Object> rabbitMqSubmitOrderConsumer(byte[] message) throws Exception{
 		SnipeTransactionRequest snipeTransactionRequest  = snipeTransactionRequestObjectReader.readValue(message);
-		if(snipeTransactionRequest.hasSniped()) {
-			throw new Exception("Order has already been sniped, if need any other please place new order");
-		}
 		Map<String, Object> aitradesMap = new ConcurrentHashMap<String, Object>();
 		aitradesMap.put(TradeConstants.SNIPETRANSACTIONREQUEST, snipeTransactionRequest);
 		return aitradesMap;
@@ -193,7 +190,7 @@ public class OrderSnipeExecuteGatewayEndpoint{
 	public Map<String, Object> updateOrDeleteSnipeOrderChannel(Map<String, Object> tradeOrderMap) throws Exception{
 		SnipeTransactionRequest snipeTransactionRequest = (SnipeTransactionRequest) tradeOrderMap.get(TradeConstants.SNIPETRANSACTIONREQUEST);
 		if(snipeTransactionRequest.hasSniped() && tradeOrderMap.get(TradeConstants.SWAP_ETH_FOR_TOKEN_HASH) != null) {
-			snipeOrderHistoryRepository.insert(snipeTransactionRequest);
+			snipeOrderHistoryRepository.save(snipeTransactionRequest);
 			snipeOrderRepository.delete(snipeTransactionRequest);
 		}
 		return tradeOrderMap;

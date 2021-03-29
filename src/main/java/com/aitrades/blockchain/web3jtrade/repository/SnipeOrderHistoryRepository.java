@@ -13,7 +13,7 @@ public class SnipeOrderHistoryRepository {
 	@Resource(name = "snipeOrderHistoryReactiveMongoTemplate")
 	public ReactiveMongoTemplate snipeOrderHistoryReactiveMongoTemplate;
 
-	public SnipeTransactionRequest insert(SnipeTransactionRequest snipeTransactionRequest) throws Exception {
-		return snipeOrderHistoryReactiveMongoTemplate.insert(snipeTransactionRequest).block();
+	public void save(SnipeTransactionRequest snipeTransactionRequest) throws Exception {
+		 snipeOrderHistoryReactiveMongoTemplate.save(snipeTransactionRequest).block();
 	}
 }

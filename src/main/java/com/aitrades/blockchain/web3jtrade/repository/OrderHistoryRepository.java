@@ -13,7 +13,7 @@ public class OrderHistoryRepository {
 	@Resource(name = "orderHistoryReactiveMongoTemplate")
 	public ReactiveMongoTemplate orderHistoryReactiveMongoTemplate;
 
-	public Order insert(Order order) throws Exception {
-		return orderHistoryReactiveMongoTemplate.insert(order).block();
+	public Order save(Order order) throws Exception {
+		return orderHistoryReactiveMongoTemplate.save(order).block();
 	}
 }
