@@ -2,11 +2,13 @@ package com.aitrades.blockchain.web3jtrade.integration.buy;
 
 import org.springframework.amqp.rabbit.connection.ConnectionFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.ComponentScan;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.integration.amqp.dsl.Amqp;
 import org.springframework.integration.annotation.IntegrationComponentScan;
+import org.springframework.integration.channel.PublishSubscribeChannel;
 import org.springframework.integration.config.EnableIntegration;
 import org.springframework.integration.context.IntegrationContextUtils;
 import org.springframework.integration.dsl.IntegrationFlow;
@@ -41,6 +43,22 @@ public class OrderBuyExecuteIntegrationConfig {
 	@Bean
 	public OrderBuyExecuteGatewayEndpoint orderBuyExecuteGatewayEndpoint() {
 		return new OrderBuyExecuteGatewayEndpoint();
+	}
+	
+	@Bean(name="createOrderErrorHandler")
+	public GlobalErrorHandler createOrderErrorHandler() {
+		return new GlobalErrorHandler();
+	}
+
+	@Autowired
+	@Qualifier("errorChannel")
+	private PublishSubscribeChannel errorChannel;
+	
+	@Bean
+	public IntegrationFlow errorHandlingFlow() {
+		return IntegrationFlows.from(errorChannel)
+				.handle("createOrderErrorHandler", "errorFlow")
+				.get();
 	}
 
 }

@@ -109,7 +109,7 @@ public class OrderSnipeExecuteGatewayEndpoint{
 			SnipeTransactionRequest snipeTransactionRequest = (SnipeTransactionRequest)tradeOrderMap.get(TradeConstants.SNIPETRANSACTIONREQUEST);
 			subGraphPriceClient.getRoute(snipeTransactionRequest.getRoute()).getPairData(snipeTransactionRequest.getPairAddress()).subscribeOn(Schedulers.io()).subscribe(resp -> {
 				if(resp != null && resp.getData() != null && resp.getData().getPair() != null && resp.getData().getPair().getReserve0AsBigDecimal().compareTo(BigDecimal.ZERO) > 0 && resp.getData().getPair().getReserve1AsBigDecimal().compareTo(BigDecimal.ZERO) > 0) {
-					 tradeOrderMap.put(TradeConstants.HAS_LIQUIDTY_EVENT, Boolean.TRUE);
+					 tradeOrderMap.put(TradeConstants.HAS_RESERVES, Boolean.TRUE);
 					 return;
 				}
 			});
