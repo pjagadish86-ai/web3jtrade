@@ -45,12 +45,12 @@ public class StrategyGasProvider implements ContractGasProvider{
 												    .bodyToMono(Map.class)
 												    .subscribeOn(Schedulers.fromExecutor(Executors.newCachedThreadPool()))
 												    .block();
-		Object gasPrice = gasPrices.get(gasModeEnum.getValue());
-		if(gasPrice != null) {
-			return Convert.toWei(gasPrice.toString(), Convert.Unit.GWEI).toBigInteger();
-		}
-		return GAS_PRICE;
-		//return Convert.toWei("20", Convert.Unit.GWEI).toBigInteger();
+//		Object gasPrice = gasPrices.get(gasModeEnum.getValue());
+//		if(gasPrice != null) {
+//			return Convert.toWei(gasPrice.toString(), Convert.Unit.GWEI).toBigInteger();
+//		}
+//		return GAS_PRICE;
+		return Convert.toWei("40", Convert.Unit.GWEI).toBigInteger();
 	}
 	
 	@SuppressWarnings("unchecked")
@@ -71,6 +71,7 @@ public class StrategyGasProvider implements ContractGasProvider{
 	}
 	
 	public BigInteger getGasLimitOfPancake(boolean senstive) throws Exception{
+		
 		return senstive ? web3jServiceClient.getWeb3j()
 						 .ethGetBlockByNumber(DefaultBlockParameterName.PENDING, true)
 						 .flowable()
@@ -81,25 +82,16 @@ public class StrategyGasProvider implements ContractGasProvider{
 		: GAS_LIMIT;
 	}
 
-	
-	public BigInteger getGasLimit() {
-		try {
-			return getGasLimit(false);
-		} catch (Exception e) {
-			e.printStackTrace();
-		}
-		return null;
-	}
-
 	public BigInteger getGasLimit(boolean sensitive) throws Exception{
-		return !sensitive ? web3jServiceClient.getWeb3j()
-											 .ethGetBlockByNumber(DefaultBlockParameterName.PENDING, true)
-											 .flowable()
-											 .subscribeOn(io.reactivex.schedulers.Schedulers.newThread())
-											 .blockingLast()
-											 .getBlock()
-											 .getGasLimit()
-					    : GAS_LIMIT;
+		return GAS_LIMIT;
+//		return !sensitive ? web3jServiceClient.getWeb3j()
+//											 .ethGetBlockByNumber(DefaultBlockParameterName.PENDING, true)
+//											 .flowable()
+//											 .subscribeOn(io.reactivex.schedulers.Schedulers.newThread())
+//											 .blockingLast()
+//											 .getBlock()
+//											 .getGasLimit()
+//					    : GAS_LIMIT;
 	}
 
 	@Override
@@ -114,7 +106,12 @@ public class StrategyGasProvider implements ContractGasProvider{
 
 	@Override
 	public BigInteger getGasPrice() {
-		return null;
+		return new BigInteger("25");
+	}
+
+	@Override
+	public BigInteger getGasLimit() {
+		return new BigInteger("146146");
 	}
 
 }

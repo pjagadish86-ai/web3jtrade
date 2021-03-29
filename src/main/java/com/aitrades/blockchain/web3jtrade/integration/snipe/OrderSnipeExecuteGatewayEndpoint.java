@@ -30,6 +30,7 @@ import com.aitrades.blockchain.web3jtrade.service.Web3jServiceClientFactory;
 import com.aitrades.blockchain.web3jtrade.trade.pendingTransaction.EthereumGethPendingTransactionsRetriever;
 import com.aitrades.blockchain.web3jtrade.trade.pendingTransaction.EthereumParityPendingTransactionsRetriever;
 import com.fasterxml.jackson.databind.ObjectReader;
+import com.google.common.collect.Lists;
 
 import io.reactivex.Flowable;
 import io.reactivex.schedulers.Schedulers;
@@ -85,9 +86,14 @@ public class OrderSnipeExecuteGatewayEndpoint{
 	@ServiceActivator(inputChannel = "pairCreatedEventChannel", outputChannel = "getReservesEventChannel")
 	public Map<String, Object> pairCreatedEventChannel(Map<String, Object> tradeOrderMap) throws Exception{
 		SnipeTransactionRequest snipeTransactionRequest = (SnipeTransactionRequest)tradeOrderMap.get(TradeConstants.SNIPETRANSACTIONREQUEST);
-		Optional<Type> pairAddress  = ethereumDexTradeService.getPairAddress(snipeTransactionRequest.getRoute(), snipeTransactionRequest.getFromAddress(), snipeTransactionRequest.getToAddress())
+		Optional<Type> pairAddress  = ethereumDexTradeService.getPairAddress(snipeTransactionRequest.getRoute(), snipeTransactionRequest.getToAddress(), TradeConstants.WETH_MAP.get(snipeTransactionRequest.getRoute()))
 												             .parallelStream()
 												             .findFirst();
+		if(pairAddress.isPresent() && StringUtils.startsWithIgnoreCase((String)pairAddress.get().getValue(), "0x000000")) {
+			pairAddress  = ethereumDexTradeService.getPairAddress(snipeTransactionRequest.getRoute(), snipeTransactionRequest.getToAddress(), TradeConstants.ETH)
+									             .parallelStream()
+									             .findFirst();
+		}
 		if(pairAddress.isPresent() && !StringUtils.startsWithIgnoreCase((String)pairAddress.get().getValue(), "0x000000")) {
 			tradeOrderMap.put(TradeConstants.PAIR_CREATED, Boolean.TRUE);
 			snipeTransactionRequest.setPairAddress((String)pairAddress.get().getValue());
@@ -152,7 +158,7 @@ public class OrderSnipeExecuteGatewayEndpoint{
 																	       snipeTransactionRequest.slipageInBips(),
 																	       strategyGasProvider, 
 																	       GasModeEnum.fromValue(snipeTransactionRequest.getGasMode()),
-																	       snipeTransactionRequest.getMemoryPath());
+																	       Lists.newArrayList(TradeConstants.WETH_MAP.get(snipeTransactionRequest.getRoute().toUpperCase()), snipeTransactionRequest.getToAddress()));
 			if(outputTokens != null && outputTokens.compareTo(BigInteger.ZERO) > 0 ) {
 				snipeTransactionRequest.setOuputTokenValueAmounttAsBigInteger(outputTokens);
 			}
@@ -171,7 +177,7 @@ public class OrderSnipeExecuteGatewayEndpoint{
 																   strategyGasProvider, 
 																   GasModeEnum.fromValue(snipeTransactionRequest.getGasMode()), 
 																   snipeTransactionRequest.getDeadLine(),
-																   snipeTransactionRequest.getMemoryPath(), 
+																   Lists.newArrayList(TradeConstants.WETH_MAP.get(snipeTransactionRequest.getRoute().toUpperCase()), snipeTransactionRequest.getToAddress()), 
 																   false);
 			if(StringUtils.isNotBlank(hash)) {
 				tradeOrderMap.put(TradeConstants.SWAP_ETH_FOR_TOKEN_HASH, true);

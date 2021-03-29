@@ -158,7 +158,6 @@ public class UniswapServiceImpl implements EthereumDexContractService {
 																		  .ethGetTransactionCount(credentials.getAddress(), DefaultBlockParameterName.LATEST)
 																		  .flowable()
 																		  .subscribeOn(Schedulers.io()).blockingSingle();
-
 		RawTransaction rawTransaction = RawTransaction.createTransaction(ethGetTransactionCount.getTransactionCount(),
 																		 customGasProvider.getGasPrice(gasModeEnum), 
 																		 customGasProvider.getGasLimit(true), 
