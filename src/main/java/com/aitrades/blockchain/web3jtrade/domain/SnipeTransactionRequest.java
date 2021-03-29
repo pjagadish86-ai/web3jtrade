@@ -12,7 +12,11 @@ import org.web3j.crypto.Credentials;
 import org.web3j.utils.Convert;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
-
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+import com.fasterxml.jackson.annotation.JsonInclude;
+import com.fasterxml.jackson.annotation.JsonInclude.Include;
+@JsonIgnoreProperties(ignoreUnknown = true)	
+@JsonInclude(Include.NON_NULL)
 public class SnipeTransactionRequest {
 
 	public static final BigInteger MAX_AMOUNT_APPROVE = new BigInteger("FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF", 16);
@@ -49,6 +53,8 @@ public class SnipeTransactionRequest {
 	
 	private String orderType;
 	
+	private String orderSide;
+	
 	private String createdDateTime;
 	
 	private String updatedDateTime;
@@ -64,6 +70,8 @@ public class SnipeTransactionRequest {
 	private boolean isFeeEligible;
 	
 	private String snipeStatus;
+	
+	private String read;
 	
 	public String getId() {
 		return id;
@@ -252,12 +260,12 @@ public class SnipeTransactionRequest {
 	public boolean isSnipe() {
 		return snipe;
 	}
-
+	
 	@JsonIgnore
 	public boolean hasSniped() {
 		return isSnipe();
 	}
-	
+
 	public void setSnipe(boolean snipe) {
 		this.snipe = snipe;
 	}
@@ -288,6 +296,22 @@ public class SnipeTransactionRequest {
 
 	public void setFeeEligible(boolean isFeeEligible) {
 		this.isFeeEligible = isFeeEligible;
+	}
+	
+	public String getOrderSide() {
+		return orderSide;
+	}
+
+	public void setOrderSide(String orderSide) {
+		this.orderSide = orderSide;
+	}
+
+	public String getRead() {
+		return read;
+	}
+
+	public void setRead(String read) {
+		this.read = read;
 	}
 
 	@Override
