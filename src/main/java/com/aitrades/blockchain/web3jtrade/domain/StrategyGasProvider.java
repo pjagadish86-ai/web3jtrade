@@ -106,7 +106,7 @@ public class StrategyGasProvider implements ContractGasProvider{
 
 	@Override
 	public BigInteger getGasPrice() {
-		return new BigInteger("25");
+		return new BigInteger("55");
 	}
 
 	@Override
