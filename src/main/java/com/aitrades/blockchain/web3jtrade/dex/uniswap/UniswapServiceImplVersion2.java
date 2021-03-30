@@ -30,6 +30,8 @@ import org.web3j.protocol.core.methods.response.EthCall;
 import org.web3j.protocol.core.methods.response.EthGetTransactionCount;
 import org.web3j.protocol.core.methods.response.EthSendTransaction;
 import org.web3j.tuples.generated.Tuple3;
+import org.web3j.tx.response.NoOpProcessor;
+import org.web3j.tx.response.PollingTransactionReceiptProcessor;
 import org.web3j.utils.Convert;
 import org.web3j.utils.Numeric;
 
@@ -43,13 +45,19 @@ import com.google.common.collect.Lists;
 
 import io.reactivex.schedulers.Schedulers;
 
-@Service("uniswap")
+@Service("uniswapv2")
 @SuppressWarnings({ "rawtypes", "unchecked" })
-public class UniswapServiceImpl implements EthereumDexContractService {
+public class UniswapServiceImplVersion2 implements EthereumDexContractService {
 
 	@Resource(name = "web3jServiceClient")
 	private Web3jServiceClient web3jServiceClient;
-
+	
+	@Resource(name = "pollingTransactionReceiptProcessor")
+	private PollingTransactionReceiptProcessor pollingTransactionReceiptProcessor;
+	
+	@Resource(name= "noOpProcessor")
+	private NoOpProcessor noOpProcessor;
+	
 	@Override
 	public List<Type> getPair(String tokenA, String tokenB) throws Exception{
 		final Function function = new Function(FUNC_GETPAIR, Arrays.asList(new Address(tokenA), new Address(tokenB)),

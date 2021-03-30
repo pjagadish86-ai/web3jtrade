@@ -26,6 +26,8 @@ import org.web3j.protocol.Web3j;
 import org.web3j.protocol.parity.Parity;
 import org.web3j.protocol.websocket.WebSocketClient;
 import org.web3j.protocol.websocket.WebSocketService;
+import org.web3j.tx.response.NoOpProcessor;
+import org.web3j.tx.response.PollingTransactionReceiptProcessor;
 
 import com.aitrades.blockchain.web3jtrade.client.Web3jServiceClient;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -44,6 +46,8 @@ public class Application {
 	private static final String ETH_GAS_PRICE_ORACLE ="https://www.etherchain.org/api";
 	private static final String ETH_GAS_STATION ="https://data-api.defipulse.com/api/v1/egs/api/ethgasAPI.json?api-key=2d249b5b77ce8b5d20fdd6a6c09a5ac3a954981252730a2e26dcfbc4a41a";
 	
+	private static final int _40 = 40;
+
 	public static void main(String[] args) throws Exception {
 		SpringApplication.run(Application.class, args);
 	}
@@ -118,6 +122,18 @@ public class Application {
 	    		  						conn.addHandlerLast(new ReadTimeoutHandler(WEBCLIENT_TIMEOUT, TimeUnit.SECONDS))
 	    		  							.addHandlerLast(new WriteTimeoutHandler(WEBCLIENT_TIMEOUT, TimeUnit.SECONDS)));
 	}
+	
+	@Bean(name= "pollingTransactionReceiptProcessor")
+	public PollingTransactionReceiptProcessor pollingTransactionReceiptProcessor() {
+		return new PollingTransactionReceiptProcessor(web3J(), 4000, _40);
+	}
+	
+	
+	@Bean(name= "noOpProcessor")
+	public NoOpProcessor noOpProcessor() {
+		return new NoOpProcessor(web3J());
+	}
+	
 	
 	@Bean
 	public MessageConverter jsonMessageConverter() {

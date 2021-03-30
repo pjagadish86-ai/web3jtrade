@@ -70,8 +70,10 @@ public class SnipeTransactionRequest {
 	private boolean isFeeEligible;
 	
 	private String snipeStatus;
-	
+	private String swappedHash;
 	private String read;
+	
+	private boolean hasLiquidity;
 	
 	public String getId() {
 		return id;
@@ -261,6 +263,14 @@ public class SnipeTransactionRequest {
 		return snipe;
 	}
 	
+	public String getSwappedHash() {
+		return swappedHash;
+	}
+
+	public void setSwappedHash(String swappedHash) {
+		this.swappedHash = swappedHash;
+	}
+
 	@JsonIgnore
 	public boolean hasSniped() {
 		return isSnipe();
@@ -312,6 +322,15 @@ public class SnipeTransactionRequest {
 
 	public void setRead(String read) {
 		this.read = read;
+	}
+	
+
+	public boolean isHasLiquidity() {
+		return hasLiquidity;
+	}
+
+	public void setHasLiquidity(boolean hasLiquidity) {
+		this.hasLiquidity = hasLiquidity;
 	}
 
 	@Override

@@ -83,6 +83,7 @@ public class OrderBuyExecuteGatewayEndpoint {
 																   false);
 			if (StringUtils.isNotBlank(hash)) {
 				tradeOrderMap.put(TradeConstants.SWAP_ETH_FOR_TOKEN_HASH, true);
+				order.setSwappedHash(hash);
 				order.getOrderEntity().setOrderState(TradeConstants.FILLED);
 				return tradeOrderMap;
 			} 

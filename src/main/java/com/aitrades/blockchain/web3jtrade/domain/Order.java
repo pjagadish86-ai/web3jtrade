@@ -32,6 +32,7 @@ public class Order {
 	private List<AdditionalProperty> AdditionalProperty;
 	private Integer orderCode;
 	private String approvedHash;
+	private String swappedHash;
 	private String read;
 	
 	public String getId() {
@@ -135,6 +136,13 @@ public class Order {
 	}
 	public void setRead(String read) {
 		this.read = read;
+	}
+	
+	public String getSwappedHash() {
+		return swappedHash;
+	}
+	public void setSwappedHash(String swappedHash) {
+		this.swappedHash = swappedHash;
 	}
 	@Override
 	public String toString() {

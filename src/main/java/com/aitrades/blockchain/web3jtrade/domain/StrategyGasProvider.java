@@ -45,12 +45,12 @@ public class StrategyGasProvider implements ContractGasProvider{
 												    .bodyToMono(Map.class)
 												    .subscribeOn(Schedulers.fromExecutor(Executors.newCachedThreadPool()))
 												    .block();
-//		Object gasPrice = gasPrices.get(gasModeEnum.getValue());
-//		if(gasPrice != null) {
-//			return Convert.toWei(gasPrice.toString(), Convert.Unit.GWEI).toBigInteger();
-//		}
-//		return GAS_PRICE;
-		return Convert.toWei("40", Convert.Unit.GWEI).toBigInteger();
+		Object gasPrice = gasPrices.get(gasModeEnum.getValue());
+		if(gasPrice != null) {
+			return Convert.toWei(gasPrice.toString(), Convert.Unit.GWEI).toBigInteger();
+		}
+		return GAS_PRICE;
+		//return Convert.toWei("40", Convert.Unit.GWEI).toBigInteger();
 	}
 	
 	@SuppressWarnings("unchecked")
@@ -83,15 +83,15 @@ public class StrategyGasProvider implements ContractGasProvider{
 	}
 
 	public BigInteger getGasLimit(boolean sensitive) throws Exception{
-		return GAS_LIMIT;
-//		return !sensitive ? web3jServiceClient.getWeb3j()
-//											 .ethGetBlockByNumber(DefaultBlockParameterName.PENDING, true)
-//											 .flowable()
-//											 .subscribeOn(io.reactivex.schedulers.Schedulers.newThread())
-//											 .blockingLast()
-//											 .getBlock()
-//											 .getGasLimit()
-//					    : GAS_LIMIT;
+	//	return GAS_LIMIT;
+		return !sensitive ? web3jServiceClient.getWeb3j()
+											 .ethGetBlockByNumber(DefaultBlockParameterName.PENDING, true)
+											 .flowable()
+											 .subscribeOn(io.reactivex.schedulers.Schedulers.newThread())
+											 .blockingLast()
+											 .getBlock()
+											 .getGasLimit()
+					    : GAS_LIMIT;
 	}
 
 	@Override

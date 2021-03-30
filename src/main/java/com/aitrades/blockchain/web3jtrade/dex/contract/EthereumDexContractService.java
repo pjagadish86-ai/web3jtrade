@@ -39,7 +39,7 @@ public interface EthereumDexContractService {
 	
 	public String swapETHForTokens(Credentials credentials, BigInteger inputEthers, BigInteger outPutTokens, StrategyGasProvider customGasProvider,  GasModeEnum gasModeEnum,  long deadLine, List<String> memoryPathAddress, boolean hasFee) throws Exception;
 	
-	public BigInteger getAmountsOut(Credentials credentials,BigDecimal inputTokens, BigDecimal slipage, StrategyGasProvider customGasProvider, GasModeEnum gasModeEnum,  List<String> memoryPathAddress) throws Exception;
+	public BigInteger getAmountsOut(Credentials credentials,BigDecimal inputTokens, BigDecimal slipage, StrategyGasProvider customGasProvider, GasModeEnum gasModeEnum,  List<String> memoryPathAddress) throws Throwable;
 	
 	public String swapTokenForETH(Credentials credentials, BigInteger inputTokens, BigInteger outputEthers, StrategyGasProvider customGasProvider, GasModeEnum gasModeEnum, long deadLine, List<String> memoryPathAddress, boolean hasFee) throws Exception;
 	

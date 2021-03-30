@@ -160,7 +160,7 @@ public class OrderSnipeExecuteGatewayEndpoint{
 				snipeTransactionRequest.setOuputTokenValueAmounttAsBigInteger(outputTokens);
 			}
 		}
-		return tradeOrderMap;
+		return tradeOrderMap;	
 	}
 	
 	@ServiceActivator(inputChannel = "swapETHForTokensChannel")
@@ -178,11 +178,12 @@ public class OrderSnipeExecuteGatewayEndpoint{
 																   false);
 			if(StringUtils.isNotBlank(hash)) {
 				tradeOrderMap.put(TradeConstants.SWAP_ETH_FOR_TOKEN_HASH, true);
+				snipeTransactionRequest.setSwappedHash(hash);
 				snipeTransactionRequest.setSnipeStatus(TradeConstants.FILLED);
 				snipeTransactionRequest.setSnipe(true);
+			
 			}
 		}
-		
 		return tradeOrderMap;
 	}
 	
@@ -192,6 +193,8 @@ public class OrderSnipeExecuteGatewayEndpoint{
 		if(snipeTransactionRequest.hasSniped() && tradeOrderMap.get(TradeConstants.SWAP_ETH_FOR_TOKEN_HASH) != null) {
 			snipeOrderHistoryRepository.save(snipeTransactionRequest);
 			snipeOrderRepository.delete(snipeTransactionRequest);
+		}else {
+			snipeOrderRepository.updateAvail(snipeTransactionRequest);
 		}
 		return tradeOrderMap;
 	}

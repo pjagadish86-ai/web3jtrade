@@ -43,7 +43,7 @@ public class EthereumDexTradeContractService {
 	};
 	
 	public BigInteger getAmountsOut(String route, Credentials credentials,BigDecimal inputTokens,BigDecimal slipage, StrategyGasProvider customGasProvider, GasModeEnum gasModeEnum,
-									List<String> memoryPathAddress) throws Exception{
+									List<String> memoryPathAddress) throws Throwable{
 		return factory.getInstance(route).getAmountsOut(credentials, inputTokens, slipage, customGasProvider, gasModeEnum, memoryPathAddress);
 	};
 	

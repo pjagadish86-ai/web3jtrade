@@ -50,7 +50,7 @@ public class OrderSellExecuteGatewayEndpoint {
 	}
 	
 	@ServiceActivator(inputChannel = "amountsOutChannel", outputChannel = "swapTokenForETHChannel")
-	public Map<String, Object> amountsOutChannel(Map<String, Object> tradeOrderMap) throws Exception{
+	public Map<String, Object> amountsOutChannel(Map<String, Object> tradeOrderMap) throws Throwable{
 		Order order = (Order) tradeOrderMap.get(TradeConstants.ORDER);
 		BigInteger inputTokens = ethereumDexTradeService.getAmountsOut(order.getRoute(),
 																		order.getCredentials(), 
@@ -82,6 +82,7 @@ public class OrderSellExecuteGatewayEndpoint {
 																  false);
 			if (StringUtils.isNotBlank(hash)) {
 				tradeOrderMap.put(TradeConstants.SWAP_TOKEN_FOR_ETH_HASH, true);
+				order.setSwappedHash(hash);
 				order.getOrderEntity().setOrderState(TradeConstants.FILLED);
 				return tradeOrderMap;
 			} 
