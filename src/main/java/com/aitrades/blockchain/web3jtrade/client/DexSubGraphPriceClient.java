@@ -11,12 +11,12 @@ public interface DexSubGraphPriceClient {
 	
 	public String getResourceUrl(String route);
 	
-	public BigDecimal getPriceOfTicker(String pairAddress);
+	public BigDecimal getPriceOfTicker(String pairAddress) throws Exception;
 	
-	public BigDecimal calculateTickerPrice(PairPrice pairPrice, EthPrice ethPrice);
+	public BigDecimal calculateTickerPrice(PairPrice pairPrice, EthPrice ethPrice) throws Exception;
 	
-	public Flowable<PairPrice> getPairData(final String pairAddress);
+	public Flowable<PairPrice> getPairData(final String pairAddress) throws Exception;
 	
-	public Flowable<EthPrice> getEthPrice();
+	public Flowable<EthPrice> getEthPrice() throws Exception;
 	
 }

@@ -9,6 +9,7 @@ import org.springframework.data.mongodb.core.query.Update;
 import org.springframework.stereotype.Repository;
 
 import com.aitrades.blockchain.web3jtrade.domain.SnipeTransactionRequest;
+import com.mongodb.client.result.DeleteResult;
 
 @Repository
 public class SnipeOrderRepository {
@@ -17,7 +18,12 @@ public class SnipeOrderRepository {
 	public ReactiveMongoTemplate snipeOrderReactiveMongoTemplate;
 	
 	public void delete(SnipeTransactionRequest transactionRequest) {
-		snipeOrderReactiveMongoTemplate.remove(transactionRequest).block();
+		DeleteResult count  = snipeOrderReactiveMongoTemplate.remove(transactionRequest).block();
+		if(count.getDeletedCount() == 0) {
+			System.out.println("not snipe deleted");
+		}else {
+			System.out.println("deleted");
+		}
 	}
 
 	public void save(SnipeTransactionRequest snipeTransactionRequest) {

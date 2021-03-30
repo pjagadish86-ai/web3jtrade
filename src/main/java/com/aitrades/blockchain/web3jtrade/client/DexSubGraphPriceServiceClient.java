@@ -50,15 +50,14 @@ public class DexSubGraphPriceServiceClient implements DexSubGraphPriceClient {
 	
 	private static final String QUERY_ETH_PRICE ="{\"query\":\"{ bundle(id: \\\"1\\\" ) {   ethPrice }}\",\"variables\":null}";
 	
-	public BigDecimal getPriceOfTicker(String pairAddress) {
+	public BigDecimal getPriceOfTicker(String pairAddress) throws Exception {
 		PairPrice pairPrice = null;
 		EthPrice ethPrice = null;
 		try {
 			pairPrice = getPairDataFromUniswap(pairAddress);
 			ethPrice = getEthPriceFrmGraph();
 		} catch (IOException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
+			throw e;
 		}
 		return calculateTickerPrice(pairPrice, ethPrice);
 	}
@@ -85,12 +84,11 @@ public class DexSubGraphPriceServiceClient implements DexSubGraphPriceClient {
         try {
             return ethPriceObjectReader.readValue(ethHttpClient.execute(post).getEntity().getContent());
         }catch (Exception e) {
-        	e.printStackTrace();
+        	throw e;
 		}
-        return null;
 	}
 	//TODO: ugly code
-	private PairPrice getPairDataFromUniswap(String pairAddress) throws IOException {
+	private PairPrice getPairDataFromUniswap(String pairAddress) throws Exception {
 		CloseableHttpClient pairPriceHttpClient =HttpClients.createMinimal();
 		StringBuffer builder = new StringBuffer();
 		builder.append(QUERY_PAIR_DATA_0);
@@ -103,9 +101,8 @@ public class DexSubGraphPriceServiceClient implements DexSubGraphPriceClient {
         try {
 			return pairPriceObjectReader.readValue(pairPriceHttpClient.execute(post).getEntity().getContent());
         }catch (Exception e) {
-        	e.printStackTrace();
+        	throw e;
 		}
-        return null;
     }
 	
 	@Override
