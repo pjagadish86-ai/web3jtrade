@@ -10,7 +10,6 @@ import org.springframework.stereotype.Service;
 import com.aitrades.blockchain.web3jtrade.dex.pancake.PancakeServiceImpl;
 import com.aitrades.blockchain.web3jtrade.dex.sushi.SushiServiceImpl;
 import com.aitrades.blockchain.web3jtrade.dex.uniswap.UniswapServiceImpl;
-import com.aitrades.blockchain.web3jtrade.dex.uniswap.UniswapServiceImplVersion2;
 
 @Service
 public class EthereumDexContractServiceFactory {
@@ -21,9 +20,6 @@ public class EthereumDexContractServiceFactory {
 	
 	@Autowired
 	private UniswapServiceImpl uniswapServiceImpl;
-	
-	@Autowired
-	private UniswapServiceImplVersion2 uniswapServiceImplVersion2;
 	
 	@Autowired
 	private SushiServiceImpl sushiServiceImpl;
@@ -37,7 +33,6 @@ public class EthereumDexContractServiceFactory {
 		typesMap.put("UNISWAP", uniswapServiceImpl);
 		typesMap.put("SUSHI", sushiServiceImpl);
 		typesMap.put("PANCAKE", pancakeServiceImpl);
-		typesMap.put("UNISWAPV2", uniswapServiceImplVersion2);
 	}
 	
 	public EthereumDexContractService getInstance(String condition) {

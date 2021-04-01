@@ -22,8 +22,8 @@ import com.aitrades.blockchain.web3jtrade.dex.contract.EthereumDexTradeContractS
 import com.aitrades.blockchain.web3jtrade.dex.contract.event.EthereumDexEventHandler;
 import com.aitrades.blockchain.web3jtrade.domain.GasModeEnum;
 import com.aitrades.blockchain.web3jtrade.domain.SnipeTransactionRequest;
-import com.aitrades.blockchain.web3jtrade.domain.StrategyGasProvider;
 import com.aitrades.blockchain.web3jtrade.domain.TradeConstants;
+import com.aitrades.blockchain.web3jtrade.oracle.gas.StrategyGasProvider;
 import com.aitrades.blockchain.web3jtrade.repository.SnipeOrderHistoryRepository;
 import com.aitrades.blockchain.web3jtrade.repository.SnipeOrderRepository;
 import com.aitrades.blockchain.web3jtrade.service.Web3jServiceClientFactory;
@@ -41,8 +41,6 @@ public class OrderSnipeExecuteGatewayEndpoint{
 	@Autowired
 	private Web3jServiceClientFactory web3jServiceClientFactory;
 	// TODO: strict support only one front run either parity or geth. future thought
-	@Autowired
-	private SnipeService snipeService;
 	
 	@Autowired
 	private EthereumGethPendingTransactionsRetriever gethPendingTrxsRetriever;
@@ -151,8 +149,8 @@ public class OrderSnipeExecuteGatewayEndpoint{
 		if(tradeOrderMap.get(TradeConstants.HAS_LIQUIDTY_EVENT) != null) {
 			BigInteger outputTokens = ethereumDexTradeService.getAmountsIn(snipeTransactionRequest.getRoute(),
 																	       snipeTransactionRequest.getCredentials(), 
-																	       snipeTransactionRequest.getInputTokenValueAmountAsBigDecimal(),
-																	       snipeTransactionRequest.slipageInBips(),
+																	       snipeTransactionRequest.getInputTokenValueAmountAsBigInteger(),
+																	       snipeTransactionRequest.getSlipageInDouble(),
 																	       strategyGasProvider, 
 																	       GasModeEnum.fromValue(snipeTransactionRequest.getGasMode()),
 																	       Lists.newArrayList(TradeConstants.WETH_MAP.get(snipeTransactionRequest.getRoute().toUpperCase()), snipeTransactionRequest.getToAddress()));
@@ -174,8 +172,9 @@ public class OrderSnipeExecuteGatewayEndpoint{
 																   strategyGasProvider, 
 																   GasModeEnum.fromValue(snipeTransactionRequest.getGasMode()), 
 																   snipeTransactionRequest.getDeadLine(),
-																   Lists.newArrayList(TradeConstants.WETH_MAP.get(snipeTransactionRequest.getRoute().toUpperCase()), snipeTransactionRequest.getToAddress()), 
-																   false);
+																   Lists.newArrayList(TradeConstants.WETH_MAP.get(snipeTransactionRequest.getRoute().toUpperCase()), 
+																		   			  snipeTransactionRequest.getToAddress()), 
+																   false, snipeTransactionRequest.getGasPrice(), snipeTransactionRequest.getGasLimit());
 			if(StringUtils.isNotBlank(hash)) {
 				tradeOrderMap.put(TradeConstants.SWAP_ETH_FOR_TOKEN_HASH, true);
 				snipeTransactionRequest.setSwappedHash(hash);

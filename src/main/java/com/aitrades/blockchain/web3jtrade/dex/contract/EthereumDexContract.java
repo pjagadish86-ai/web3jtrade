@@ -19,9 +19,9 @@ import org.web3j.protocol.Web3j;
 import org.web3j.protocol.core.RemoteFunctionCall;
 import org.web3j.tuples.generated.Tuple3;
 import org.web3j.tx.Contract;
-import org.web3j.tx.gas.StaticGasProvider;
+import org.web3j.tx.gas.DefaultGasProvider;
 
-import com.aitrades.blockchain.web3jtrade.domain.StrategyGasProvider;
+import com.aitrades.blockchain.web3jtrade.oracle.gas.StrategyGasProvider;
 
 @SuppressWarnings({ "rawtypes", "unchecked" })
 public class EthereumDexContract extends Contract {
@@ -31,7 +31,7 @@ public class EthereumDexContract extends Contract {
     public static final String FUNC_GETAMOUNTSIN = "getAmountsIn";
     
 	public EthereumDexContract(String contractAddress, Web3j web3j, Credentials credentials, StrategyGasProvider contractGasProvider) {
-		super(BIN_NOT_PROVIDED, contractAddress, web3j, credentials, new StaticGasProvider(contractGasProvider.getGasPrice(), contractGasProvider.getGasLimit()));
+		super(BIN_NOT_PROVIDED, contractAddress, web3j, credentials, new DefaultGasProvider());
 	}
 
 	public RemoteFunctionCall<List> getAmountsOut(BigInteger amountIn, List<String> path) {

@@ -28,7 +28,7 @@ public class LiquidityEventRetriever {
 			flowable.subscribeOn(Schedulers.computation())
 					.subscribe(resp -> {
 						if(resp != null) {
-							snipeTransactionRequest.setHasLiquidity(true);
+						//	snipeTransactionRequest.setHasLiquidity(true);
 							return;
 						}
 					});

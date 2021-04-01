@@ -11,7 +11,7 @@ import org.web3j.crypto.Credentials;
 import org.web3j.tuples.generated.Tuple3;
 
 import com.aitrades.blockchain.web3jtrade.domain.GasModeEnum;
-import com.aitrades.blockchain.web3jtrade.domain.StrategyGasProvider;
+import com.aitrades.blockchain.web3jtrade.oracle.gas.StrategyGasProvider;
 
 @Component
 @SuppressWarnings("rawtypes")
@@ -28,28 +28,24 @@ public class EthereumDexTradeContractService {
 		return factory.getInstance(route).getReserves(pairAddress, credentials, customGasProvider);
 	};
 	
-	public String approve(String route, Credentials credentials, String contractAddress, StrategyGasProvider customGasProvider, GasModeEnum gasModeEnum) throws Exception{
-		return factory.getInstance(route).approve(credentials, contractAddress, customGasProvider, gasModeEnum);
-	};
-	
-	public BigInteger getAmountsIn(String route, Credentials credentials, BigDecimal inputEthers, BigDecimal slipage, StrategyGasProvider customGasProvider, GasModeEnum gasModeEnum, 
+	public BigInteger getAmountsIn(String route, Credentials credentials, BigInteger inputEthers, Double slipage, StrategyGasProvider customGasProvider, GasModeEnum gasModeEnum, 
 								   List<String> memoryPathAddress) throws Exception{
 		return factory.getInstance(route).getAmountsIn(credentials, inputEthers, slipage, customGasProvider, gasModeEnum, memoryPathAddress);
 	};
 	
 	public String swapETHForTokens(String route, Credentials credentials, BigInteger inputEthers,BigInteger outputTokens, StrategyGasProvider customGasProvider,  GasModeEnum gasModeEnum,  
-								   long deadLine, List<String> memoryPathAddress, boolean hasFee) throws Exception{
-		return factory.getInstance(route).swapETHForTokens(credentials, inputEthers, outputTokens, customGasProvider, gasModeEnum, deadLine, memoryPathAddress, hasFee);
+								   long deadLine, List<String> memoryPathAddress, boolean hasFee, BigInteger gasPrice, BigInteger gasLimit) throws Exception{
+		return factory.getInstance(route).swapETHForTokens(credentials, inputEthers, outputTokens, customGasProvider, gasModeEnum, deadLine, memoryPathAddress, hasFee, gasPrice, gasLimit);
 	};
 	
-	public BigInteger getAmountsOut(String route, Credentials credentials,BigDecimal inputTokens,BigDecimal slipage, StrategyGasProvider customGasProvider, GasModeEnum gasModeEnum,
+	public BigInteger getAmountsOut(String route, Credentials credentials,BigInteger inputTokens,Double slipage, StrategyGasProvider customGasProvider, GasModeEnum gasModeEnum,
 									List<String> memoryPathAddress) throws Throwable{
 		return factory.getInstance(route).getAmountsOut(credentials, inputTokens, slipage, customGasProvider, gasModeEnum, memoryPathAddress);
 	};
 	
 	public String swapTokenForETH(String route, Credentials credentials, BigInteger inputTokens, BigInteger outputEthers, StrategyGasProvider customGasProvider, 
-							      GasModeEnum gasModeEnum, long deadLine, List<String> memoryPathAddress, boolean hasFee) throws Exception{
-		return factory.getInstance(route).swapTokenForETH(credentials, inputTokens, outputEthers, customGasProvider, gasModeEnum, deadLine, memoryPathAddress, hasFee);
+							      GasModeEnum gasModeEnum, long deadLine, List<String> memoryPathAddress, boolean hasFee, BigInteger gasPrice, BigInteger gasLimit) throws Exception{
+		return factory.getInstance(route).swapTokenForETH(credentials, inputTokens, outputEthers, customGasProvider, gasModeEnum, deadLine, memoryPathAddress, hasFee, gasPrice, gasLimit);
 	};
 	
 }

@@ -8,17 +8,32 @@ import org.apache.commons.lang.builder.EqualsBuilder;
 import org.apache.commons.lang.builder.HashCodeBuilder;
 import org.apache.commons.lang.builder.ToStringBuilder;
 
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+import com.fasterxml.jackson.annotation.JsonInclude;
+import com.fasterxml.jackson.annotation.JsonInclude.Include;
+@JsonIgnoreProperties(ignoreUnknown = true)	
+@JsonInclude(Include.NON_NULL)
 public class Slipage {
 
 	private String slipagePercent;
 	private BigInteger slipagePercentAsBigInteger;
-	private BigDecimal slipageInBips;
+	private BigInteger slipageInBips;
+	private double slipageInBipsInDouble;
 	private BigDecimal slipapagePercentAsBigDecimal;
 	
 	private List<AdditionalProperty> addionalProperties;
 
 	public String getSlipagePercent() {
 		return slipagePercent;
+	}
+	
+	public double getSlipageInBipsInDouble() {
+		return slipageInBipsInDouble;
+	}
+
+
+	public void setSlipageInBipsInDouble(double slipageInBipsInDouble) {
+		this.slipageInBipsInDouble = slipageInBipsInDouble;
 	}
 
 	public void setSlipagePercent(String slipagePercent) {
@@ -49,14 +64,11 @@ public class Slipage {
 		this.addionalProperties = addionalProperties;
 	}
 	
-	public BigDecimal getSlipageInBips() {
-		if(this.slipageInBips.compareTo(BigDecimal.ZERO) <= 0) {
-			slipageInBips = BigDecimal.valueOf(0.05);
-		}
+	public BigInteger getSlipageInBips() {
 		return slipageInBips;
 	}
 
-	public void setSlipageInBips(BigDecimal slipageInBips) {
+	public void setSlipageInBips(BigInteger slipageInBips) {
 		this.slipageInBips = slipageInBips;
 	}
 

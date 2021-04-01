@@ -9,7 +9,6 @@ import org.apache.commons.lang.builder.HashCodeBuilder;
 import org.apache.commons.lang.builder.ToStringBuilder;
 import org.springframework.data.annotation.Id;
 import org.web3j.crypto.Credentials;
-import org.web3j.utils.Convert;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
@@ -49,6 +48,8 @@ public class SnipeTransactionRequest {
 	
 	private BigDecimal slipage;
 	
+	private Double slipageInDouble;
+	
 	private long deadLine;
 	
 	private String orderType;
@@ -65,15 +66,15 @@ public class SnipeTransactionRequest {
 	
 	private String approvedHash;
 	
+	private String swappedHash;
+	
 	private boolean hasApproved;
 	
 	private boolean isFeeEligible;
 	
 	private String snipeStatus;
-	private String swappedHash;
-	private String read;
 	
-	private boolean hasLiquidity;
+	private String read;
 	
 	public String getId() {
 		return id;
@@ -116,7 +117,7 @@ public class SnipeTransactionRequest {
 	}
 
 	public BigInteger getInputTokenValueAmountAsBigInteger() {
-		return  Convert.toWei(getInputTokenValueAmountAsBigDecimal(), Convert.Unit.ETHER).toBigInteger();
+		return inputTokenValueAmountAsBigInteger;
 	}
 
 	public void setInputTokenValueAmountAsBigInteger(BigInteger inputTokenValueAmountAsBigInteger) {
@@ -219,11 +220,6 @@ public class SnipeTransactionRequest {
 		this.hasApproved = hasApproved;
 	}
 
-	@JsonIgnore
-	public BigDecimal slipageInBips() {
-		return (getSlipage().multiply(new BigDecimal(100))).divide(new BigDecimal(10000));
-	}
-
 	public long getDeadLine() {
 		if(this.deadLine <= 0) {
 			this.deadLine = 300l;
@@ -263,14 +259,6 @@ public class SnipeTransactionRequest {
 		return snipe;
 	}
 	
-	public String getSwappedHash() {
-		return swappedHash;
-	}
-
-	public void setSwappedHash(String swappedHash) {
-		this.swappedHash = swappedHash;
-	}
-
 	@JsonIgnore
 	public boolean hasSniped() {
 		return isSnipe();
@@ -324,13 +312,12 @@ public class SnipeTransactionRequest {
 		this.read = read;
 	}
 	
-
-	public boolean isHasLiquidity() {
-		return hasLiquidity;
+	public Double getSlipageInDouble() {
+		return slipageInDouble;
 	}
 
-	public void setHasLiquidity(boolean hasLiquidity) {
-		this.hasLiquidity = hasLiquidity;
+	public void setSlipageInDouble(Double slipageInDouble) {
+		this.slipageInDouble = slipageInDouble;
 	}
 
 	@Override
@@ -351,6 +338,14 @@ public class SnipeTransactionRequest {
 	@JsonIgnore
 	public Credentials getCredentials() {
 		return Credentials.create(getWalletInfo().getPrivateKey());
+	}
+
+	public String getSwappedHash() {
+		return swappedHash;
+	}
+
+	public void setSwappedHash(String swappedHash) {
+		this.swappedHash = swappedHash;
 	}
 
 }

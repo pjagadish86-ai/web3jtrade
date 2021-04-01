@@ -1,8 +1,14 @@
 package com.aitrades.blockchain.web3jtrade.domain;
 
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+import com.fasterxml.jackson.annotation.JsonInclude;
+import com.fasterxml.jackson.annotation.JsonInclude.Include;
+
+@JsonIgnoreProperties(ignoreUnknown = true)	
+@JsonInclude(Include.NON_NULL)
 public enum OrderDecision {
 	
-	BUY("BUY",1), SELL("SELL",2), SNIPE("SNIPE", 3), INSTANT("INSTANT", 4);
+	BUY("BUY",1), SELL("SELL",2);
 	
 	private final String value;
 	private final Integer sortorder;

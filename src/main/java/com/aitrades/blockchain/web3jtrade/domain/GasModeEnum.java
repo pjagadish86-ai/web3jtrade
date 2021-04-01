@@ -1,11 +1,18 @@
 package com.aitrades.blockchain.web3jtrade.domain;
 
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+import com.fasterxml.jackson.annotation.JsonInclude;
+import com.fasterxml.jackson.annotation.JsonInclude.Include;
+
+@JsonIgnoreProperties(ignoreUnknown = true)	
+@JsonInclude(Include.NON_NULL)
 public enum GasModeEnum {
 	ULTRA("ultra",1), 
 	FASTEST("fastest",2), 	
 	FAST("fast",3), 
 	STANDARD("standard",4), 	
-	SAFELOW("safelow",5);
+	SAFELOW("safelow",5),
+	CUSTOM("CUSTOM",1), ;
 	
 	private final String value;
 	private final Integer sortorder;

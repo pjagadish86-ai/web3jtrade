@@ -12,8 +12,8 @@ import org.springframework.integration.annotation.Transformer;
 import com.aitrades.blockchain.web3jtrade.dex.contract.EthereumDexTradeContractService;
 import com.aitrades.blockchain.web3jtrade.domain.GasModeEnum;
 import com.aitrades.blockchain.web3jtrade.domain.Order;
-import com.aitrades.blockchain.web3jtrade.domain.StrategyGasProvider;
 import com.aitrades.blockchain.web3jtrade.domain.TradeConstants;
+import com.aitrades.blockchain.web3jtrade.oracle.gas.StrategyGasProvider;
 import com.aitrades.blockchain.web3jtrade.repository.OrderHistoryRepository;
 import com.aitrades.blockchain.web3jtrade.repository.OrderRepository;
 import com.aitrades.blockchain.web3jtrade.side.OrderState;
@@ -54,8 +54,8 @@ public class OrderBuyExecuteGatewayEndpoint {
 		Order order = (Order) tradeOrderMap.get(TradeConstants.ORDER);
 		BigInteger outputTokens = ethereumDexTradeService.getAmountsIn(order.getRoute(),
 																	   order.getCredentials(), 
-																	   order.getFrom().getAmountAsBigDecimal(),
-																	   order.getSlippage().getSlipageInBips(),
+																	   order.getFrom().getAmountAsBigInteger(),
+																	   order.getSlippage().getSlipageInBipsInDouble(),
 															           strategyGasProvider, 
 															           GasModeEnum.fromValue(order.getGasMode()),
 															           Lists.newArrayList(TradeConstants.WETH_MAP.get(order.getRoute().toUpperCase()), order.getTo().getTicker().getAddress()));
@@ -80,7 +80,9 @@ public class OrderBuyExecuteGatewayEndpoint {
 																   GasModeEnum.fromValue(order.getGasMode()), 
 																   300l, 
 																   Lists.newArrayList( TradeConstants.WETH_MAP.get(order.getRoute().toUpperCase()), order.getTo().getTicker().getAddress()),
-																   false);
+																   false, 
+																   order.getGasPrice().getValueBigInteger(),
+																   order.getGasLimit().getValueBigInteger());
 			if (StringUtils.isNotBlank(hash)) {
 				tradeOrderMap.put(TradeConstants.SWAP_ETH_FOR_TOKEN_HASH, true);
 				order.setSwappedHash(hash);
