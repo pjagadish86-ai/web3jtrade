@@ -95,12 +95,11 @@ public class UniswapServiceImpl implements DexContractService {
 																	    credentials, 
 																	    customGasProvider);
 		
-		BigInteger amountsOut = (BigInteger) uniswapV2Contract.getAmountsIn(inputEthers, memoryPathAddress)// TODO: come back to verify 
+		List amountsOuts = (List) uniswapV2Contract.getAmountsIn(inputEthers, memoryPathAddress)// TODO: come back to verify 
 															  .flowable()
-															  .blockingSingle()
-															  .stream()
-															  .reduce((first, second) -> first)
-															  .get();
+															  .blockingSingle();
+		BigInteger amountsOut = (BigInteger)amountsOuts.get(0);					  
+		
 		if(amountsOut.compareTo(BigInteger.ZERO) <=0 ) {
 			throw new Exception("getAmountsIn out zero");
 		}

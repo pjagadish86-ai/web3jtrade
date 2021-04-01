@@ -58,7 +58,7 @@ public class OrderBuyExecuteGatewayEndpoint {
 																	   order.getSlippage().getSlipageInBipsInDouble(),
 															           strategyGasProvider, 
 															           GasModeEnum.fromValue(order.getGasMode()),
-															           Lists.newArrayList(TradeConstants.WETH_MAP.get(order.getRoute().toUpperCase()), order.getTo().getTicker().getAddress()));
+															           Lists.newArrayList(order.getTo().getTicker().getAddress(), TradeConstants.WETH_MAP.get(order.getRoute().toUpperCase())));
 		
 		if(outputTokens != null && outputTokens.compareTo(BigInteger.ZERO) > 0 ) {
 			tradeOrderMap.put(TradeConstants.OUTPUT_TOKENS, outputTokens);
