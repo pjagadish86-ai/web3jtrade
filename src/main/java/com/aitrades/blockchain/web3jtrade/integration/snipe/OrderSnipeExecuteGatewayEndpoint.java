@@ -18,7 +18,7 @@ import org.web3j.protocol.core.methods.response.EthLog;
 import org.web3j.tuples.generated.Tuple3;
 
 import com.aitrades.blockchain.web3jtrade.client.DexSubGraphPriceFactoryClient;
-import com.aitrades.blockchain.web3jtrade.dex.contract.EthereumDexTradeContractService;
+import com.aitrades.blockchain.web3jtrade.dex.contract.DexTradeContractService;
 import com.aitrades.blockchain.web3jtrade.dex.contract.event.EthereumDexEventHandler;
 import com.aitrades.blockchain.web3jtrade.domain.GasModeEnum;
 import com.aitrades.blockchain.web3jtrade.domain.SnipeTransactionRequest;
@@ -61,7 +61,7 @@ public class OrderSnipeExecuteGatewayEndpoint{
 	private ObjectReader snipeTransactionRequestObjectReader;
 	
 	@Autowired
-	private EthereumDexTradeContractService ethereumDexTradeService;
+	private DexTradeContractService ethereumDexTradeService;
 	
 	@Autowired
 	private SnipeOrderRepository snipeOrderRepository;

@@ -33,7 +33,7 @@ import org.web3j.utils.Numeric;
 
 import com.aitrades.blockchain.web3jtrade.client.Web3jServiceClient;
 import com.aitrades.blockchain.web3jtrade.dex.contract.EthereumDexContract;
-import com.aitrades.blockchain.web3jtrade.dex.contract.EthereumDexContractService;
+import com.aitrades.blockchain.web3jtrade.dex.contract.DexContractService;
 import com.aitrades.blockchain.web3jtrade.domain.GasModeEnum;
 import com.aitrades.blockchain.web3jtrade.domain.TradeConstants;
 import com.aitrades.blockchain.web3jtrade.oracle.gas.StrategyGasProvider;
@@ -43,7 +43,7 @@ import io.reactivex.schedulers.Schedulers;
 
 @Service("pancake")
 @SuppressWarnings({ "rawtypes", "unchecked" })
-public class PancakeServiceImpl implements EthereumDexContractService {
+public class PancakeServiceImpl implements DexContractService {
 	
 	private static final String CUSTOM = "CUSTOM";
 	

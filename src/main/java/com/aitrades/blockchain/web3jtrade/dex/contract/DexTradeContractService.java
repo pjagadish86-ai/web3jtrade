@@ -1,6 +1,5 @@
 package com.aitrades.blockchain.web3jtrade.dex.contract;
 
-import java.math.BigDecimal;
 import java.math.BigInteger;
 import java.util.List;
 
@@ -15,10 +14,10 @@ import com.aitrades.blockchain.web3jtrade.oracle.gas.StrategyGasProvider;
 
 @Component
 @SuppressWarnings("rawtypes")
-public class EthereumDexTradeContractService {
+public class DexTradeContractService {
 
 	@Autowired
-	private EthereumDexContractServiceFactory factory;
+	private DexContractServiceFactory factory;
 	
 	public List<Type> getPairAddress(String route, String tokenA, String tokenB) throws Exception{
 		return factory.getInstance(route).getPair(tokenA, tokenB);

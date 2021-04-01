@@ -45,8 +45,8 @@ public class RabbitMQOrderSubmitSnipeConfig {
         SimpleMessageListenerContainer container =
                 new SimpleMessageListenerContainer(connectionFactory);
         container.setQueues(orderSubmitSnipeQueue());
-        container.setConcurrentConsumers(2);
-        container.setDefaultRequeueRejected(false);
+        container.setConcurrentConsumers(1);
+        container.setDefaultRequeueRejected(true);
 //        container.setAdviceChain(new Advice[]{interceptor()});
         return container;
     }

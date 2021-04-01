@@ -1,6 +1,5 @@
 package com.aitrades.blockchain.web3jtrade.dex.contract;
 
-import java.math.BigDecimal;
 import java.math.BigInteger;
 import java.util.List;
 
@@ -11,7 +10,7 @@ import org.web3j.tuples.generated.Tuple3;
 import com.aitrades.blockchain.web3jtrade.domain.GasModeEnum;
 import com.aitrades.blockchain.web3jtrade.oracle.gas.StrategyGasProvider;
 @SuppressWarnings({"rawtypes" })
-public interface EthereumDexContractService {
+public interface DexContractService {
 
     public static BigInteger MAX_UINT256 = new BigInteger("FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF", 16);
 
@@ -40,5 +39,6 @@ public interface EthereumDexContractService {
 	public BigInteger getAmountsOut(Credentials credentials,BigInteger inputTokens, Double slipage, StrategyGasProvider customGasProvider, GasModeEnum gasModeEnum,  List<String> memoryPathAddress) throws Throwable;
 	
 	public String swapTokenForETH(Credentials credentials, BigInteger inputTokens, BigInteger outputEthers, StrategyGasProvider customGasProvider, GasModeEnum gasModeEnum, long deadLine, List<String> memoryPathAddress, boolean hasFee, BigInteger gasPrice, BigInteger gasLimit) throws Exception;
+	
 	
 }

@@ -9,7 +9,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.integration.annotation.ServiceActivator;
 import org.springframework.integration.annotation.Transformer;
 
-import com.aitrades.blockchain.web3jtrade.dex.contract.EthereumDexTradeContractService;
+import com.aitrades.blockchain.web3jtrade.dex.contract.DexTradeContractService;
 import com.aitrades.blockchain.web3jtrade.domain.GasModeEnum;
 import com.aitrades.blockchain.web3jtrade.domain.Order;
 import com.aitrades.blockchain.web3jtrade.domain.TradeConstants;
@@ -35,7 +35,7 @@ public class OrderSellExecuteGatewayEndpoint {
 	public ObjectReader orderRequestObjectReader;
 	
 	@Autowired
-	protected EthereumDexTradeContractService ethereumDexTradeService;
+	protected DexTradeContractService ethereumDexTradeService;
 	
 	@Transformer(inputChannel = "transformSellOrderChannel", outputChannel = "amountsOutChannel")
 	public Map<String, Object> transformSellOrderChannel(byte[] message) throws Exception{

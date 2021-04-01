@@ -12,11 +12,11 @@ import com.aitrades.blockchain.web3jtrade.dex.sushi.SushiServiceImpl;
 import com.aitrades.blockchain.web3jtrade.dex.uniswap.UniswapServiceImpl;
 
 @Service
-public class EthereumDexContractServiceFactory {
+public class DexContractServiceFactory {
 
 	
 	@Autowired
-	private Map<String, EthereumDexContractService> typesMap;
+	private Map<String, DexContractService> typesMap;
 	
 	@Autowired
 	private UniswapServiceImpl uniswapServiceImpl;
@@ -35,7 +35,7 @@ public class EthereumDexContractServiceFactory {
 		typesMap.put("PANCAKE", pancakeServiceImpl);
 	}
 	
-	public EthereumDexContractService getInstance(String condition) {
+	public DexContractService getInstance(String condition) {
 		return typesMap.get(condition);
 	}
 
