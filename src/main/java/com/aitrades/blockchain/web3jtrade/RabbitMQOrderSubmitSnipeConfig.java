@@ -1,5 +1,6 @@
 package com.aitrades.blockchain.web3jtrade;
 
+import org.springframework.amqp.core.AcknowledgeMode;
 import org.springframework.amqp.core.Binding;
 import org.springframework.amqp.core.BindingBuilder;
 import org.springframework.amqp.core.DirectExchange;
@@ -46,7 +47,8 @@ public class RabbitMQOrderSubmitSnipeConfig {
                 new SimpleMessageListenerContainer(connectionFactory);
         container.setQueues(orderSubmitSnipeQueue());
         container.setConcurrentConsumers(1);
-        container.setDefaultRequeueRejected(true);
+        container.setDefaultRequeueRejected(false);
+        container.setAcknowledgeMode(AcknowledgeMode.AUTO);
 //        container.setAdviceChain(new Advice[]{interceptor()});
         return container;
     }

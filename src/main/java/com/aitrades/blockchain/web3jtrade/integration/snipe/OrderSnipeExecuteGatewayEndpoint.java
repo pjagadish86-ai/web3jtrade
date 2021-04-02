@@ -17,12 +17,13 @@ import org.web3j.abi.datatypes.Type;
 import org.web3j.protocol.core.methods.response.EthLog;
 import org.web3j.tuples.generated.Tuple3;
 
-import com.aitrades.blockchain.web3jtrade.client.DexSubGraphPriceFactoryClient;
+import com.aitrades.blockchain.web3jtrade.client.DexSubGraphPriceServiceClient;
 import com.aitrades.blockchain.web3jtrade.dex.contract.DexTradeContractService;
 import com.aitrades.blockchain.web3jtrade.dex.contract.event.EthereumDexEventHandler;
 import com.aitrades.blockchain.web3jtrade.domain.GasModeEnum;
 import com.aitrades.blockchain.web3jtrade.domain.SnipeTransactionRequest;
 import com.aitrades.blockchain.web3jtrade.domain.TradeConstants;
+import com.aitrades.blockchain.web3jtrade.domain.price.PairPrice;
 import com.aitrades.blockchain.web3jtrade.oracle.gas.StrategyGasProvider;
 import com.aitrades.blockchain.web3jtrade.repository.SnipeOrderHistoryRepository;
 import com.aitrades.blockchain.web3jtrade.repository.SnipeOrderRepository;
@@ -55,7 +56,7 @@ public class OrderSnipeExecuteGatewayEndpoint{
 	public StrategyGasProvider strategyGasProvider;
 	
 	@Autowired
-	private DexSubGraphPriceFactoryClient subGraphPriceClient;
+	private DexSubGraphPriceServiceClient subGraphPriceClient;
 	
 	@Resource(name="snipeTransactionRequestObjectReader")
 	private ObjectReader snipeTransactionRequestObjectReader;
@@ -96,18 +97,22 @@ public class OrderSnipeExecuteGatewayEndpoint{
 		return tradeOrderMap;
 	}
 	
+	//TODO: combine pair data, reserves and addliquidty single call
 	@ServiceActivator(inputChannel = "getReservesEventChannel", outputChannel = "addLiquidityEvent")
 	public Map<String, Object> getReservesEventChannel(Map<String, Object> tradeOrderMap) throws Exception{
 		
 		if(tradeOrderMap.get(TradeConstants.PAIR_CREATED) != null) {
 			
 			SnipeTransactionRequest snipeTransactionRequest = (SnipeTransactionRequest)tradeOrderMap.get(TradeConstants.SNIPETRANSACTIONREQUEST);
-			subGraphPriceClient.getRoute(snipeTransactionRequest.getRoute()).getPairData(snipeTransactionRequest.getPairAddress()).subscribeOn(Schedulers.io()).subscribe(resp -> {
-				if(resp != null && resp.getData() != null && resp.getData().getPair() != null && resp.getData().getPair().getReserve0AsBigDecimal().compareTo(BigDecimal.ZERO) > 0 && resp.getData().getPair().getReserve1AsBigDecimal().compareTo(BigDecimal.ZERO) > 0) {
-					 tradeOrderMap.put(TradeConstants.HAS_RESERVES, Boolean.TRUE);
-					 return;
-				}
-			});
+//			Flowable<PairPrice> pairData = subGraphPriceClient.getPairData(snipeTransactionRequest.getPairAddress());
+//				
+//				pairData.subscribeOn(Schedulers.io())
+//						.blockingSubscribe(resp -> {
+//				if(resp != null && resp.getData() != null && resp.getData().getPair() != null && resp.getData().getPair().getReserve0AsBigDecimal().compareTo(BigDecimal.ZERO) > 0 && resp.getData().getPair().getReserve1AsBigDecimal().compareTo(BigDecimal.ZERO) > 0) {
+//					 tradeOrderMap.put(TradeConstants.HAS_RESERVES, Boolean.TRUE);
+//					 return;
+//				}
+//			});
 			
 			if(tradeOrderMap.get(TradeConstants.HAS_RESERVES) == null) {
 				Tuple3<BigInteger, BigInteger, BigInteger> reservers = ethereumDexTradeService.getReservesOfPair(snipeTransactionRequest.getRoute(), snipeTransactionRequest.getPairAddress(), snipeTransactionRequest.getCredentials(), snipeTransactionRequest.getGasPrice(), snipeTransactionRequest.getGasLimit());
@@ -125,13 +130,13 @@ public class OrderSnipeExecuteGatewayEndpoint{
 	@ServiceActivator(inputChannel = "addLiquidityEvent", outputChannel = "amountsInChannel")
 	public Map<String, Object> addLiquidityEvent(Map<String, Object> tradeOrderMap) throws Exception{
 		SnipeTransactionRequest snipeTransactionRequest = (SnipeTransactionRequest)tradeOrderMap.get(TradeConstants.SNIPETRANSACTIONREQUEST);
-		if(tradeOrderMap.get(TradeConstants.HAS_RESERVES) != null) {
+		if(tradeOrderMap.get(TradeConstants.HAS_RESERVES) == null) {
 			try {
 				Flowable<EthLog> flowable = EthereumDexEventHandler.mintEventFlowables(web3jServiceClientFactory.getWeb3jMap().get(snipeTransactionRequest.getRoute()).getWeb3j(), 
 																					   snipeTransactionRequest.getPairAddress(), 
 																					   TradeConstants.ROUTER_MAP.get(snipeTransactionRequest.getRoute()));
 				flowable.subscribeOn(Schedulers.computation())
-						.subscribe(resp -> {
+						.blockingSubscribe(resp -> {
 					if(resp != null) {
 						 tradeOrderMap.put(TradeConstants.HAS_LIQUIDTY_EVENT, Boolean.TRUE);
 						 return;
@@ -147,7 +152,7 @@ public class OrderSnipeExecuteGatewayEndpoint{
 	public Map<String, Object> amountsInChannel(Map<String, Object> tradeOrderMap) throws Exception{
 		SnipeTransactionRequest snipeTransactionRequest = (SnipeTransactionRequest) tradeOrderMap.get(TradeConstants.SNIPETRANSACTIONREQUEST);
 		try {
-			if(tradeOrderMap.get(TradeConstants.HAS_LIQUIDTY_EVENT) != null) {
+			if(tradeOrderMap.get(TradeConstants.HAS_LIQUIDTY_EVENT) != null || tradeOrderMap.get(TradeConstants.HAS_RESERVES) != null ) {
 				BigInteger gasPrice = null;
 				BigInteger gasLimit = null;
 				if(snipeTransactionRequest.getGasMode().equalsIgnoreCase("CUSTOM")) {
