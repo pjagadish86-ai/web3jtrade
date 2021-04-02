@@ -39,7 +39,7 @@ public class StrategyGasProvider {
 													   .bodyToMono(Map.class)
 													   .subscribeOn(Schedulers.fromExecutor(Executors.newCachedThreadPool()))
 													   .block();
-		return Convert.toWei(gasPrices.get(gasModeEnum.getValue().toLowerCase()).toString(), Convert.Unit.GWEI).toBigInteger();
+		return Convert.toWei(gasPrices.get(gasModeEnum.getValue()).toString(), Convert.Unit.GWEI).toBigInteger();
 	}
 	
 	public BigInteger getGasLimit(String route) throws Exception{

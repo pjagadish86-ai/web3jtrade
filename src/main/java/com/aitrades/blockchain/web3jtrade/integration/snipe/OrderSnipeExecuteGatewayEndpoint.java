@@ -110,7 +110,7 @@ public class OrderSnipeExecuteGatewayEndpoint{
 			});
 			
 			if(tradeOrderMap.get(TradeConstants.HAS_RESERVES) == null) {
-				Tuple3<BigInteger, BigInteger, BigInteger> reservers = ethereumDexTradeService.getReservesOfPair(snipeTransactionRequest.getRoute(), snipeTransactionRequest.getPairAddress(), snipeTransactionRequest.getCredentials(), strategyGasProvider);
+				Tuple3<BigInteger, BigInteger, BigInteger> reservers = ethereumDexTradeService.getReservesOfPair(snipeTransactionRequest.getRoute(), snipeTransactionRequest.getPairAddress(), snipeTransactionRequest.getCredentials(), snipeTransactionRequest.getGasPrice(), snipeTransactionRequest.getGasLimit());
 				if (reservers != null) {
 					if (reservers.component1().compareTo(BigInteger.ZERO) > 0
 							&& reservers.component2().compareTo(BigInteger.ZERO) > 0) {
@@ -148,13 +148,23 @@ public class OrderSnipeExecuteGatewayEndpoint{
 		SnipeTransactionRequest snipeTransactionRequest = (SnipeTransactionRequest) tradeOrderMap.get(TradeConstants.SNIPETRANSACTIONREQUEST);
 		try {
 			if(tradeOrderMap.get(TradeConstants.HAS_LIQUIDTY_EVENT) != null) {
+				BigInteger gasPrice = null;
+				BigInteger gasLimit = null;
+				if(snipeTransactionRequest.getGasMode().equalsIgnoreCase("CUSTOM")) {
+					gasPrice = snipeTransactionRequest.getGasPrice();
+					gasLimit = snipeTransactionRequest.getGasLimit();
+				}else {
+					gasPrice = strategyGasProvider.getGasPrice(GasModeEnum.fromValue(snipeTransactionRequest.getGasMode()));
+					gasLimit = strategyGasProvider.getGasLimit(snipeTransactionRequest.getRoute());
+				}
+				
 				BigInteger outputTokens = ethereumDexTradeService.getAmountsIn(snipeTransactionRequest.getRoute(),
 																		       snipeTransactionRequest.getCredentials(), 
 																		       snipeTransactionRequest.getInputTokenValueAmountAsBigInteger(),
 																		       snipeTransactionRequest.getSlipageInDouble(),
-																		       strategyGasProvider, 
-																		       GasModeEnum.fromValue(snipeTransactionRequest.getGasMode()),
-																		       Lists.newArrayList(TradeConstants.WETH_MAP.get(snipeTransactionRequest.getRoute().toUpperCase()), snipeTransactionRequest.getToAddress()));
+																		       Lists.newArrayList(TradeConstants.WETH_MAP.get(snipeTransactionRequest.getRoute().toUpperCase()), snipeTransactionRequest.getToAddress()),
+																		       gasPrice,
+																		       gasLimit);
 				if(outputTokens != null && outputTokens.compareTo(BigInteger.ZERO) > 0 ) {
 					snipeTransactionRequest.setOuputTokenValueAmounttAsBigInteger(outputTokens);
 				}
@@ -171,16 +181,25 @@ public class OrderSnipeExecuteGatewayEndpoint{
 		SnipeTransactionRequest snipeTransactionRequest = (SnipeTransactionRequest) tradeOrderMap.get(TradeConstants.SNIPETRANSACTIONREQUEST);
 		try {
 			if(snipeTransactionRequest.getOuputTokenValueAmounttAsBigInteger() != null && snipeTransactionRequest.getOuputTokenValueAmounttAsBigInteger().compareTo(BigInteger.ZERO) > 0) {
+				BigInteger gasPrice = null;
+				BigInteger gasLimit = null;
+				if(snipeTransactionRequest.getGasMode().equalsIgnoreCase("CUSTOM")) {
+					gasPrice = snipeTransactionRequest.getGasPrice();
+					gasLimit = snipeTransactionRequest.getGasLimit();
+				}else {
+					gasPrice = strategyGasProvider.getGasPrice(GasModeEnum.fromValue(snipeTransactionRequest.getGasMode()));
+					gasLimit = strategyGasProvider.getGasLimit(snipeTransactionRequest.getRoute());
+				}
 				String hash = ethereumDexTradeService.swapETHForTokens(snipeTransactionRequest.getRoute(),
 																	   snipeTransactionRequest.getCredentials(), 
 																	   snipeTransactionRequest.getInputTokenValueAmountAsBigInteger(),
 																	   snipeTransactionRequest.getOuputTokenValueAmounttAsBigInteger(), 
-																	   strategyGasProvider, 
-																	   GasModeEnum.fromValue(snipeTransactionRequest.getGasMode()), 
 																	   snipeTransactionRequest.getDeadLine(),
 																	   Lists.newArrayList(TradeConstants.WETH_MAP.get(snipeTransactionRequest.getRoute().toUpperCase()), 
 																			   			  snipeTransactionRequest.getToAddress()), 
-																	   false, snipeTransactionRequest.getGasPrice(), snipeTransactionRequest.getGasLimit());
+																	   false, 
+																	   gasPrice, 
+																	   gasLimit);
 				if(StringUtils.isNotBlank(hash)) {
 					tradeOrderMap.put(TradeConstants.SWAP_ETH_FOR_TOKEN_HASH, true);
 					snipeTransactionRequest.setSwappedHash(hash);

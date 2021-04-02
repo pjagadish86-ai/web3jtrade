@@ -40,7 +40,7 @@ import reactor.netty.http.client.HttpClient;
 @SpringBootApplication(scanBasePackages = { "com.aitrades.blockchain.web3jtrade" })
 public class Application {
 
-	private static final String ENDPOINT_WSS = "wss://eth-ropsten.ws.alchemyapi.io/v2/rbcu5rCKQjynzoU_TTGtTvamSnagl9BU";
+	private static final String ENDPOINT_WSS = "wss://eth-mainnet.ws.alchemyapi.io/v2/9XymsgNnaJBVR1KHUM6aH9dG2CU1FJ-2";
 	
 	private static final long WEBCLIENT_TIMEOUT= 20l;
 	private static final String ETH_GAS_PRICE_ORACLE ="https://www.etherchain.org/api";

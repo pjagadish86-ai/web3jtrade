@@ -51,19 +51,34 @@ public class OrderSellExecuteGatewayEndpoint {
 	
 	@ServiceActivator(inputChannel = "amountsOutChannel", outputChannel = "swapTokenForETHChannel")
 	public Map<String, Object> amountsOutChannel(Map<String, Object> tradeOrderMap) throws Throwable{
-		Order order = (Order) tradeOrderMap.get(TradeConstants.ORDER);
-		BigInteger inputTokens = ethereumDexTradeService.getAmountsOut(order.getRoute(),
-																		order.getCredentials(), 
-																		order.getFrom().getAmountAsBigInteger(),
-																		order.getSlippage().getSlipageInBipsInDouble(),
-																        strategyGasProvider, 
-																        GasModeEnum.fromValue(order.getGasMode()),
-																        Lists.newArrayList(order.getFrom().getTicker().getAddress(), TradeConstants.WETH_MAP.get(order.getRoute().toUpperCase())));
-		if(inputTokens != null && inputTokens.compareTo(BigInteger.ZERO) > 0 ) {
-			tradeOrderMap.put(TradeConstants.INPUT_TOKENS, inputTokens);
-			return tradeOrderMap;
+		Order order = null;
+		try {
+			order = (Order) tradeOrderMap.get(TradeConstants.ORDER);
+			BigInteger gasPrice = null;
+			BigInteger gasLimit = null;
+			if(order.getGasMode().equalsIgnoreCase("CUSTOM")) {
+				gasPrice = order.getGasPrice().getValueBigInteger();
+				gasLimit = order.getGasLimit().getValueBigInteger();
+			}else {
+				gasPrice = strategyGasProvider.getGasPrice(GasModeEnum.fromValue(order.getGasMode()));
+				gasLimit = strategyGasProvider.getGasLimit(order.getRoute());
+			}
+			BigInteger inputTokens = ethereumDexTradeService.getAmountsOut(order.getRoute(),
+																			order.getCredentials(), 
+																			order.getFrom().getAmountAsBigInteger(),
+																			order.getSlippage().getSlipageInBipsInDouble(),
+																	        Lists.newArrayList(order.getFrom().getTicker().getAddress(), TradeConstants.WETH_MAP.get(order.getRoute().toUpperCase())),
+																	        gasPrice,
+																	        gasLimit);
+			if(inputTokens != null && inputTokens.compareTo(BigInteger.ZERO) > 0 ) {
+				tradeOrderMap.put(TradeConstants.INPUT_TOKENS, inputTokens);
+				
+			}
+		} catch (Exception e) {
+			purgeMessage(order);
+			e.printStackTrace();
 		}
-		throw new Exception("AmountsOut tokens are zero or some error, will retry");
+		return tradeOrderMap;
 	}
 	
 	@ServiceActivator(inputChannel = "swapTokenForETHChannel", outputChannel ="updateSellOrderChannel")
@@ -71,31 +86,37 @@ public class OrderSellExecuteGatewayEndpoint {
 		if (tradeOrderMap.get(TradeConstants.INPUT_TOKENS) != null) {
 			Order order = null;
 			try {
-				 order = (Order) tradeOrderMap.get(TradeConstants.ORDER);
+				order = (Order) tradeOrderMap.get(TradeConstants.ORDER);
+				BigInteger gasPrice = null;
+				BigInteger gasLimit = null;
+				if(order.getGasMode().equalsIgnoreCase("CUSTOM")) {
+					gasPrice = order.getGasPrice().getValueBigInteger();
+					gasLimit = order.getGasLimit().getValueBigInteger();
+				}else {
+					gasPrice = strategyGasProvider.getGasPrice(GasModeEnum.fromValue(order.getGasMode()));
+					gasLimit = strategyGasProvider.getGasLimit(order.getRoute());
+				}
 				BigInteger outputTokens = (BigInteger) tradeOrderMap.get(TradeConstants.INPUT_TOKENS);
 				String hash = ethereumDexTradeService.swapTokenForETH(order.getRoute(), 
 																	  order.getCredentials(),
 																	  order.getFrom().getAmountAsBigInteger(), 
 																	  outputTokens, 
-																	  strategyGasProvider,
-																	  GasModeEnum.fromValue(order.getGasMode()), 
 																	  250l,
 																	  Lists.newArrayList(order.getFrom().getTicker().getAddress(), TradeConstants.WETH_MAP.get(order.getRoute().toUpperCase())), // TODO populate from Client
 																	  false, 
-																	  order.getGasPrice().getValueBigInteger(),
-																	  order.getGasLimit().getValueBigInteger());
+																	  gasPrice,
+																	  gasLimit);
 				if (StringUtils.isNotBlank(hash)) {
 					tradeOrderMap.put(TradeConstants.SWAP_TOKEN_FOR_ETH_HASH, true);
 					order.setSwappedHash(hash);
 					order.getOrderEntity().setOrderState(TradeConstants.FILLED);
-					return tradeOrderMap;
 				}
 			} catch (Exception e) {
 				purgeMessage(order);
 				e.printStackTrace();
 			} 
 		}
-		throw new Exception("Unable to SWAP_TOKEN_FOR_ETH_HASH");
+		return tradeOrderMap;
 	}
 	
 	@ServiceActivator(inputChannel = "updateSellOrderChannel")

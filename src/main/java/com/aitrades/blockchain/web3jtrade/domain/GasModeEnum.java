@@ -11,7 +11,7 @@ public enum GasModeEnum {
 	FASTEST("fastest",2), 	
 	FAST("fast",3), 
 	STANDARD("standard",4), 	
-	SAFELOW("safelow",5),
+	SAFELOW("safeLow",5),
 	CUSTOM("CUSTOM",1), ;
 	
 	private final String value;

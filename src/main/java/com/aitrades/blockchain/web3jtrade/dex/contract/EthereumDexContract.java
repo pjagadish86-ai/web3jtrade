@@ -19,19 +19,16 @@ import org.web3j.protocol.Web3j;
 import org.web3j.protocol.core.RemoteFunctionCall;
 import org.web3j.tuples.generated.Tuple3;
 import org.web3j.tx.Contract;
-import org.web3j.tx.gas.DefaultGasProvider;
 
-import com.aitrades.blockchain.web3jtrade.oracle.gas.StrategyGasProvider;
-
-@SuppressWarnings({ "rawtypes", "unchecked" })
+@SuppressWarnings({ "rawtypes", "unchecked", "deprecation" })
 public class EthereumDexContract extends Contract {
     public static final String BIN_NOT_PROVIDED = "Bin file was not provided";
 	private static final String FUNC_GETRESERVES = "getReserves";
 	public static final String FUNC_GETAMOUNTSOUT = "getAmountsOut";
     public static final String FUNC_GETAMOUNTSIN = "getAmountsIn";
     
-	public EthereumDexContract(String contractAddress, Web3j web3j, Credentials credentials, StrategyGasProvider contractGasProvider) {
-		super(BIN_NOT_PROVIDED, contractAddress, web3j, credentials, new DefaultGasProvider());
+	public EthereumDexContract(String contractAddress, Web3j web3j, Credentials credentials, BigInteger gasPrice, BigInteger gasLimit) {
+		super(BIN_NOT_PROVIDED, contractAddress, web3j, credentials, gasPrice, gasLimit);
 	}
 
 	public RemoteFunctionCall<List> getAmountsOut(BigInteger amountIn, List<String> path) {
