@@ -11,12 +11,13 @@ import com.mongodb.reactivestreams.client.MongoClient;
 @Configuration
 public class OrderMongoConfig extends AbstractReactiveMongoConfiguration {
 	
+	private static final String ORDER = "order";
 	@Autowired
 	public MongoClient mongoClient;
 	
 	@Override
 	protected String getDatabaseName() {
-		return "order";
+		return ORDER;
 	}
 
 	@Bean(name = "orderReactiveMongoTemplate")

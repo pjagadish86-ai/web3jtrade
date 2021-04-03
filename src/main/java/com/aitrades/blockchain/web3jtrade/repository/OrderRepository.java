@@ -19,7 +19,7 @@ public class OrderRepository {
 	
 	public void delete(Order order) {
 		DeleteResult count  = orderReactiveMongoTemplate.remove(order).block();
-		if(count.getDeletedCount() == 0) {
+		if(count != null && count.getDeletedCount() == 0) {
 			System.out.println("not deleted");
 		}else {
 			System.out.println("deleted");
@@ -43,7 +43,6 @@ public class OrderRepository {
         query.addCriteria(Criteria.where("id").is(order.getId()));
         Update update = new Update();
         update.set("read", "AVAL");
-     //   update.set("counter", order.getCounter()+1); TODO: Come back
 		orderReactiveMongoTemplate.updateFirst(query, update, Order.class).block();
 	}
 }

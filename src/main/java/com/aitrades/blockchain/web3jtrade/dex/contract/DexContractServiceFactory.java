@@ -15,6 +15,12 @@ import com.aitrades.blockchain.web3jtrade.dex.uniswap.UniswapServiceImpl;
 public class DexContractServiceFactory {
 
 	
+	private static final String PANCAKE = "PANCAKE";
+
+	private static final String SUSHI = "SUSHI";
+
+	private static final String UNISWAP = "UNISWAP";
+
 	@Autowired
 	private Map<String, DexContractService> typesMap;
 	
@@ -30,9 +36,9 @@ public class DexContractServiceFactory {
 
 	@PostConstruct
 	public void init() {
-		typesMap.put("UNISWAP", uniswapServiceImpl);
-		typesMap.put("SUSHI", sushiServiceImpl);
-		typesMap.put("PANCAKE", pancakeServiceImpl);
+		typesMap.put(UNISWAP, uniswapServiceImpl);
+		typesMap.put(SUSHI, sushiServiceImpl);
+		typesMap.put(PANCAKE, pancakeServiceImpl);
 	}
 	
 	public DexContractService getInstance(String condition) {

@@ -11,12 +11,13 @@ import com.mongodb.reactivestreams.client.MongoClient;
 @Configuration
 public class SnipeOrderMongoConfig extends AbstractReactiveMongoConfiguration {
 	
+	private static final String SNIPE_ORDER = "snipeOrder";
 	@Autowired
 	public MongoClient mongoClient;
 	
 	@Override
 	protected String getDatabaseName() {
-		return "snipeOrder";
+		return SNIPE_ORDER;
 	}
 
 	@Bean(name = "snipeOrderReactiveMongoTemplate")

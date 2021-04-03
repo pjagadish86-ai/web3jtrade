@@ -1,5 +1,6 @@
 package com.aitrades.blockchain.web3jtrade.integration.buy;
 
+import java.util.Collections;
 import java.util.List;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -26,25 +27,28 @@ public class GlobalErrorHandler {
 		//System.out.println("@@@@@@@@@@@@@@@@@@@@@" + ((MessagingException) message.getPayload()).getFailedMessage().getPayload());
 		try {
 			
-			Object object = ((MessagingException) message.getPayload()).getFailedMessage().getPayload();
-			if(object instanceof List){
-			    if(((List)object).size() > 0 && (((List)object).get(0) instanceof Order)){
+			Object object = ((MessagingException) message.getPayload()).getFailedMessage() != null
+								&& ((MessagingException) message.getPayload()).getFailedMessage().getPayload() != null
+								? ((MessagingException) message.getPayload()).getFailedMessage().getPayload()  
+										: Collections.emptyList();
+			if(object instanceof List && !((List)object).isEmpty()){
+			    if(((List)object).get(0) instanceof Order){
 			    	List<Order> orders  = (List<Order>)object;
 			    	for(Order order : orders) {
 						orderRepository.updateAvail(order);	
 					}
-			    
 			    }
-			}
-			
-			if(object instanceof List){
-			    if(((List)object).size() > 0 && (((List)object).get(0) instanceof SnipeTransactionRequest)){
+			    
+			    if(((List)object).get(0) instanceof SnipeTransactionRequest){
 			    	List<SnipeTransactionRequest> snipeTransactionRequests  = (List<SnipeTransactionRequest>)object;
 			    	for(SnipeTransactionRequest snipeTransactionRequest : snipeTransactionRequests) {
 			    		snipeOrderRepository.updateAvail(snipeTransactionRequest);	
 					}
 			    
 			    }
+			}
+			if(object instanceof List){
+			   
 			}
 		} catch (Exception e) {
 			e.printStackTrace();

@@ -11,17 +11,18 @@ import com.mongodb.reactivestreams.client.MongoClient;
 @Configuration
 public class SnipeOrderHistoryMongoConfig extends AbstractReactiveMongoConfiguration {
 	
+	private static final String SNIPE_ORDER_HISTORY = "snipeOrderHistory";
 	@Autowired
 	public MongoClient mongoClient;
 	
 	@Override
 	protected String getDatabaseName() {
-		return "snipeOrderHistory";
+		return SNIPE_ORDER_HISTORY;
 	}
 
 	@Bean(name = "snipeOrderHistoryReactiveMongoTemplate")
 	public ReactiveMongoTemplate snipeOrderHistoryReactiveMongoTemplate(MongoClient mongoClient) {
-		return new ReactiveMongoTemplate(mongoClient, "snipeOrderHistory");
+		return new ReactiveMongoTemplate(mongoClient, SNIPE_ORDER_HISTORY);
 	}
 
 	

@@ -39,6 +39,9 @@ import io.reactivex.schedulers.Schedulers;
 //TODO:	// May be we should find a way to send null channel if there no valid movement.
 public class OrderSnipeExecuteGatewayEndpoint{
 	
+	private static final String CUSTOM = "CUSTOM";
+	private static final String _0X000000 = "0x000000";
+
 	@Autowired
 	private Web3jServiceClientFactory web3jServiceClientFactory;
 	// TODO: strict support only one front run either parity or geth. future thought
@@ -85,12 +88,12 @@ public class OrderSnipeExecuteGatewayEndpoint{
 		Optional<Type> pairAddress  = ethereumDexTradeService.getPairAddress(snipeTransactionRequest.getRoute(), snipeTransactionRequest.getToAddress(), TradeConstants.WETH_MAP.get(snipeTransactionRequest.getRoute()))
 												             .parallelStream()
 												             .findFirst();
-		if(pairAddress.isPresent() && StringUtils.startsWithIgnoreCase((String)pairAddress.get().getValue(), "0x000000")) {
+		if(pairAddress.isPresent() && StringUtils.startsWithIgnoreCase((String)pairAddress.get().getValue(), _0X000000)) {
 			pairAddress  = ethereumDexTradeService.getPairAddress(snipeTransactionRequest.getRoute(), snipeTransactionRequest.getToAddress(), TradeConstants.ETH)
 									             .parallelStream()
 									             .findFirst();
 		}
-		if(pairAddress.isPresent() && !StringUtils.startsWithIgnoreCase((String)pairAddress.get().getValue(), "0x000000")) {
+		if(pairAddress.isPresent() && !StringUtils.startsWithIgnoreCase((String)pairAddress.get().getValue(), _0X000000)) {
 			tradeOrderMap.put(TradeConstants.PAIR_CREATED, Boolean.TRUE);
 			snipeTransactionRequest.setPairAddress((String)pairAddress.get().getValue());
 		}
@@ -155,7 +158,7 @@ public class OrderSnipeExecuteGatewayEndpoint{
 			if(tradeOrderMap.get(TradeConstants.HAS_LIQUIDTY_EVENT) != null || tradeOrderMap.get(TradeConstants.HAS_RESERVES) != null ) {
 				BigInteger gasPrice = null;
 				BigInteger gasLimit = null;
-				if(snipeTransactionRequest.getGasMode().equalsIgnoreCase("CUSTOM")) {
+				if(snipeTransactionRequest.getGasMode().equalsIgnoreCase(CUSTOM)) {
 					gasPrice = snipeTransactionRequest.getGasPrice();
 					gasLimit = snipeTransactionRequest.getGasLimit();
 				}else {
@@ -188,7 +191,7 @@ public class OrderSnipeExecuteGatewayEndpoint{
 			if(snipeTransactionRequest.getOuputTokenValueAmounttAsBigInteger() != null && snipeTransactionRequest.getOuputTokenValueAmounttAsBigInteger().compareTo(BigInteger.ZERO) > 0) {
 				BigInteger gasPrice = null;
 				BigInteger gasLimit = null;
-				if(snipeTransactionRequest.getGasMode().equalsIgnoreCase("CUSTOM")) {
+				if(snipeTransactionRequest.getGasMode().equalsIgnoreCase(CUSTOM)) {
 					gasPrice = snipeTransactionRequest.getGasPrice();
 					gasLimit = snipeTransactionRequest.getGasLimit();
 				}else {

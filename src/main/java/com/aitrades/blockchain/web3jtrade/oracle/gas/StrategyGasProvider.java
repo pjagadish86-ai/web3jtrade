@@ -70,7 +70,7 @@ public class StrategyGasProvider {
 	
 	public BigInteger getGasLimitOfPancake(boolean senstive) throws Exception{
 		return  web3jServiceClientFactory.getWeb3jMap().get(PANCAKE).getWeb3j()
-				 .ethGetBlockByNumber(DefaultBlockParameterName.PENDING, true)
+				 .ethGetBlockByNumber(DefaultBlockParameterName.PENDING, false)
 				 .flowable()
 				 .subscribeOn(io.reactivex.schedulers.Schedulers.newThread())
 				 .blockingLast()

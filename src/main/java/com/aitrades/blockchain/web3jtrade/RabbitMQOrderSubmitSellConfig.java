@@ -49,7 +49,6 @@ public class RabbitMQOrderSubmitSellConfig {
         container.setConcurrentConsumers(2);
         container.setDefaultRequeueRejected(false);
         container.setAcknowledgeMode(AcknowledgeMode.NONE);
-//        container.setAdviceChain(new Advice[]{interceptor()});
         return container;
     }
 

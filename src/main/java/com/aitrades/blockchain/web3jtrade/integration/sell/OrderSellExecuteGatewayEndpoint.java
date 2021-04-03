@@ -102,7 +102,7 @@ public class OrderSellExecuteGatewayEndpoint {
 																	  order.getFrom().getAmountAsBigInteger(), 
 																	  outputTokens, 
 																	  250l,
-																	  Lists.newArrayList(order.getFrom().getTicker().getAddress(), TradeConstants.WETH_MAP.get(order.getRoute().toUpperCase())), // TODO populate from Client
+																	  Lists.newArrayList(order.getFrom().getTicker().getAddress(), TradeConstants.WETH_MAP.get(order.getRoute().toUpperCase())),
 																	  false, 
 																	  gasPrice,
 																	  gasLimit);

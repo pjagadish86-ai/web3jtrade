@@ -26,7 +26,7 @@ public enum OrderState {
 	
 	public static OrderState fromValue(String value) {
 		for (final OrderState orderStatus : OrderState.values()) {
-			if (orderStatus.value.equals(value)) {
+			if (orderStatus.value.equalsIgnoreCase(value)) {
 				return orderStatus;
 			}
 		}
@@ -36,7 +36,7 @@ public enum OrderState {
 	public static OrderState fromName(String name) {
 
 		for (final OrderState orderType : OrderState.values()) {
-			if (orderType.name().equals(name)) {
+			if (orderType.name().equalsIgnoreCase(name)) {
 				return orderType;
 			}
 		}

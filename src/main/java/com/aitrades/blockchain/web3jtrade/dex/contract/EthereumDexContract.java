@@ -84,7 +84,7 @@ public class EthereumDexContract extends Contract {
                         if(results == null || results.isEmpty()) {
                         	return new Tuple3<BigInteger, BigInteger, BigInteger>(BigInteger.ZERO, BigInteger.ZERO, BigInteger.ZERO);
                         }
-                        return new Tuple3<BigInteger, BigInteger, BigInteger>(
+                        return new Tuple3<>(
                                 (BigInteger) results.get(0).getValue(), 
                                 (BigInteger) results.get(1).getValue(), 
                                 (BigInteger) results.get(2).getValue());

@@ -11,17 +11,18 @@ import com.mongodb.reactivestreams.client.MongoClient;
 @Configuration
 public class OrderHistoryMongoConfig extends AbstractReactiveMongoConfiguration {
 	
+	private static final String ORDER_HISTORY = "orderHistory";
 	@Autowired
 	public MongoClient mongoClient;
 	
 	@Override
 	protected String getDatabaseName() {
-		return "orderHistory";
+		return ORDER_HISTORY;
 	}
 
 	@Bean(name = "orderHistoryReactiveMongoTemplate")
 	public ReactiveMongoTemplate orderHistoryReactiveMongoTemplate(MongoClient mongoClient) {
-		return new ReactiveMongoTemplate(mongoClient, "orderHistory");
+		return new ReactiveMongoTemplate(mongoClient, ORDER_HISTORY);
 	}
 
 	

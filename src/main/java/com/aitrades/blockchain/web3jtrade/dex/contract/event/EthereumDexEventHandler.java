@@ -18,6 +18,7 @@ import io.reactivex.Flowable;
 
 public class EthereumDexEventHandler {
 
+	private static final String _0X = "0x";
 	private static final String MINT = "Mint";
 
 	public static final Event MINT_EVENT = new Event(MINT, Arrays.<TypeReference<?>>asList(new TypeReference<Address>(true) { }, new TypeReference<Uint256>() { }, new TypeReference<Uint256>() { }));
@@ -25,7 +26,7 @@ public class EthereumDexEventHandler {
 	public static Flowable<EthLog> mintEventFlowables(Web3j web3j, String pairAddress, String routerAddress) {
 		EthFilter filter = new EthFilter(new DefaultBlockParameterNumber(9903308), DefaultBlockParameterName.LATEST,	pairAddress);
 		filter.addSingleTopic(EventEncoder.encode(MINT_EVENT));
-		filter.addOptionalTopics("0x" + TypeEncoder.encode(new Address(routerAddress.substring(2))));
+		filter.addOptionalTopics(_0X + TypeEncoder.encode(new Address(routerAddress.substring(2))));
 		return web3j.ethGetLogs(filter).flowable();
 	}
 

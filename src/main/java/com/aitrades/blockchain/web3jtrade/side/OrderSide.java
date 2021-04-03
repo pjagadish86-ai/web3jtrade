@@ -23,7 +23,7 @@ public enum OrderSide {
 
 	public static OrderSide fromValue(String value) {
 		for (final OrderSide tradeSide : OrderSide.values()) {
-			if (tradeSide.value.equals(value)) {
+			if (tradeSide.value.equalsIgnoreCase(value)) {
 				return tradeSide;
 			}
 		}
@@ -33,7 +33,7 @@ public enum OrderSide {
 	public static OrderSide fromName(String name) {
 
 		for (final OrderSide tradeSide : OrderSide.values()) {
-			if (tradeSide.name().equals(name)) {
+			if (tradeSide.name().equalsIgnoreCase(name)) {
 				return tradeSide;
 			}
 		}

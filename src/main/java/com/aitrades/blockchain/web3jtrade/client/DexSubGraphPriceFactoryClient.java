@@ -10,6 +10,10 @@ import org.springframework.stereotype.Service;
 @Service
 public class DexSubGraphPriceFactoryClient {
 
+	private static final String SUSHI = "SUSHI";
+
+	private static final String UNISWAP = "UNISWAP";
+
 	@Autowired
 	private DexSubGraphPriceServiceClient dexSubGraphPriceServiceClient;
 	
@@ -18,8 +22,8 @@ public class DexSubGraphPriceFactoryClient {
 
 	@PostConstruct
 	public void init() {
-		typesMap.put("UNISWAP", dexSubGraphPriceServiceClient);
-		typesMap.put("SUSHI", dexSubGraphPriceServiceClient);
+		typesMap.put(UNISWAP, dexSubGraphPriceServiceClient);
+		typesMap.put(SUSHI, dexSubGraphPriceServiceClient);
 	}
 	
 	public DexSubGraphPriceServiceClient getRoute(String condition) {
