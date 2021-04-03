@@ -44,6 +44,7 @@ public class Application {
 	
 	private static final long WEBCLIENT_TIMEOUT= 20l;
 	private static final String ETH_GAS_PRICE_ORACLE ="https://www.etherchain.org/api";
+	@SuppressWarnings("unused")
 	private static final String ETH_GAS_STATION ="https://data-api.defipulse.com/api/v1/egs/api/ethgasAPI.json?api-key=2d249b5b77ce8b5d20fdd6a6c09a5ac3a954981252730a2e26dcfbc4a41a";
 	
 	private static final int _40 = 40;

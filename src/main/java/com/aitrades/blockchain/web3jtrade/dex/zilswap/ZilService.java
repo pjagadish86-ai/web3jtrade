@@ -12,6 +12,7 @@ import com.aitrades.blockchain.web3jtrade.oracle.gas.StrategyGasProvider;
 
 public interface ZilService {
 
+	@SuppressWarnings("rawtypes")
 	public List<Type> getPair(String tokenA, String tokenB) throws Exception;
 	
 	public Tuple3<BigInteger, BigInteger, BigInteger> getReserves(String pairAddress, Credentials credentials, StrategyGasProvider customGasProvider) throws Exception;

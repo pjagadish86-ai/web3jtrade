@@ -2,31 +2,27 @@ package com.aitrades.blockchain.web3jtrade.oracle.gas;
 
 import java.math.BigInteger;
 
-import org.web3j.tx.gas.ContractGasProvider;
+import org.apache.commons.lang.StringUtils;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Component;
 
-public class GasProvider implements ContractGasProvider{
-
+import com.aitrades.blockchain.web3jtrade.domain.GasModeEnum;
+@Component
+public class GasProvider{
 	
-	@Override
-	public BigInteger getGasPrice(String contractFunc) {
-		return new BigInteger(contractFunc);
+	private static final String CUSTOM ="CUSTOM";
+	
+	@Autowired
+	private StrategyGasProvider strategyGasProvider;
+	
+	public BigInteger getGasPrice(GasModeEnum gasMode, BigInteger gasPrice) throws Exception {
+		return StringUtils.equalsIgnoreCase(gasMode.getValue().toLowerCase(), CUSTOM) ? gasPrice : strategyGasProvider.getGasPrice(gasMode);
 	}
 
-	@Deprecated
-	@Override
-	public BigInteger getGasPrice() {
-		return null;
+
+	public BigInteger getGasLimit(GasModeEnum gasMode, BigInteger gasLimit) throws Exception {
+		return StringUtils.equalsIgnoreCase(gasMode.getValue().toLowerCase(), CUSTOM) ? gasLimit : strategyGasProvider.getGasPrice(gasMode);
 	}
 
-	@Override
-	public BigInteger getGasLimit(String contractFunc) {
-		return new BigInteger(contractFunc);
-	}
-
-	@Deprecated
-	@Override
-	public BigInteger getGasLimit() {
-		return null;
-	}
 
 }

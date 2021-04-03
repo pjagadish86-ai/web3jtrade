@@ -43,7 +43,7 @@ public class EthereumParityPendingTransactionsRetriever {
     private static final Set<String> UNISWAP_LIQUID_METHODS =  Set.of("0x7ff36ab5","0x18cbafe5");
 
 	@Autowired
-	public Parity parity;
+	private Parity parity;
 	
 	@Resource(name = "web3jServiceClient")
 	private Web3jServiceClient web3jServiceClient;

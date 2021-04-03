@@ -9,8 +9,6 @@ import org.web3j.abi.datatypes.Type;
 import org.web3j.crypto.Credentials;
 import org.web3j.tuples.generated.Tuple3;
 
-import com.aitrades.blockchain.web3jtrade.domain.GasModeEnum;
-
 @Component
 @SuppressWarnings("rawtypes")
 public class DexTradeContractService {

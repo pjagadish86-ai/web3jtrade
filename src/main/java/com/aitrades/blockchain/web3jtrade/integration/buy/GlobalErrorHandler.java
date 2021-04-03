@@ -16,10 +16,10 @@ import com.aitrades.blockchain.web3jtrade.repository.SnipeOrderRepository;
 public class GlobalErrorHandler {
 
 	@Autowired
-	public OrderRepository orderRepository;
+	private OrderRepository orderRepository;
 	
 	@Autowired
-	public SnipeOrderRepository snipeOrderRepository;
+	private SnipeOrderRepository snipeOrderRepository;
 	
 	@SuppressWarnings({ "unchecked", "rawtypes" })
 	@ServiceActivator(inputChannel = "errorFlow")

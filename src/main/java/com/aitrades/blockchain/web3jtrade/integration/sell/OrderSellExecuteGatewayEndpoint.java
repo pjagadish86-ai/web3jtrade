@@ -13,7 +13,7 @@ import com.aitrades.blockchain.web3jtrade.dex.contract.DexTradeContractService;
 import com.aitrades.blockchain.web3jtrade.domain.GasModeEnum;
 import com.aitrades.blockchain.web3jtrade.domain.Order;
 import com.aitrades.blockchain.web3jtrade.domain.TradeConstants;
-import com.aitrades.blockchain.web3jtrade.oracle.gas.StrategyGasProvider;
+import com.aitrades.blockchain.web3jtrade.oracle.gas.GasProvider;
 import com.aitrades.blockchain.web3jtrade.repository.OrderHistoryRepository;
 import com.aitrades.blockchain.web3jtrade.repository.OrderRepository;
 import com.aitrades.blockchain.web3jtrade.side.OrderState;
@@ -23,19 +23,19 @@ import com.google.common.collect.Lists;
 public class OrderSellExecuteGatewayEndpoint {
 	
 	@Autowired
-	public StrategyGasProvider strategyGasProvider;
+	private GasProvider gasProvider;
 	
 	@Autowired
-	public OrderRepository orderRepository;
+	private OrderRepository orderRepository;
 	
 	@Autowired
-	public OrderHistoryRepository orderHistoryRepository;
+	private OrderHistoryRepository orderHistoryRepository;
 	
 	@Autowired
-	public ObjectReader orderRequestObjectReader;
+	private ObjectReader orderRequestObjectReader;
 	
 	@Autowired
-	protected DexTradeContractService ethereumDexTradeService;
+	private DexTradeContractService ethereumDexTradeService;
 	
 	@Transformer(inputChannel = "transformSellOrderChannel", outputChannel = "amountsOutChannel")
 	public Map<String, Object> transformSellOrderChannel(byte[] message) throws Exception{
@@ -54,22 +54,17 @@ public class OrderSellExecuteGatewayEndpoint {
 		Order order = null;
 		try {
 			order = (Order) tradeOrderMap.get(TradeConstants.ORDER);
-			BigInteger gasPrice = null;
-			BigInteger gasLimit = null;
-			if(order.getGasMode().equalsIgnoreCase("CUSTOM")) {
-				gasPrice = order.getGasPrice().getValueBigInteger();
-				gasLimit = order.getGasLimit().getValueBigInteger();
-			}else {
-				gasPrice = strategyGasProvider.getGasPrice(GasModeEnum.fromValue(order.getGasMode()));
-				gasLimit = strategyGasProvider.getGasLimit(order.getRoute());
-			}
 			BigInteger inputTokens = ethereumDexTradeService.getAmountsOut(order.getRoute(),
 																			order.getCredentials(), 
 																			order.getFrom().getAmountAsBigInteger(),
 																			order.getSlippage().getSlipageInBipsInDouble(),
 																	        Lists.newArrayList(order.getFrom().getTicker().getAddress(), TradeConstants.WETH_MAP.get(order.getRoute().toUpperCase())),
-																	        gasPrice,
-																	        gasLimit);
+																	        gasProvider.getGasPrice(GasModeEnum.fromValue(order.getGasMode()), order.getGasPrice().getValueBigInteger()),
+																	     	gasProvider.getGasPrice(GasModeEnum.fromValue(order.getGasMode()), order.getGasLimit().getValueBigInteger()));
+			
+			
+	     	
+	     	
 			if(inputTokens != null && inputTokens.compareTo(BigInteger.ZERO) > 0 ) {
 				tradeOrderMap.put(TradeConstants.INPUT_TOKENS, inputTokens);
 				
@@ -87,15 +82,6 @@ public class OrderSellExecuteGatewayEndpoint {
 			Order order = null;
 			try {
 				order = (Order) tradeOrderMap.get(TradeConstants.ORDER);
-				BigInteger gasPrice = null;
-				BigInteger gasLimit = null;
-				if(order.getGasMode().equalsIgnoreCase("CUSTOM")) {
-					gasPrice = order.getGasPrice().getValueBigInteger();
-					gasLimit = order.getGasLimit().getValueBigInteger();
-				}else {
-					gasPrice = strategyGasProvider.getGasPrice(GasModeEnum.fromValue(order.getGasMode()));
-					gasLimit = strategyGasProvider.getGasLimit(order.getRoute());
-				}
 				BigInteger outputTokens = (BigInteger) tradeOrderMap.get(TradeConstants.INPUT_TOKENS);
 				String hash = ethereumDexTradeService.swapTokenForETH(order.getRoute(), 
 																	  order.getCredentials(),
@@ -104,8 +90,8 @@ public class OrderSellExecuteGatewayEndpoint {
 																	  250l,
 																	  Lists.newArrayList(order.getFrom().getTicker().getAddress(), TradeConstants.WETH_MAP.get(order.getRoute().toUpperCase())),
 																	  false, 
-																	  gasPrice,
-																	  gasLimit);
+																	  gasProvider.getGasPrice(GasModeEnum.fromValue(order.getGasMode()), order.getGasPrice().getValueBigInteger()),
+																      gasProvider.getGasPrice(GasModeEnum.fromValue(order.getGasMode()), order.getGasLimit().getValueBigInteger()));
 				if (StringUtils.isNotBlank(hash)) {
 					tradeOrderMap.put(TradeConstants.SWAP_TOKEN_FOR_ETH_HASH, true);
 					order.setSwappedHash(hash);

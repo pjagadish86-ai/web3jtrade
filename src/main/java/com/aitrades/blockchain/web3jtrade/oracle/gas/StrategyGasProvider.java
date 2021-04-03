@@ -28,7 +28,7 @@ public class StrategyGasProvider {
 	private WebClient gasWebClient;
 	
 	@Autowired
-	public Web3jServiceClientFactory  web3jServiceClientFactory;
+	private Web3jServiceClientFactory  web3jServiceClientFactory;
 	
 	@SuppressWarnings("unchecked")
 	public BigInteger getGasPrice(GasModeEnum gasModeEnum) throws Exception{

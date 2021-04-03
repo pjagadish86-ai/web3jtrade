@@ -44,16 +44,24 @@ import io.reactivex.schedulers.Schedulers;
 @SuppressWarnings({ "rawtypes", "unchecked" })
 public class PancakeServiceImpl implements DexContractService {
 
+	private static final String GET_AMOUNTS_OUT_RETURNED_ZERO = "GetAmounts Out Returned ZERO";
+
+	@SuppressWarnings("unused")
+	private static final String CUSTOM = "CUSTOM";
+	
 	@Resource(name = "web3jServiceClient")
 	private Web3jServiceClient web3jServiceClient;
 
 	@Override
 	public List<Type> getPair(String tokenA, String tokenB) throws Exception{
+		
 		final Function function = new Function(FUNC_GETPAIR, Arrays.asList(new Address(tokenA), new Address(tokenB)),
 											   Arrays.asList(new TypeReference<Address>() {
 											}));
-		String data = FunctionEncoder.encode(function);
-		Transaction transaction = Transaction.createEthCallTransaction(TradeConstants.FACTORY_MAP.get(TradeConstants.UNISWAP), TradeConstants.FACTORY_MAP.get(TradeConstants.UNISWAP), data);
+
+		Transaction transaction = Transaction.createEthCallTransaction(TradeConstants.FACTORY_MAP.get(TradeConstants.PANCAKE), 
+																	  TradeConstants.FACTORY_MAP.get(TradeConstants.PANCAKE), 
+																	  FunctionEncoder.encode(function));
 		EthCall ethCall = web3jServiceClient.getWeb3j()
 										    .ethCall(transaction, DefaultBlockParameterName.LATEST)
 										    .flowable()
@@ -61,24 +69,21 @@ public class PancakeServiceImpl implements DexContractService {
 		if(ethCall.hasError()) {
 			throw new Exception(ethCall.getError().getMessage());
 		}
-		
-		String value = ethCall.getValue();
-		
-		return FunctionReturnDecoder.decode(value, function.getOutputParameters());
+		return FunctionReturnDecoder.decode(ethCall.getValue(), function.getOutputParameters());
 	}
 
 	@Override
 	public Tuple3<BigInteger, BigInteger, BigInteger> getReserves(String pairAddress, Credentials credentials, BigInteger gasPrice, BigInteger gasLimit)  throws Exception{
 		
-		EthereumDexContract uniswapV2Pair = new EthereumDexContract(pairAddress, 
-																    web3jServiceClient.getWeb3j(), 
-																    credentials,
-																    gasPrice,
-																    gasLimit);
-		return uniswapV2Pair.getReserves()
-							.flowable()
-					        .subscribeOn(Schedulers.io())
-					        .blockingSingle();
+		EthereumDexContract dexContract = new EthereumDexContract(pairAddress, 
+															      web3jServiceClient.getWeb3j(), 
+															      credentials,
+															      gasPrice,
+															      gasLimit);
+		return dexContract.getReserves()
+						  .flowable()
+				          .subscribeOn(Schedulers.io())
+				          .blockingSingle();
 	}
 
 
@@ -86,22 +91,19 @@ public class PancakeServiceImpl implements DexContractService {
 	public BigInteger getAmountsIn(Credentials credentials, BigInteger inputEthers, Double slipage,
 								   List<String> memoryPathAddress, BigInteger gasPrice, BigInteger gasLimit) throws Exception {
 
-		EthereumDexContract uniswapV2Contract = new EthereumDexContract(TradeConstants.ROUTER_MAP.get(TradeConstants.UNISWAP),
-																		web3jServiceClient.getWeb3j(), 
-																	    credentials, 
-																	    gasPrice, 
-																	    gasLimit);
+		EthereumDexContract dexContract = new EthereumDexContract(TradeConstants.ROUTER_MAP.get(TradeConstants.PANCAKE),
+																  web3jServiceClient.getWeb3j(), 
+															      credentials, 
+															      gasPrice, 
+															      gasLimit);
 		
-		List amountsOuts = (List) uniswapV2Contract.getAmountsIn(inputEthers, memoryPathAddress)
-															  .flowable()
-															  .blockingSingle();
+		List amountsOuts = dexContract.getAmountsIn(inputEthers, memoryPathAddress)
+									  .flowable()
+									  .blockingSingle();
+		
 		BigInteger amountsOut = (BigInteger)amountsOuts.get(0);					  
-		System.out.println("AMOUNTs in"+ amountsOut);
-		if(amountsOut.compareTo(BigInteger.ZERO) <=0 ) {
-			throw new Exception("getAmountsIn out zero");
-		}
 		double slipageWithCal  = amountsOut.doubleValue() * slipage;
-		return new BigDecimal(amountsOut.doubleValue() - slipageWithCal).setScale(0, RoundingMode.DOWN).toBigInteger();
+		return BigDecimal.valueOf(amountsOut.doubleValue() - slipageWithCal).setScale(0, RoundingMode.DOWN).toBigInteger();
 	}
 
 	@Override
@@ -114,22 +116,21 @@ public class PancakeServiceImpl implements DexContractService {
 													   			  new Uint256(BigInteger.valueOf(Instant.now().plus(deadLine, ChronoUnit.SECONDS).getEpochSecond()))),
 											   Collections.emptyList());
 
-		String data = FunctionEncoder.encode(function);
-
 		EthGetTransactionCount ethGetTransactionCount = web3jServiceClient.getWeb3j()
 																		  .ethGetTransactionCount(credentials.getAddress(), DefaultBlockParameterName.LATEST)
 																		  .flowable()
-																		  .subscribeOn(Schedulers.io()).blockingSingle();
+																		  .subscribeOn(Schedulers.io())
+																		  .blockingSingle();
+		
 		RawTransaction rawTransaction = RawTransaction.createTransaction(ethGetTransactionCount.getTransactionCount(),
 																		 gasPrice, 
 																		 gasLimit, 
-																		 TradeConstants.ROUTER_MAP.get(TradeConstants.UNISWAP), 
+																		 TradeConstants.ROUTER_MAP.get(TradeConstants.PANCAKE), 
 																		 inputEthers,
-																		 data);
+																		 FunctionEncoder.encode(function));
 		
-		byte[] signedMessage = TransactionEncoder.signMessage(rawTransaction, credentials);
 		EthSendTransaction ethSendTransaction = web3jServiceClient.getWeb3j()
-																  .ethSendRawTransaction(Numeric.toHexString(signedMessage))
+																  .ethSendRawTransaction(Numeric.toHexString(TransactionEncoder.signMessage(rawTransaction, credentials)))
 																  .flowable()
 																  .blockingSingle();
 		if(ethSendTransaction.hasError()) {
@@ -139,7 +140,7 @@ public class PancakeServiceImpl implements DexContractService {
 	}
 
 	private List<Address> getAddress(List<String> path) {
-		List<Address>  addresses = new ArrayList<Address>();
+		List<Address> addresses = new ArrayList<>();
 		for(String addr : path) {
 			addresses.add(new Address(addr));
 		}
@@ -150,27 +151,27 @@ public class PancakeServiceImpl implements DexContractService {
 	public BigInteger getAmountsOut(Credentials credentials, BigInteger inputTokens, Double slipage, 
 								    List<String> memoryPathAddress, BigInteger gasPrice, BigInteger gasLimit) throws Throwable {
 
-		EthereumDexContract uniswapV2Contract = new EthereumDexContract(TradeConstants.ROUTER_MAP.get(TradeConstants.UNISWAP),
-																	web3jServiceClient.getWeb3j(), 
-																	credentials, 
-																	gasPrice, 
-																	gasLimit);
+		EthereumDexContract dexContract = new EthereumDexContract(TradeConstants.ROUTER_MAP.get(TradeConstants.PANCAKE),
+																 web3jServiceClient.getWeb3j(), 
+																 credentials, 
+																 gasPrice, 
+																 gasLimit);
 		
-		BigInteger amountsIn = (BigInteger) uniswapV2Contract.getAmountsOut(inputTokens, memoryPathAddress)
-															 .flowable()
-															 .blockingSingle()
-															 .stream()
-															 .reduce((first, second) -> second)
-															 .orElseThrow(() -> new Exception("GetAmounts Out Returned ZERO"));
+		BigInteger amountsIn = (BigInteger) dexContract.getAmountsOut(inputTokens, memoryPathAddress)
+													   .flowable()
+													   .blockingSingle()
+													   .stream()
+													   .reduce((first, second) -> second)
+													   .orElseThrow(() -> new Exception(GET_AMOUNTS_OUT_RETURNED_ZERO));
+		
 		double slipageWithCal  = amountsIn.doubleValue() * slipage;
-		return new BigDecimal(amountsIn.doubleValue() - slipageWithCal).setScale(0, RoundingMode.DOWN).toBigInteger();
+		return BigDecimal.valueOf(amountsIn.doubleValue() - slipageWithCal).setScale(0, RoundingMode.DOWN).toBigInteger();
 	}
 
 	@Override
 	public String swapTokenForETH(Credentials credentials, BigInteger inputTokens, BigInteger outputEthers,
-								  long deadLine, 
-								  List<String> memoryPathAddress,
-								  boolean hasFee, BigInteger gasPrice, BigInteger gasLimit) throws Exception {
+								  long deadLine, List<String> memoryPathAddress,  boolean hasFee, 
+								  BigInteger gasPrice, BigInteger gasLimit) throws Exception {
 
 		final Function function = new Function(FUNC_SWAPEXACTTOKENSFORETH,
 											   Lists.newArrayList(new Uint256(inputTokens), 
@@ -180,8 +181,6 @@ public class PancakeServiceImpl implements DexContractService {
 																  new Uint256(BigInteger.valueOf(Instant.now().plus(deadLine, ChronoUnit.SECONDS).getEpochSecond()))),
 											   Collections.emptyList());
 
-		String data = FunctionEncoder.encode(function);
-		
 		EthGetTransactionCount ethGetTransactionCount = web3jServiceClient.getWeb3j()
 																		  .ethGetTransactionCount(credentials.getAddress(), DefaultBlockParameterName.LATEST)
 																		  .flowable()
@@ -190,13 +189,12 @@ public class PancakeServiceImpl implements DexContractService {
 		RawTransaction rawTransaction = RawTransaction.createTransaction(ethGetTransactionCount.getTransactionCount(),
 																		 gasPrice, 
 																		 gasLimit, 
-																		 TradeConstants.ROUTER_MAP.get(TradeConstants.UNISWAP),
+																		 TradeConstants.ROUTER_MAP.get(TradeConstants.PANCAKE),
 																		 BigInteger.ZERO, 
-																		 data);
+																		 FunctionEncoder.encode(function));
 		
-		byte[] signedMessage = TransactionEncoder.signMessage(rawTransaction, credentials);
 		EthSendTransaction ethSendTransaction = web3jServiceClient.getWeb3j()
-																  .ethSendRawTransaction(Numeric.toHexString(signedMessage))
+																  .ethSendRawTransaction(Numeric.toHexString(TransactionEncoder.signMessage(rawTransaction, credentials)))
 																  .flowable()
 																  .subscribeOn(Schedulers.io())
 																  .blockingSingle();
