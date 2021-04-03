@@ -24,6 +24,7 @@ import com.aitrades.blockchain.web3jtrade.domain.GasModeEnum;
 import com.aitrades.blockchain.web3jtrade.domain.SnipeTransactionRequest;
 import com.aitrades.blockchain.web3jtrade.domain.TradeConstants;
 import com.aitrades.blockchain.web3jtrade.domain.price.PairPrice;
+import com.aitrades.blockchain.web3jtrade.integration.snipe.mq.SnipeOrderReSender;
 import com.aitrades.blockchain.web3jtrade.oracle.gas.StrategyGasProvider;
 import com.aitrades.blockchain.web3jtrade.repository.SnipeOrderHistoryRepository;
 import com.aitrades.blockchain.web3jtrade.repository.SnipeOrderRepository;
@@ -72,6 +73,9 @@ public class OrderSnipeExecuteGatewayEndpoint{
 	
 	@Autowired
 	public SnipeOrderHistoryRepository snipeOrderHistoryRepository;
+	
+	@Autowired
+	private SnipeOrderReSender snipeOrderReSender;
 
 	@Transformer(inputChannel = "rabbitMqSubmitOrderConsumer", outputChannel = "pairCreatedEventChannel")
 	public Map<String, Object> rabbitMqSubmitOrderConsumer(byte[] message) throws Exception{
@@ -100,23 +104,12 @@ public class OrderSnipeExecuteGatewayEndpoint{
 		return tradeOrderMap;
 	}
 	
-	//TODO: combine pair data, reserves and addliquidty single call
 	@ServiceActivator(inputChannel = "getReservesEventChannel", outputChannel = "addLiquidityEvent")
 	public Map<String, Object> getReservesEventChannel(Map<String, Object> tradeOrderMap) throws Exception{
 		
 		if(tradeOrderMap.get(TradeConstants.PAIR_CREATED) != null) {
 			
 			SnipeTransactionRequest snipeTransactionRequest = (SnipeTransactionRequest)tradeOrderMap.get(TradeConstants.SNIPETRANSACTIONREQUEST);
-//			Flowable<PairPrice> pairData = subGraphPriceClient.getPairData(snipeTransactionRequest.getPairAddress());
-//				
-//				pairData.subscribeOn(Schedulers.io())
-//						.blockingSubscribe(resp -> {
-//				if(resp != null && resp.getData() != null && resp.getData().getPair() != null && resp.getData().getPair().getReserve0AsBigDecimal().compareTo(BigDecimal.ZERO) > 0 && resp.getData().getPair().getReserve1AsBigDecimal().compareTo(BigDecimal.ZERO) > 0) {
-//					 tradeOrderMap.put(TradeConstants.HAS_RESERVES, Boolean.TRUE);
-//					 return;
-//				}
-//			});
-			
 			if(tradeOrderMap.get(TradeConstants.HAS_RESERVES) == null) {
 				Tuple3<BigInteger, BigInteger, BigInteger> reservers = ethereumDexTradeService.getReservesOfPair(snipeTransactionRequest.getRoute(), snipeTransactionRequest.getPairAddress(), snipeTransactionRequest.getCredentials(), snipeTransactionRequest.getGasPrice(), snipeTransactionRequest.getGasLimit());
 				if (reservers != null) {
@@ -126,6 +119,18 @@ public class OrderSnipeExecuteGatewayEndpoint{
 					} 
 				}
 			}
+			
+			Flowable<PairPrice> pairData = subGraphPriceClient.getPairData(snipeTransactionRequest.getPairAddress());
+			pairData.subscribeOn(Schedulers.io())
+					.blockingSubscribe(resp -> {
+			if(resp != null && resp.getData() != null 
+					&& resp.getData().getPair() != null 
+					&& resp.getData().getPair().getReserve0AsBigDecimal().compareTo(BigDecimal.ZERO) > 0 
+					&& resp.getData().getPair().getReserve1AsBigDecimal().compareTo(BigDecimal.ZERO) > 0) {
+				 tradeOrderMap.put(TradeConstants.HAS_RESERVES, Boolean.TRUE);
+				 return;
+			}
+		});
 		}
 		return tradeOrderMap;
 	}
@@ -178,8 +183,12 @@ public class OrderSnipeExecuteGatewayEndpoint{
 				}
 			}
 		} catch (Exception e) {
-			purgeMessage(snipeTransactionRequest);
-			e.printStackTrace();
+			if(StringUtils.containsIgnoreCase(e.getMessage(), "INSUFFICIENT_LIQUIDITY")) {
+				snipeOrderReSender.send(snipeTransactionRequest);
+			}else {
+				purgeMessage(snipeTransactionRequest);
+				throw e;
+			}
 		}
 		return tradeOrderMap;	
 	}

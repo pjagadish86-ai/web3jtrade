@@ -48,7 +48,7 @@ public class RabbitMQOrderSubmitSnipeConfig {
         container.setQueues(orderSubmitSnipeQueue());
         container.setConcurrentConsumers(1);
         container.setDefaultRequeueRejected(false);
-        container.setAcknowledgeMode(AcknowledgeMode.AUTO);
+        container.setAcknowledgeMode(AcknowledgeMode.NONE);
         return container;
     }
 
