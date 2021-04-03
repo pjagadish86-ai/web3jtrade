@@ -74,6 +74,9 @@ public class SnipeTransactionRequest {
 	
 	private String snipeStatus;
 	
+	private String doSell;
+	private String doSellPercentage;
+	
 	private String read;
 	
 	public String getId() {
@@ -259,6 +262,22 @@ public class SnipeTransactionRequest {
 		return snipe;
 	}
 	
+	public String getDoSell() {
+		return doSell;
+	}
+
+	public void setDoSell(String doSell) {
+		this.doSell = doSell;
+	}
+
+	public String getDoSellPercentage() {
+		return doSellPercentage;
+	}
+
+	public void setDoSellPercentage(String doSellPercentage) {
+		this.doSellPercentage = doSellPercentage;
+	}
+
 	@JsonIgnore
 	public boolean hasSniped() {
 		return isSnipe();

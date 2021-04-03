@@ -28,7 +28,10 @@ import org.web3j.protocol.core.DefaultBlockParameterName;
 import org.web3j.protocol.core.methods.request.Transaction;
 import org.web3j.protocol.core.methods.response.EthCall;
 import org.web3j.protocol.core.methods.response.EthGetTransactionCount;
+import org.web3j.protocol.core.methods.response.EthSendTransaction;
 import org.web3j.tuples.generated.Tuple3;
+import org.web3j.tx.exceptions.ContractCallException;
+import org.web3j.utils.Numeric;
 
 import com.aitrades.blockchain.web3jtrade.client.Web3jServiceClient;
 import com.aitrades.blockchain.web3jtrade.dex.contract.DexContractService;
@@ -86,22 +89,32 @@ public class UniswapServiceImpl implements DexContractService {
 	public BigInteger getAmountsIn(Credentials credentials, BigInteger inputEthers, Double slipage,
 								   List<String> memoryPathAddress, BigInteger gasPrice, BigInteger gasLimit) throws Exception {
 
-		EthereumDexContract uniswapV2Contract = new EthereumDexContract(TradeConstants.ROUTER_MAP.get(TradeConstants.UNISWAP),
-																		web3jServiceClient.getWeb3j(), 
-																	    credentials, 
-																	    gasPrice, 
-																	    gasLimit);
-		
-		List amountsOuts = (List) uniswapV2Contract.getAmountsIn(inputEthers, memoryPathAddress)// TODO: come back to verify 
-															  .flowable()
-															  .blockingSingle();
-		BigInteger amountsOut = (BigInteger)amountsOuts.get(0);					  
-		System.out.println("AMOUNTs in"+ amountsOut);
-		if(amountsOut.compareTo(BigInteger.ZERO) <=0 ) {
-			throw new Exception("getAmountsIn out zero");
+		BigInteger outputTokensWithSlipage = null;
+		try {
+			EthereumDexContract uniswapV2Contract = new EthereumDexContract(TradeConstants.ROUTER_MAP.get(TradeConstants.UNISWAP),
+																			web3jServiceClient.getWeb3j(), 
+																		    credentials, 
+																		    gasPrice, 
+																		    gasLimit);
+			
+			List amountsOuts = (List) uniswapV2Contract.getAmountsIn(inputEthers, memoryPathAddress)// TODO: come back to verify 
+																  .flowable()
+																  .blockingSingle();
+			BigInteger amountsOut = (BigInteger)amountsOuts.get(0);					  
+			System.out.println("AMOUNTs in"+ amountsOut);
+			if(amountsOut.compareTo(BigInteger.ZERO) <=0 ) {
+				throw new Exception("getAmountsIn out zero");
+			}
+			double slipageWithCal  = amountsOut.doubleValue() * slipage;
+			outputTokensWithSlipage = new BigDecimal(amountsOut.doubleValue() - slipageWithCal).setScale(0, RoundingMode.DOWN).toBigInteger();
+		} catch (Exception e) {
+			e.printStackTrace();
+			if(e instanceof ContractCallException) {
+				if(e.getMessage().contains("org.web3j.tx.exceptions.ContractCallException: Contract Call has been reverted by the EVM with the reason: 'execution reverted: UniswapV2Library: INSUFFICIENT_LIQUIDITY'.")) {
+					System.out.println("");
+				}
+			}
 		}
-		double slipageWithCal  = amountsOut.doubleValue() * slipage;
-		BigInteger outputTokensWithSlipage = new BigDecimal(amountsOut.doubleValue() - slipageWithCal).setScale(0, RoundingMode.DOWN).toBigInteger();
 		
 		return outputTokensWithSlipage;
 	}
@@ -130,8 +143,6 @@ public class UniswapServiceImpl implements DexContractService {
 																		 data);
 		
 		byte[] signedMessage = TransactionEncoder.signMessage(rawTransaction, credentials);
-		System.out.println("swapped eth tokens");
-		return "swappedhash";
 //		EthSendTransaction ethSendTransaction = web3jServiceClient.getWeb3j()
 //																  .ethSendRawTransaction(Numeric.toHexString(signedMessage))
 //																  .flowable()
@@ -140,6 +151,7 @@ public class UniswapServiceImpl implements DexContractService {
 //			throw new Exception(ethSendTransaction.getError().getMessage());
 //		}
 //		return ethSendTransaction.getTransactionHash();
+		return "Test Passes with swaptoEth";
 	}
 
 	private List<Address> getAddress(List<String> path) {

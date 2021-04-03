@@ -210,7 +210,6 @@ public class OrderSnipeExecuteGatewayEndpoint{
 					snipeTransactionRequest.setSwappedHash(hash);
 					snipeTransactionRequest.setSnipeStatus(TradeConstants.FILLED);
 					snipeTransactionRequest.setSnipe(true);
-				
 				}
 			}
 		} catch (Exception e) {
