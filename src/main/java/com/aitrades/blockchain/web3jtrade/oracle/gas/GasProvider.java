@@ -7,6 +7,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 import com.aitrades.blockchain.web3jtrade.domain.GasModeEnum;
+import com.aitrades.blockchain.web3jtrade.domain.TradeConstants;
 @Component
 public class GasProvider{
 	
@@ -21,7 +22,7 @@ public class GasProvider{
 
 
 	public BigInteger getGasLimit(GasModeEnum gasMode, BigInteger gasLimit) throws Exception {
-		return StringUtils.equalsIgnoreCase(gasMode.getValue().toLowerCase(), CUSTOM) ? gasLimit : strategyGasProvider.getGasPrice(gasMode);
+		return StringUtils.equalsIgnoreCase(gasMode.getValue().toLowerCase(), CUSTOM) ? gasLimit : strategyGasProvider.getGasLimit(TradeConstants.UNISWAP);
 	}
 
 
