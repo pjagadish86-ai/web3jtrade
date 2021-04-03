@@ -46,7 +46,7 @@ public class RabbitMQOrderSubmitBuyConfig {
         SimpleMessageListenerContainer container =
                 new SimpleMessageListenerContainer(connectionFactory);
         container.setQueues(orderSubmitBuyQueue());
-        container.setConcurrentConsumers(2);
+        container.setConcurrentConsumers(5);
         container.setDefaultRequeueRejected(false);
         container.setAcknowledgeMode(AcknowledgeMode.NONE);
         return container;

@@ -106,9 +106,7 @@ public class OrderSnipeExecuteGatewayEndpoint{
 	
 	@ServiceActivator(inputChannel = "getReservesEventChannel", outputChannel = "addLiquidityEvent")
 	public Map<String, Object> getReservesEventChannel(Map<String, Object> tradeOrderMap) throws Exception{
-		
 		if(tradeOrderMap.get(TradeConstants.PAIR_CREATED) != null) {
-			
 			SnipeTransactionRequest snipeTransactionRequest = (SnipeTransactionRequest)tradeOrderMap.get(TradeConstants.SNIPETRANSACTIONREQUEST);
 			if(tradeOrderMap.get(TradeConstants.HAS_RESERVES) == null) {
 				Tuple3<BigInteger, BigInteger, BigInteger> reservers = ethereumDexTradeService.getReservesOfPair(snipeTransactionRequest.getRoute(), snipeTransactionRequest.getPairAddress(), snipeTransactionRequest.getCredentials(), snipeTransactionRequest.getGasPrice(), snipeTransactionRequest.getGasLimit());
@@ -119,18 +117,6 @@ public class OrderSnipeExecuteGatewayEndpoint{
 					} 
 				}
 			}
-			
-			Flowable<PairPrice> pairData = subGraphPriceClient.getPairData(snipeTransactionRequest.getPairAddress());
-			pairData.subscribeOn(Schedulers.io())
-					.blockingSubscribe(resp -> {
-			if(resp != null && resp.getData() != null 
-					&& resp.getData().getPair() != null 
-					&& resp.getData().getPair().getReserve0AsBigDecimal().compareTo(BigDecimal.ZERO) > 0 
-					&& resp.getData().getPair().getReserve1AsBigDecimal().compareTo(BigDecimal.ZERO) > 0) {
-				 tradeOrderMap.put(TradeConstants.HAS_RESERVES, Boolean.TRUE);
-				 return;
-			}
-		});
 		}
 		return tradeOrderMap;
 	}
