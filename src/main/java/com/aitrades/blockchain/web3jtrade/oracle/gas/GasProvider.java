@@ -5,6 +5,7 @@ import java.math.BigInteger;
 import org.apache.commons.lang.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
+import org.web3j.protocol.core.methods.request.Transaction;
 
 import com.aitrades.blockchain.web3jtrade.domain.GasModeEnum;
 import com.aitrades.blockchain.web3jtrade.domain.TradeConstants;
@@ -25,5 +26,12 @@ public class GasProvider{
 		return StringUtils.equalsIgnoreCase(gasMode.getValue().toLowerCase(), CUSTOM) ? gasLimit : strategyGasProvider.getGasLimit(TradeConstants.UNISWAP);
 	}
 
+	public BigInteger getGasLimit(GasModeEnum gasMode,  BigInteger gasLimit, Transaction transaction) throws Exception {
+		if(StringUtils.equalsIgnoreCase(gasMode.getValue().toLowerCase(), CUSTOM)) {
+			return gasLimit;
+		}else {
+			return strategyGasProvider.getGasLimit(transaction, TradeConstants.UNISWAP);
+		}
+	}
 
 }

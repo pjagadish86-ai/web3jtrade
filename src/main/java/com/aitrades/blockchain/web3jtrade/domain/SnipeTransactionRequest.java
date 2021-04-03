@@ -2,7 +2,10 @@ package com.aitrades.blockchain.web3jtrade.domain;
 
 import java.math.BigDecimal;
 import java.math.BigInteger;
+import java.time.LocalDateTime;
+import java.util.Date;
 import java.util.List;
+import java.util.concurrent.atomic.AtomicInteger;
 
 import org.apache.commons.lang.builder.EqualsBuilder;
 import org.apache.commons.lang.builder.HashCodeBuilder;
@@ -10,6 +13,7 @@ import org.apache.commons.lang.builder.ToStringBuilder;
 import org.springframework.data.annotation.Id;
 import org.web3j.crypto.Credentials;
 
+import com.fasterxml.jackson.annotation.JsonFormat;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonInclude;
@@ -77,7 +81,14 @@ public class SnipeTransactionRequest {
 	private String doSell;
 	private String doSellPercentage;
 	
+	private AtomicInteger atomicInteger;
 	private String read;
+	
+	@JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd@HH:mm:ss.SSSZ")
+    private LocalDateTime createdLocalDateTime;
+	
+	@JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd@HH:mm:ss.SSSZ")
+    private LocalDateTime updatedLocalDateTime;
 	
 	public String getId() {
 		return id;
@@ -337,6 +348,30 @@ public class SnipeTransactionRequest {
 
 	public void setSlipageInDouble(Double slipageInDouble) {
 		this.slipageInDouble = slipageInDouble;
+	}
+
+	public AtomicInteger getAtomicInteger() {
+		return atomicInteger;
+	}
+
+	public void setAtomicInteger(AtomicInteger atomicInteger) {
+		this.atomicInteger = atomicInteger;
+	}
+
+	public LocalDateTime getCreatedLocalDateTime() {
+		return createdLocalDateTime;
+	}
+
+	public void setCreatedLocalDateTime(LocalDateTime createdLocalDateTime) {
+		this.createdLocalDateTime = createdLocalDateTime;
+	}
+
+	public LocalDateTime getUpdatedLocalDateTime() {
+		return updatedLocalDateTime;
+	}
+
+	public void setUpdatedLocalDateTime(LocalDateTime updatedLocalDateTime) {
+		this.updatedLocalDateTime = updatedLocalDateTime;
 	}
 
 	@Override

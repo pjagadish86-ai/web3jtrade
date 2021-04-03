@@ -1,6 +1,8 @@
 package com.aitrades.blockchain.web3jtrade.integration.snipe;
 
 import java.math.BigInteger;
+import java.time.LocalDateTime;
+import java.util.Date;
 import java.util.Map;
 import java.util.Optional;
 import java.util.concurrent.ConcurrentHashMap;
@@ -158,6 +160,9 @@ public class OrderSnipeExecuteGatewayEndpoint{
 			}
 		} catch (Exception e) {
 			if(StringUtils.containsIgnoreCase(e.getMessage(), "INSUFFICIENT_LIQUIDITY")) {
+				if(snipeTransactionRequest.getCreatedLocalDateTime() == null) {
+					snipeTransactionRequest.setCreatedLocalDateTime(LocalDateTime.now());
+				}
 				snipeOrderReSender.send(snipeTransactionRequest);
 			}else {
 				purgeMessage(snipeTransactionRequest);

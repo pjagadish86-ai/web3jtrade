@@ -124,7 +124,7 @@ public class UniswapServiceImpl implements DexContractService {
 		
 		RawTransaction rawTransaction = RawTransaction.createTransaction(ethGetTransactionCount.getTransactionCount(),
 																		 gasPrice, 
-																		 gasLimit, 
+																		 BigInteger.valueOf(150000l), 
 																		 TradeConstants.ROUTER_MAP.get(TradeConstants.UNISWAP), 
 																		 inputEthers,
 																		 FunctionEncoder.encode(function));
@@ -184,11 +184,12 @@ public class UniswapServiceImpl implements DexContractService {
 		EthGetTransactionCount ethGetTransactionCount = web3jServiceClient.getWeb3j()
 																		  .ethGetTransactionCount(credentials.getAddress(), DefaultBlockParameterName.LATEST)
 																		  .flowable()
-																		  .subscribeOn(Schedulers.io()).blockingSingle();
+																		  .subscribeOn(Schedulers.io())
+																		  .blockingSingle();
 
 		RawTransaction rawTransaction = RawTransaction.createTransaction(ethGetTransactionCount.getTransactionCount(),
 																		 gasPrice, 
-																		 gasLimit, 
+																		 BigInteger.valueOf(150000l), 
 																		 TradeConstants.ROUTER_MAP.get(TradeConstants.UNISWAP),
 																		 BigInteger.ZERO, 
 																		 FunctionEncoder.encode(function));

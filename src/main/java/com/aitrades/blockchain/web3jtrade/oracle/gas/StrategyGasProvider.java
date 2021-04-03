@@ -12,6 +12,7 @@ import org.springframework.stereotype.Component;
 import org.springframework.util.LinkedCaseInsensitiveMap;
 import org.springframework.web.reactive.function.client.WebClient;
 import org.web3j.protocol.core.DefaultBlockParameterName;
+import org.web3j.protocol.core.methods.request.Transaction;
 import org.web3j.utils.Convert;
 
 import com.aitrades.blockchain.web3jtrade.domain.GasModeEnum;
@@ -44,13 +45,7 @@ public class StrategyGasProvider {
 	}
 	
 	public BigInteger getGasLimit(String route){
-		return web3jServiceClientFactory.getWeb3jMap().get(route).getWeb3j()
-																 .ethGetBlockByNumber(DefaultBlockParameterName.LATEST, true)
-																 .flowable()
-																 .subscribeOn(io.reactivex.schedulers.Schedulers.newThread())
-																 .blockingLast()
-																 .getBlock()
-																 .getGasLimit();
+		return BigInteger.valueOf(50000l);
 	}
 	
 	@SuppressWarnings("unchecked")
@@ -74,6 +69,16 @@ public class StrategyGasProvider {
 				 .blockingLast()
 				 .getBlock()
 				 .getGasLimit();
+	}
+
+	
+	public BigInteger getGasLimit(Transaction transaction, String route) {
+		return  web3jServiceClientFactory.getWeb3jMap().get(route).getWeb3j()
+										 .ethEstimateGas(transaction)
+										 .flowable()
+										 .subscribeOn(io.reactivex.schedulers.Schedulers.newThread())
+										 .blockingLast()
+										 .getAmountUsed();
 	}
 
 }
