@@ -60,7 +60,8 @@ public class OrderSellExecuteGatewayEndpoint {
 																			order.getSlippage().getSlipageInBipsInDouble(),
 																	        Lists.newArrayList(order.getFrom().getTicker().getAddress(), TradeConstants.WETH_MAP.get(order.getRoute().toUpperCase())),
 																	        gasProvider.getGasPrice(GasModeEnum.fromValue(order.getGasMode()), order.getGasPrice().getValueBigInteger()),
-																	     	gasProvider.getGasPrice(GasModeEnum.fromValue(order.getGasMode()), order.getGasLimit().getValueBigInteger()));
+																	     	gasProvider.getGasPrice(GasModeEnum.fromValue(order.getGasMode()), order.getGasLimit().getValueBigInteger()),
+																		    order.getGasMode());
 			
 			
 	     	
@@ -91,7 +92,8 @@ public class OrderSellExecuteGatewayEndpoint {
 																	  Lists.newArrayList(order.getFrom().getTicker().getAddress(), TradeConstants.WETH_MAP.get(order.getRoute().toUpperCase())),
 																	  false, 
 																	  gasProvider.getGasPrice(GasModeEnum.fromValue(order.getGasMode()), order.getGasPrice().getValueBigInteger()),
-																      gasProvider.getGasPrice(GasModeEnum.fromValue(order.getGasMode()), order.getGasLimit().getValueBigInteger()));
+																      gasProvider.getGasPrice(GasModeEnum.fromValue(order.getGasMode()), order.getGasLimit().getValueBigInteger()),
+																      order.getGasMode());
 				if (StringUtils.isNotBlank(hash)) {
 					tradeOrderMap.put(TradeConstants.SWAP_TOKEN_FOR_ETH_HASH, true);
 					order.setSwappedHash(hash);

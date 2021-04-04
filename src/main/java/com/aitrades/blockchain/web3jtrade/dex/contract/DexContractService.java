@@ -27,14 +27,14 @@ public interface DexContractService {
     
 	public List<Type> getPair(String tokenA, String tokenB) throws Exception;
 	
-	public Tuple3<BigInteger, BigInteger, BigInteger> getReserves(String pairAddress, Credentials credentials, BigInteger gasPrice, BigInteger gasLimit) throws Exception;
+	public Tuple3<BigInteger, BigInteger, BigInteger> getReserves(String pairAddress, Credentials credentials, BigInteger gasPrice, BigInteger gasLimit, String gasMode) throws Exception;
 	
-	public BigInteger getAmountsIn(Credentials credentials, BigInteger inputEthers, Double slipage, List<String> memoryPathAddress, BigInteger gasPrice, BigInteger gasLimit) throws Exception;
+	public BigInteger getAmountsIn(Credentials credentials, BigInteger inputEthers, Double slipage, List<String> memoryPathAddress, BigInteger gasPrice, BigInteger gasLimit, String gasMode) throws Exception;
 	
-	public String swapETHForTokens(Credentials credentials, BigInteger inputEthers, BigInteger outPutTokens, long deadLine, List<String> memoryPathAddress, boolean hasFee, BigInteger gasPrice, BigInteger gasLimit) throws Exception;
+	public String swapETHForTokens(Credentials credentials, BigInteger inputEthers, BigInteger outPutTokens, long deadLine, List<String> memoryPathAddress, boolean hasFee, BigInteger gasPrice, BigInteger gasLimit, String gasMode) throws Exception;
 	
-	public BigInteger getAmountsOut(Credentials credentials,BigInteger inputTokens, Double slipage, List<String> memoryPathAddress, BigInteger gasPrice, BigInteger gasLimit) throws Throwable;
+	public BigInteger getAmountsOut(Credentials credentials,BigInteger inputTokens, Double slipage, List<String> memoryPathAddress, BigInteger gasPrice, BigInteger gasLimit, String gasMode) throws Throwable;
 	
-	public String swapTokenForETH(Credentials credentials, BigInteger inputTokens, BigInteger outputEthers, long deadLine, List<String> memoryPathAddress, boolean hasFee, BigInteger gasPrice, BigInteger gasLimit) throws Exception;
+	public String swapTokenForETH(Credentials credentials, BigInteger inputTokens, BigInteger outputEthers, long deadLine, List<String> memoryPathAddress, boolean hasFee, BigInteger gasPrice, BigInteger gasLimit, String gasMode) throws Exception;
 
 }

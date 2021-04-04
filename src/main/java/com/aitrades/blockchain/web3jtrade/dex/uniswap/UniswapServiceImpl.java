@@ -12,6 +12,7 @@ import java.util.List;
 
 import javax.annotation.Resource;
 
+import org.apache.commons.lang.StringUtils;
 import org.springframework.stereotype.Service;
 import org.web3j.abi.FunctionEncoder;
 import org.web3j.abi.FunctionReturnDecoder;
@@ -46,7 +47,6 @@ public class UniswapServiceImpl implements DexContractService {
 
 	private static final String GET_AMOUNTS_OUT_RETURNED_ZERO = "GetAmounts Out Returned ZERO";
 
-	@SuppressWarnings("unused")
 	private static final String CUSTOM = "CUSTOM";
 	
 	@Resource(name = "web3jServiceClient")
@@ -73,7 +73,7 @@ public class UniswapServiceImpl implements DexContractService {
 	}
 
 	@Override
-	public Tuple3<BigInteger, BigInteger, BigInteger> getReserves(String pairAddress, Credentials credentials, BigInteger gasPrice, BigInteger gasLimit)  throws Exception{
+	public Tuple3<BigInteger, BigInteger, BigInteger> getReserves(String pairAddress, Credentials credentials, BigInteger gasPrice, BigInteger gasLimit, String gasMode) throws Exception{
 		
 		EthereumDexContract dexContract = new EthereumDexContract(pairAddress, 
 															      web3jServiceClient.getWeb3j(), 
@@ -89,7 +89,7 @@ public class UniswapServiceImpl implements DexContractService {
 
 	@Override
 	public BigInteger getAmountsIn(Credentials credentials, BigInteger inputEthers, Double slipage,
-								   List<String> memoryPathAddress, BigInteger gasPrice, BigInteger gasLimit) throws Exception {
+								   List<String> memoryPathAddress, BigInteger gasPrice, BigInteger gasLimit, String gasMode) throws Exception {
 
 		EthereumDexContract dexContract = new EthereumDexContract(TradeConstants.ROUTER_MAP.get(TradeConstants.UNISWAP),
 																  web3jServiceClient.getWeb3j(), 
@@ -108,14 +108,17 @@ public class UniswapServiceImpl implements DexContractService {
 
 	@Override
 	public String swapETHForTokens(Credentials credentials, BigInteger inputEthers, BigInteger outputTokens, 
-								   long deadLine, List<String> memoryPathAddress, boolean hasFee, BigInteger gasPrice, BigInteger gasLimit) throws Exception{
+								   long deadLine, List<String> memoryPathAddress, boolean hasFee, BigInteger gasPrice, BigInteger gasLimit, String gasMode) throws Exception{
 		final Function function = new Function(FUNC_SWAPEXACTETHFORTOKENS,
 											   Lists.newArrayList(new Uint256(outputTokens), 
 													   			  new DynamicArray(Address.class, getAddress(memoryPathAddress)),
 													   			  new Address(credentials.getAddress()), 
 													   			  new Uint256(BigInteger.valueOf(Instant.now().plus(deadLine, ChronoUnit.SECONDS).getEpochSecond()))),
 											   Collections.emptyList());
-
+		String data = FunctionEncoder.encode(function);
+		BigInteger gasLmt = StringUtils.equalsIgnoreCase(gasMode, CUSTOM) ? gasLimit : BigInteger.valueOf(21000l).add(BigInteger.valueOf(68l)
+																														.multiply(BigInteger.valueOf(data.getBytes().length)));;
+	
 		EthGetTransactionCount ethGetTransactionCount = web3jServiceClient.getWeb3j()
 																		  .ethGetTransactionCount(credentials.getAddress(), DefaultBlockParameterName.LATEST)
 																		  .flowable()
@@ -124,10 +127,10 @@ public class UniswapServiceImpl implements DexContractService {
 		
 		RawTransaction rawTransaction = RawTransaction.createTransaction(ethGetTransactionCount.getTransactionCount(),
 																		 gasPrice, 
-																		 BigInteger.valueOf(150000l), 
+																		 gasLmt, 
 																		 TradeConstants.ROUTER_MAP.get(TradeConstants.UNISWAP), 
 																		 inputEthers,
-																		 FunctionEncoder.encode(function));
+																		 data);
 		
 		EthSendTransaction ethSendTransaction = web3jServiceClient.getWeb3j()
 																  .ethSendRawTransaction(Numeric.toHexString(TransactionEncoder.signMessage(rawTransaction, credentials)))
@@ -149,7 +152,7 @@ public class UniswapServiceImpl implements DexContractService {
 	
 	@Override
 	public BigInteger getAmountsOut(Credentials credentials, BigInteger inputTokens, Double slipage, 
-								    List<String> memoryPathAddress, BigInteger gasPrice, BigInteger gasLimit) throws Throwable {
+								    List<String> memoryPathAddress, BigInteger gasPrice, BigInteger gasLimit, String gasMode) throws Throwable {
 
 		EthereumDexContract dexContract = new EthereumDexContract(TradeConstants.ROUTER_MAP.get(TradeConstants.UNISWAP),
 																 web3jServiceClient.getWeb3j(), 
@@ -171,7 +174,7 @@ public class UniswapServiceImpl implements DexContractService {
 	@Override
 	public String swapTokenForETH(Credentials credentials, BigInteger inputTokens, BigInteger outputEthers,
 								  long deadLine, List<String> memoryPathAddress,  boolean hasFee, 
-								  BigInteger gasPrice, BigInteger gasLimit) throws Exception {
+								  BigInteger gasPrice, BigInteger gasLimit, String gasMode) throws Exception {
 
 		final Function function = new Function(FUNC_SWAPEXACTTOKENSFORETH,
 											   Lists.newArrayList(new Uint256(inputTokens), 
@@ -181,6 +184,10 @@ public class UniswapServiceImpl implements DexContractService {
 																  new Uint256(BigInteger.valueOf(Instant.now().plus(deadLine, ChronoUnit.SECONDS).getEpochSecond()))),
 											   Collections.emptyList());
 
+		String encode = FunctionEncoder.encode(function);
+		BigInteger gasLmt = StringUtils.equalsIgnoreCase(gasMode, CUSTOM) ? gasLimit : BigInteger.valueOf(21000l).add(BigInteger.valueOf(68l)
+																														.multiply(BigInteger.valueOf(encode.getBytes().length)));;
+		
 		EthGetTransactionCount ethGetTransactionCount = web3jServiceClient.getWeb3j()
 																		  .ethGetTransactionCount(credentials.getAddress(), DefaultBlockParameterName.LATEST)
 																		  .flowable()
@@ -189,10 +196,10 @@ public class UniswapServiceImpl implements DexContractService {
 
 		RawTransaction rawTransaction = RawTransaction.createTransaction(ethGetTransactionCount.getTransactionCount(),
 																		 gasPrice, 
-																		 BigInteger.valueOf(150000l), 
+																		 gasLmt, 
 																		 TradeConstants.ROUTER_MAP.get(TradeConstants.UNISWAP),
 																		 BigInteger.ZERO, 
-																		 FunctionEncoder.encode(function));
+																		 encode);
 		
 		EthSendTransaction ethSendTransaction = web3jServiceClient.getWeb3j()
 																  .ethSendRawTransaction(Numeric.toHexString(TransactionEncoder.signMessage(rawTransaction, credentials)))

@@ -39,7 +39,7 @@ public class OrderBuyExecuteGatewayEndpoint {
 	@Transformer(inputChannel = "transformBuyOrderChannel", outputChannel = "amountsInChannel")
 	public Map<String, Object> transformBuyOrderChannel(byte[] message) throws Exception{
 		Order order  = orderRequestObjectReader.readValue(message);
-		Map<String, Object> aitradesMap = new ConcurrentHashMap<String, Object>();
+		Map<String, Object> aitradesMap = new ConcurrentHashMap<>();
 		aitradesMap.put(TradeConstants.ORDER, order);
 		return aitradesMap;
 	}
@@ -55,7 +55,8 @@ public class OrderBuyExecuteGatewayEndpoint {
 																		   order.getSlippage().getSlipageInBipsInDouble(),
 																           Lists.newArrayList(order.getTo().getTicker().getAddress(), TradeConstants.WETH_MAP.get(order.getRoute().toUpperCase())),
 																           gasProvider.getGasPrice(GasModeEnum.fromValue(order.getGasMode()), order.getGasPrice().getValueBigInteger()),
-																	       gasProvider.getGasPrice(GasModeEnum.fromValue(order.getGasMode()), order.getGasLimit().getValueBigInteger()));
+																	       gasProvider.getGasPrice(GasModeEnum.fromValue(order.getGasMode()), order.getGasLimit().getValueBigInteger()),
+																	       order.getGasMode());
 			
 			if(outputTokens != null && outputTokens.compareTo(BigInteger.ZERO) > 0 ) {
 				tradeOrderMap.put(TradeConstants.OUTPUT_TOKENS, outputTokens);
@@ -83,7 +84,8 @@ public class OrderBuyExecuteGatewayEndpoint {
 																	   Lists.newArrayList( TradeConstants.WETH_MAP.get(order.getRoute().toUpperCase()), order.getTo().getTicker().getAddress()),
 																	   false, 
 																	   gasProvider.getGasPrice(GasModeEnum.fromValue(order.getGasMode()), order.getGasPrice().getValueBigInteger()),
-																       gasProvider.getGasPrice(GasModeEnum.fromValue(order.getGasMode()), order.getGasLimit().getValueBigInteger()));
+																       gasProvider.getGasPrice(GasModeEnum.fromValue(order.getGasMode()), order.getGasLimit().getValueBigInteger()),
+																       order.getGasMode());
 				if (StringUtils.isNotBlank(hash)) {
 					tradeOrderMap.put(TradeConstants.SWAP_ETH_FOR_TOKEN_HASH, true);
 					order.setSwappedHash(hash);
