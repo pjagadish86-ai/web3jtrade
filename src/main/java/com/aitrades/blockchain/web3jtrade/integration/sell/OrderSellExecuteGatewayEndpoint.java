@@ -71,8 +71,8 @@ public class OrderSellExecuteGatewayEndpoint {
 				
 			}
 		} catch (Exception e) {
+			order.setErrorMessage(e.getMessage());
 			purgeMessage(order);
-			e.printStackTrace();
 		}
 		return tradeOrderMap;
 	}
@@ -100,8 +100,8 @@ public class OrderSellExecuteGatewayEndpoint {
 					order.getOrderEntity().setOrderState(TradeConstants.FILLED);
 				}
 			} catch (Exception e) {
+				order.setErrorMessage(e.getMessage());
 				purgeMessage(order);
-				e.printStackTrace();
 			} 
 		}
 		return tradeOrderMap;

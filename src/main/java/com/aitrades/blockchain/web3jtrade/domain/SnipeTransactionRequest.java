@@ -84,6 +84,8 @@ public class SnipeTransactionRequest {
 	private AtomicInteger atomicInteger;
 	private String read;
 	
+	private String errorMessage;
+	
 	@JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd@HH:mm:ss.SSSZ")
     private LocalDateTime createdLocalDateTime;
 	
@@ -287,6 +289,14 @@ public class SnipeTransactionRequest {
 
 	public void setDoSellPercentage(String doSellPercentage) {
 		this.doSellPercentage = doSellPercentage;
+	}
+
+	public String getErrorMessage() {
+		return errorMessage;
+	}
+
+	public void setErrorMessage(String errorMessage) {
+		this.errorMessage = errorMessage;
 	}
 
 	@JsonIgnore

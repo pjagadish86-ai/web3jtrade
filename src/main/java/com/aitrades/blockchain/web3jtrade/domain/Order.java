@@ -34,6 +34,7 @@ public class Order {
 	private String approvedHash;
 	private String swappedHash;
 	private String read;
+	private String errorMessage;
 	private boolean isFee;
 	
 	public String getId() {
@@ -151,6 +152,13 @@ public class Order {
 	}
 	public void setFee(boolean isFee) {
 		this.isFee = isFee;
+	}
+	
+	public String getErrorMessage() {
+		return errorMessage;
+	}
+	public void setErrorMessage(String errorMessage) {
+		this.errorMessage = errorMessage;
 	}
 	@Override
 	public String toString() {

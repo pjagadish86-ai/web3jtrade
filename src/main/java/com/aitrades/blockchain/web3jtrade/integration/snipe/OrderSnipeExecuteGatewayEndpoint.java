@@ -171,8 +171,8 @@ public class OrderSnipeExecuteGatewayEndpoint{
 				}
 				snipeOrderReSender.send(snipeTransactionRequest);
 			}else {
+				snipeTransactionRequest.setErrorMessage(e.getMessage());
 				purgeMessage(snipeTransactionRequest);
-				throw e;
 			}
 		}
 		return tradeOrderMap;	
@@ -202,8 +202,8 @@ public class OrderSnipeExecuteGatewayEndpoint{
 				}
 			}
 		} catch (Exception e) {
+			snipeTransactionRequest.setErrorMessage(e.getMessage());
 			purgeMessage(snipeTransactionRequest);
-			e.printStackTrace();
 		}
 		return tradeOrderMap;
 	}

@@ -62,8 +62,8 @@ public class OrderBuyExecuteGatewayEndpoint {
 				tradeOrderMap.put(TradeConstants.OUTPUT_TOKENS, outputTokens);
 			}
 		} catch (Exception e) {
+			order.setErrorMessage(e.getMessage());
 			purgeMessage(order);
-			e.printStackTrace();
 		}
 		return tradeOrderMap;
 	}
@@ -93,8 +93,8 @@ public class OrderBuyExecuteGatewayEndpoint {
 				} 
 			}
 		} catch (Exception e) {
+			order.setErrorMessage(e.getMessage());
 			purgeMessage(order);
-			e.printStackTrace();
 		}
 		return tradeOrderMap;
 	}
