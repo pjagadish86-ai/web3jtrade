@@ -16,7 +16,6 @@ import com.aitrades.blockchain.web3jtrade.domain.TradeConstants;
 import com.aitrades.blockchain.web3jtrade.oracle.gas.GasProvider;
 import com.aitrades.blockchain.web3jtrade.repository.OrderHistoryRepository;
 import com.aitrades.blockchain.web3jtrade.repository.OrderRepository;
-import com.aitrades.blockchain.web3jtrade.side.OrderState;
 import com.fasterxml.jackson.databind.ObjectReader;
 import com.google.common.collect.Lists;
 

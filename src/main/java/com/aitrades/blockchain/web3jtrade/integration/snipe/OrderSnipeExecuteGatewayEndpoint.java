@@ -38,7 +38,6 @@ import com.google.common.collect.Lists;
 import io.reactivex.Flowable;
 import io.reactivex.schedulers.Schedulers;
 @SuppressWarnings({"unused", "rawtypes"})
-//TODO:	// May be we should find a way to send null channel if there no valid movement.
 public class OrderSnipeExecuteGatewayEndpoint{
 	
 	private static final String CUSTOM = "CUSTOM";
@@ -92,11 +91,6 @@ public class OrderSnipeExecuteGatewayEndpoint{
 		Optional<Type> pairAddress  = ethereumDexTradeService.getPairAddress(snipeTransactionRequest.getRoute(), snipeTransactionRequest.getToAddress(), TradeConstants.WETH_MAP.get(snipeTransactionRequest.getRoute()))
 												             .parallelStream()
 												             .findFirst();
-		if(pairAddress.isPresent() && StringUtils.startsWithIgnoreCase((String)pairAddress.get().getValue(), _0X000000)) {
-			pairAddress  = ethereumDexTradeService.getPairAddress(snipeTransactionRequest.getRoute(), snipeTransactionRequest.getToAddress(), TradeConstants.ETH)
-									             .parallelStream()
-									             .findFirst();
-		}
 		if(pairAddress.isPresent() && !StringUtils.startsWithIgnoreCase((String)pairAddress.get().getValue(), _0X000000)) {
 			tradeOrderMap.put(TradeConstants.PAIR_CREATED, Boolean.TRUE);
 			snipeTransactionRequest.setPairAddress((String)pairAddress.get().getValue());
@@ -108,19 +102,21 @@ public class OrderSnipeExecuteGatewayEndpoint{
 	public Map<String, Object> getReservesEventChannel(Map<String, Object> tradeOrderMap) throws Exception{
 		if(tradeOrderMap.get(TradeConstants.PAIR_CREATED) != null) {
 			SnipeTransactionRequest snipeTransactionRequest = (SnipeTransactionRequest)tradeOrderMap.get(TradeConstants.SNIPETRANSACTIONREQUEST);
-			if(tradeOrderMap.get(TradeConstants.HAS_RESERVES) == null) {
-				Tuple3<BigInteger, BigInteger, BigInteger> reservers = ethereumDexTradeService.getReservesOfPair(snipeTransactionRequest.getRoute(), 
-																										         snipeTransactionRequest.getPairAddress(), 
-																										         snipeTransactionRequest.getCredentials(), 
-																										         snipeTransactionRequest.getGasPrice(), 
-																										         snipeTransactionRequest.getGasLimit(),
-																										         snipeTransactionRequest.getGasMode());
-				if (reservers != null) {
-					if (reservers.component1().compareTo(BigInteger.ZERO) > 0
+			try {
+				if(tradeOrderMap.get(TradeConstants.HAS_RESERVES) == null) {
+					Tuple3<BigInteger, BigInteger, BigInteger> reservers = ethereumDexTradeService.getReservesOfPair(snipeTransactionRequest.getRoute(), 
+																											         snipeTransactionRequest.getPairAddress(), 
+																											         snipeTransactionRequest.getCredentials(), 
+																											         snipeTransactionRequest.getGasPrice(), 
+																											         snipeTransactionRequest.getGasLimit(),
+																											         snipeTransactionRequest.getGasMode());
+					if (reservers != null 
+							&& reservers.component1().compareTo(BigInteger.ZERO) > 0
 							&& reservers.component2().compareTo(BigInteger.ZERO) > 0) {
-						tradeOrderMap.put(TradeConstants.HAS_RESERVES, Boolean.TRUE);
-					} 
+							tradeOrderMap.put(TradeConstants.HAS_RESERVES, Boolean.TRUE);
+					}
 				}
+			} catch (Exception e) {
 			}
 		}
 		return tradeOrderMap;
@@ -151,7 +147,7 @@ public class OrderSnipeExecuteGatewayEndpoint{
 	public Map<String, Object> amountsInChannel(Map<String, Object> tradeOrderMap) throws Exception{
 		SnipeTransactionRequest snipeTransactionRequest = (SnipeTransactionRequest) tradeOrderMap.get(TradeConstants.SNIPETRANSACTIONREQUEST);
 		try {
-			if(tradeOrderMap.get(TradeConstants.HAS_LIQUIDTY_EVENT) != null || tradeOrderMap.get(TradeConstants.HAS_RESERVES) != null ) {
+			if(tradeOrderMap.get(TradeConstants.HAS_LIQUIDTY_EVENT) != null && tradeOrderMap.get(TradeConstants.HAS_RESERVES) != null ) {
 				BigInteger outputTokens = ethereumDexTradeService.getAmountsIn(snipeTransactionRequest.getRoute(),
 																		       snipeTransactionRequest.getCredentials(), 
 																		       snipeTransactionRequest.getInputTokenValueAmountAsBigInteger(),
@@ -166,15 +162,16 @@ public class OrderSnipeExecuteGatewayEndpoint{
 			}
 		} catch (Exception e) {
 			if(StringUtils.containsIgnoreCase(e.getMessage(), "INSUFFICIENT_LIQUIDITY")) {
-				if(snipeTransactionRequest.getCreatedLocalDateTime() == null) {
-					snipeTransactionRequest.setCreatedLocalDateTime(LocalDateTime.now());
+				if(StringUtils.isBlank(snipeTransactionRequest.getCreatedDateTime())) {
+					snipeTransactionRequest.setCreatedDateTime(LocalDateTime.now().toString());
 				}
 				snipeOrderReSender.send(snipeTransactionRequest);
 			}else {
 				snipeTransactionRequest.setErrorMessage(e.getMessage());
 				purgeMessage(snipeTransactionRequest);
 			}
-		}
+		} 
+		
 		return tradeOrderMap;	
 	}
 	
@@ -214,7 +211,7 @@ public class OrderSnipeExecuteGatewayEndpoint{
 		if(snipeTransactionRequest.hasSniped() && tradeOrderMap.get(TradeConstants.SWAP_ETH_FOR_TOKEN_HASH) != null) {
 			purgeMessage(snipeTransactionRequest);
 		}else {
-			snipeOrderRepository.updateAvail(snipeTransactionRequest);
+			snipeOrderReSender.send(snipeTransactionRequest);
 		}
 		return tradeOrderMap;
 	}

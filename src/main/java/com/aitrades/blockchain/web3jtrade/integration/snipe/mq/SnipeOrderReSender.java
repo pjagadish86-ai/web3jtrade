@@ -1,13 +1,11 @@
 package com.aitrades.blockchain.web3jtrade.integration.snipe.mq;
 
-import java.time.Duration;
 import java.time.LocalDateTime;
 
 import javax.annotation.Resource;
 
 import org.springframework.amqp.core.AmqpTemplate;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
 
 import com.aitrades.blockchain.web3jtrade.domain.SnipeTransactionRequest;
@@ -28,16 +26,16 @@ public class SnipeOrderReSender {
 	
 	public void send(SnipeTransactionRequest snipeTransactionRequest) throws Exception {
 		try {
-			System.out.println("Into sleep mode-" + snipeTransactionRequest);
-			Thread.sleep(25000l);
-			int response = LocalDateTime.now().getMinute() - snipeTransactionRequest.getCreatedLocalDateTime().getMinute();
+			Thread.sleep(15000l);
+			requeueMessage(snipeTransactionRequest);
+			int response = LocalDateTime.now().getMinute() - LocalDateTime.parse(snipeTransactionRequest.getCreatedDateTime()).getMinute();
 			if(response <= 30) {
 				requeueMessage(snipeTransactionRequest);
 			}else {
+				snipeTransactionRequest.setSnipeExpired("retired more than 30 mins snipeorder expired");
 				snipeOrderHistoryRepository.save(snipeTransactionRequest);
 				snipeOrderRepository.delete(snipeTransactionRequest);
 			}
-			System.out.println("Snipe Message Sent" + snipeTransactionRequest);
 		} catch (InterruptedException e) {
 			e.printStackTrace();
 		} 
