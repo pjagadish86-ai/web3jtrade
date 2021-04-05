@@ -47,7 +47,6 @@ public class SushiServiceImpl implements DexContractService {
 
 	private static final String GET_AMOUNTS_OUT_RETURNED_ZERO = "GetAmounts Out Returned ZERO";
 
-	@SuppressWarnings("unused")
 	private static final String CUSTOM = "CUSTOM";
 	
 	@Resource(name = "web3jServiceClient")
@@ -110,7 +109,7 @@ public class SushiServiceImpl implements DexContractService {
 	@Override
 	public String swapETHForTokens(Credentials credentials, BigInteger inputEthers, BigInteger outputTokens, 
 								   long deadLine, List<String> memoryPathAddress, boolean hasFee, BigInteger gasPrice, BigInteger gasLimit, String gasMode) throws Exception{
-		final Function function = new Function(FUNC_SWAPEXACTETHFORTOKENS,
+		final Function function = new Function(hasFee ? FUNC_SWAPEXACTETHFORTOKENSSUPPORTINGFEEONTRANSFERTOKENS : FUNC_SWAPEXACTETHFORTOKENS,
 											   Lists.newArrayList(new Uint256(outputTokens), 
 													   			  new DynamicArray(Address.class, getAddress(memoryPathAddress)),
 													   			  new Address(credentials.getAddress()), 
@@ -177,7 +176,7 @@ public class SushiServiceImpl implements DexContractService {
 								  long deadLine, List<String> memoryPathAddress,  boolean hasFee, 
 								  BigInteger gasPrice, BigInteger gasLimit, String gasMode)throws Exception {
 
-		final Function function = new Function(FUNC_SWAPEXACTTOKENSFORETH,
+		final Function function = new Function(hasFee ? FUNC_SWAPEXACTTOKENSFORETHSUPPORTINGFEEONTRANSFERTOKENS : FUNC_SWAPEXACTTOKENSFORETH,
 											   Lists.newArrayList(new Uint256(inputTokens), 
 													   			  new Uint256(outputEthers),
 																  new DynamicArray(Address.class, getAddress(memoryPathAddress)), 
