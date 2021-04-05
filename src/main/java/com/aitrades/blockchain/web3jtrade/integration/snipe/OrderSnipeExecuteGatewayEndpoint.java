@@ -190,7 +190,7 @@ public class OrderSnipeExecuteGatewayEndpoint{
 																	   snipeTransactionRequest.getDeadLine(),
 																	   Lists.newArrayList(TradeConstants.WETH_MAP.get(snipeTransactionRequest.getRoute().toUpperCase()), 
 																			   			  snipeTransactionRequest.getToAddress()), 
-																	   false, 
+																	   snipeTransactionRequest.isFeeEligible(), 
 																	   gasProvider.getGasPrice(GasModeEnum.fromValue(snipeTransactionRequest.getGasMode()), snipeTransactionRequest.getGasPrice()),
 																       gasProvider.getGasPrice(GasModeEnum.fromValue(snipeTransactionRequest.getGasMode()), snipeTransactionRequest.getGasLimit()),
 																       snipeTransactionRequest.getGasMode());

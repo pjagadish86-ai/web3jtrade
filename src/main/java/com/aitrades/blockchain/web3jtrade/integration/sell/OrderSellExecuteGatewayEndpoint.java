@@ -40,10 +40,6 @@ public class OrderSellExecuteGatewayEndpoint {
 	@Transformer(inputChannel = "transformSellOrderChannel", outputChannel = "amountsOutChannel")
 	public Map<String, Object> transformSellOrderChannel(byte[] message) throws Exception{
 		Order order  = orderRequestObjectReader.readValue(message);
-		if(order.getOrderEntity().getOrderState().equalsIgnoreCase(OrderState.FILLED.name())) {
-			throw new Exception("Order has already been successfull, if need any new order, other please place  order");
-		}
-		
 		Map<String, Object> aitradesMap = new ConcurrentHashMap<String, Object>();
 		aitradesMap.put(TradeConstants.ORDER, order);
 		return aitradesMap;
@@ -90,7 +86,7 @@ public class OrderSellExecuteGatewayEndpoint {
 																	  outputTokens, 
 																	  250l,
 																	  Lists.newArrayList(order.getFrom().getTicker().getAddress(), TradeConstants.WETH_MAP.get(order.getRoute().toUpperCase())),
-																	  false, 
+																	  order.isFee(), 
 																	  gasProvider.getGasPrice(GasModeEnum.fromValue(order.getGasMode()), order.getGasPrice().getValueBigInteger()),
 																      gasProvider.getGasPrice(GasModeEnum.fromValue(order.getGasMode()), order.getGasLimit().getValueBigInteger()),
 																      order.getGasMode());

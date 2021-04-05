@@ -82,7 +82,7 @@ public class OrderBuyExecuteGatewayEndpoint {
 																	   outputTokens, 
 																	   300l, 
 																	   Lists.newArrayList( TradeConstants.WETH_MAP.get(order.getRoute().toUpperCase()), order.getTo().getTicker().getAddress()),
-																	   false, 
+																	   order.isFee(), 
 																	   gasProvider.getGasPrice(GasModeEnum.fromValue(order.getGasMode()), order.getGasPrice().getValueBigInteger()),
 																       gasProvider.getGasPrice(GasModeEnum.fromValue(order.getGasMode()), order.getGasLimit().getValueBigInteger()),
 																       order.getGasMode());
