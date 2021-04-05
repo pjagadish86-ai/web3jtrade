@@ -76,13 +76,13 @@ public class EthereumDexContract extends Contract {
         final Function function = new Function(FUNC_GETRESERVES, 
                 Arrays.<Type>asList(), 
                 Arrays.<TypeReference<?>>asList(new TypeReference<Uint112>() {}, new TypeReference<Uint112>() {}, new TypeReference<Uint32>() {}));
-        return new RemoteFunctionCall<Tuple3<BigInteger, BigInteger, BigInteger>>(function,
+        return new RemoteFunctionCall<>(function,
                 new Callable<Tuple3<BigInteger, BigInteger, BigInteger>>() {
                     @Override
                     public Tuple3<BigInteger, BigInteger, BigInteger> call() throws Exception {
                         List<Type> results = executeCallMultipleValueReturn(function);
                         if(results == null || results.isEmpty()) {
-                        	return new Tuple3<BigInteger, BigInteger, BigInteger>(BigInteger.ZERO, BigInteger.ZERO, BigInteger.ZERO);
+                        	return new Tuple3<>(BigInteger.ZERO, BigInteger.ZERO, BigInteger.ZERO);
                         }
                         return new Tuple3<>(
                                 (BigInteger) results.get(0).getValue(), 
