@@ -13,9 +13,11 @@ import com.aitrades.blockchain.web3jtrade.dex.contract.DexTradeContractService;
 import com.aitrades.blockchain.web3jtrade.domain.GasModeEnum;
 import com.aitrades.blockchain.web3jtrade.domain.Order;
 import com.aitrades.blockchain.web3jtrade.domain.TradeConstants;
+import com.aitrades.blockchain.web3jtrade.domain.TradeOverview;
 import com.aitrades.blockchain.web3jtrade.oracle.gas.GasProvider;
 import com.aitrades.blockchain.web3jtrade.repository.OrderHistoryRepository;
 import com.aitrades.blockchain.web3jtrade.repository.OrderRepository;
+import com.aitrades.blockchain.web3jtrade.repository.TradeOverviewRepository;
 import com.fasterxml.jackson.databind.ObjectReader;
 import com.google.common.collect.Lists;
 
@@ -29,6 +31,9 @@ public class OrderSellExecuteGatewayEndpoint {
 	
 	@Autowired
 	private OrderHistoryRepository orderHistoryRepository;
+	
+	@Autowired 
+	private TradeOverviewRepository tradeOverviewRepository;
 	
 	@Autowired
 	private ObjectReader orderRequestObjectReader;
@@ -112,8 +117,22 @@ public class OrderSellExecuteGatewayEndpoint {
 	}
 
 	private void purgeMessage(Order order) throws Exception {
+		tradeOverviewRepository.save(mapRequestToTradeOverView(order));
 		orderHistoryRepository.save(order);
 		orderRepository.delete(order);
+	}
+	
+	private TradeOverview mapRequestToTradeOverView(Order request) {
+		TradeOverview overview = new TradeOverview();
+		overview.setApprovedHash(request.getApprovedHash());
+		overview.setSwappedHash(request.getSwappedHash());
+		overview.setErrorMessage(request.getErrorMessage());
+		overview.setId(request.getId());
+		overview.setOrderDesc("TRADE");
+		overview.setOrderSide(request.getOrderEntity().getOrderSide());
+		overview.setOrderState(request.getOrderEntity().getOrderState());
+		overview.setOrderType(request.getOrderEntity().getOrderType());
+		return overview;
 	}
 	
 }

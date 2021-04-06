@@ -2,7 +2,6 @@ package com.aitrades.blockchain.web3jtrade.integration.snipe;
 
 import java.math.BigInteger;
 import java.time.LocalDateTime;
-import java.util.Date;
 import java.util.Map;
 import java.util.Optional;
 import java.util.concurrent.ConcurrentHashMap;
@@ -24,17 +23,17 @@ import com.aitrades.blockchain.web3jtrade.dex.contract.event.EthereumDexEventHan
 import com.aitrades.blockchain.web3jtrade.domain.GasModeEnum;
 import com.aitrades.blockchain.web3jtrade.domain.SnipeTransactionRequest;
 import com.aitrades.blockchain.web3jtrade.domain.TradeConstants;
+import com.aitrades.blockchain.web3jtrade.domain.TradeOverview;
 import com.aitrades.blockchain.web3jtrade.integration.snipe.mq.SnipeOrderReSender;
 import com.aitrades.blockchain.web3jtrade.oracle.gas.GasProvider;
-import com.aitrades.blockchain.web3jtrade.oracle.gas.StrategyGasProvider;
 import com.aitrades.blockchain.web3jtrade.repository.SnipeOrderHistoryRepository;
 import com.aitrades.blockchain.web3jtrade.repository.SnipeOrderRepository;
+import com.aitrades.blockchain.web3jtrade.repository.TradeOverviewRepository;
 import com.aitrades.blockchain.web3jtrade.service.Web3jServiceClientFactory;
 import com.aitrades.blockchain.web3jtrade.trade.pendingTransaction.EthereumGethPendingTransactionsRetriever;
 import com.aitrades.blockchain.web3jtrade.trade.pendingTransaction.EthereumParityPendingTransactionsRetriever;
 import com.fasterxml.jackson.databind.ObjectReader;
 import com.google.common.collect.Lists;
-import com.hazelcast.internal.util.MapUtil;
 
 import io.reactivex.Flowable;
 import io.reactivex.schedulers.Schedulers;
@@ -73,6 +72,9 @@ public class OrderSnipeExecuteGatewayEndpoint{
 	
 	@Autowired
 	private SnipeOrderHistoryRepository snipeOrderHistoryRepository;
+	
+	@Autowired 
+	private TradeOverviewRepository tradeOverviewRepository;
 	
 	@Autowired
 	private SnipeOrderReSender snipeOrderReSender;
@@ -241,8 +243,24 @@ public class OrderSnipeExecuteGatewayEndpoint{
 
 
 	private void purgeMessage(SnipeTransactionRequest snipeTransactionRequest) throws Exception {
+		tradeOverviewRepository.save(mapRequestToTradeOverView(snipeTransactionRequest));
 		snipeOrderHistoryRepository.save(snipeTransactionRequest);
 		snipeOrderRepository.delete(snipeTransactionRequest);
+		
+	}
+
+
+	private TradeOverview mapRequestToTradeOverView(SnipeTransactionRequest request) {
+		TradeOverview overview = new TradeOverview();
+		overview.setApprovedHash(request.getApprovedHash());
+		overview.setSwappedHash(request.getSwappedHash());
+		overview.setErrorMessage(request.getErrorMessage());
+		overview.setId(request.getId());
+		overview.setOrderDesc("SNIPE");
+		overview.setOrderSide(null);
+		overview.setOrderState(request.getSnipeStatus());
+		overview.setOrderType("SNIPE");
+		return overview;
 	}
 	
 }
