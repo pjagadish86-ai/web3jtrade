@@ -30,6 +30,7 @@ import com.aitrades.blockchain.web3jtrade.repository.SnipeOrderHistoryRepository
 import com.aitrades.blockchain.web3jtrade.repository.SnipeOrderRepository;
 import com.aitrades.blockchain.web3jtrade.repository.TradeOverviewRepository;
 import com.aitrades.blockchain.web3jtrade.service.Web3jServiceClientFactory;
+import com.aitrades.blockchain.web3jtrade.side.OrderState;
 import com.aitrades.blockchain.web3jtrade.trade.pendingTransaction.EthereumGethPendingTransactionsRetriever;
 import com.aitrades.blockchain.web3jtrade.trade.pendingTransaction.EthereumParityPendingTransactionsRetriever;
 import com.fasterxml.jackson.databind.ObjectReader;
@@ -40,6 +41,8 @@ import io.reactivex.schedulers.Schedulers;
 @SuppressWarnings({"unused", "rawtypes"})
 public class OrderSnipeExecuteGatewayEndpoint{
 	
+	private static final String FAILED = "FAILED";
+	private static final String SNIPE = "SNIPE";
 	private static final String CUSTOM = "CUSTOM";
 	private static final String _0X000000 = "0x000000";
 
@@ -256,10 +259,10 @@ public class OrderSnipeExecuteGatewayEndpoint{
 		overview.setSwappedHash(request.getSwappedHash());
 		overview.setErrorMessage(request.getErrorMessage());
 		overview.setId(request.getId());
-		overview.setOrderDesc("SNIPE");
+		overview.setOrderDesc(SNIPE);
 		overview.setOrderSide(null);
-		overview.setOrderState(request.getSnipeStatus());
-		overview.setOrderType("SNIPE");
+		overview.setOrderState(StringUtils.isNotBlank(request.getErrorMessage())? FAILED: request.getSnipeStatus());
+		overview.setOrderType(SNIPE);
 		return overview;
 	}
 	
