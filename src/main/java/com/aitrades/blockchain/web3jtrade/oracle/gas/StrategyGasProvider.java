@@ -6,6 +6,7 @@ import java.util.concurrent.Executors;
 
 import javax.annotation.Resource;
 
+import org.apache.commons.lang.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.MediaType;
 import org.springframework.stereotype.Component;
@@ -41,7 +42,11 @@ public class StrategyGasProvider {
 												    .bodyToMono(LinkedCaseInsensitiveMap.class)
 												    .subscribeOn(Schedulers.fromExecutor(Executors.newCachedThreadPool()))
 												    .block();
-		return Convert.toWei(gasPrices.get(gasModeEnum.getValue()).toString(), Convert.Unit.GWEI).toBigInteger();
+		String gasMode = gasModeEnum.getValue().toLowerCase();
+		if(StringUtils.equalsIgnoreCase(gasModeEnum.getValue().toLowerCase(), "ULTRA")) {
+			gasMode ="FASTEST";
+		}
+		return Convert.toWei(gasPrices.get(gasMode).toString(), Convert.Unit.GWEI).toBigInteger();
 	}
 	
 	public BigInteger getGasLimit(String route){
@@ -57,7 +62,11 @@ public class StrategyGasProvider {
 												    .bodyToMono(LinkedCaseInsensitiveMap.class)
 												    .subscribeOn(Schedulers.fromExecutor(Executors.newCachedThreadPool()))
 												    .block();
-		Object gasPrice = gasPrices.get(gasModeEnum.getValue());
+		String gasMode = gasModeEnum.getValue().toLowerCase();
+		if(StringUtils.equalsIgnoreCase(gasModeEnum.getValue().toLowerCase(), "ULTRA")) {
+			gasMode ="FASTEST";
+		}
+		Object gasPrice = gasPrices.get(gasMode);
 		return gasPrice != null ? Convert.toWei(gasPrice.toString(), Convert.Unit.GWEI).toBigInteger() : null;
 	}
 	
