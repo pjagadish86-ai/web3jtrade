@@ -37,11 +37,11 @@ public class EthereumDexContract extends Contract {
                 new DynamicArray<Address>(
                         Address.class, getAddress(path))), 
                 Arrays.<TypeReference<?>>asList(new TypeReference<DynamicArray<Uint256>>() {}));
-        return new RemoteFunctionCall<List>(function,
+        return new RemoteFunctionCall<>(function,
                 new Callable<List>() {
 					@Override
                     public List call() throws Exception {
-                        List<Type> result = (List<Type>) executeCallSingleValueReturn(function, List.class);
+                        List<Type> result = executeCallSingleValueReturn(function, List.class);
                         return convertToNative(result);
                     }
                 });
@@ -54,18 +54,18 @@ public class EthereumDexContract extends Contract {
                 Arrays.<Type>asList(new Uint256(amountOut), 
                 new DynamicArray<Address>(Address.class, getAddress(path))), 
                 Arrays.<TypeReference<?>>asList(new TypeReference<DynamicArray<Uint256>>() {}));
-        return new RemoteFunctionCall<List>(function,
+        return new RemoteFunctionCall<>(function,
                 new Callable<List>() {
                     @Override
                     public List call() throws Exception {
-                        List<Type> result = (List<Type>) executeCallSingleValueReturn(function, List.class);
+                        List<Type> result = executeCallSingleValueReturn(function, List.class);
                         return convertToNative(result);
                     }
                 });
     }
 	
 	private List<Address> getAddress(List<String> path) {
-		List<Address>  addresses = new ArrayList<Address>();
+		List<Address>  addresses = new ArrayList<>();
 		for(String addr : path) {
 			addresses.add(new Address(addr));
 		}
