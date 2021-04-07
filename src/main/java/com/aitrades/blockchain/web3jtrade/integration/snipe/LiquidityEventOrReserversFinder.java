@@ -52,18 +52,11 @@ public class LiquidityEventOrReserversFinder {
 	}
 	
 	private Tuple3<BigInteger, BigInteger, BigInteger> getReservesEventChannel(final String  route, final String  pairAddress,final  Credentials credentials,final  BigInteger gasPrice, BigInteger gasLimit, final String  gasMode) throws Exception{
-		try {
-			
-			
-			return ethereumDexTradeService.getReservesOfPair(route, 
-															 pairAddress, 
-															 credentials, 
-															 gasPrice, 
-															 gasLimit,
-													         gasMode);
-		} catch (Exception e) {
-			e.printStackTrace();
-			return null;
-		}
+		return ethereumDexTradeService.getReservesOfPair(route, 
+														 pairAddress, 
+														 credentials, 
+														 gasPrice, 
+														 gasLimit,
+												         gasMode);
 	}
 }
