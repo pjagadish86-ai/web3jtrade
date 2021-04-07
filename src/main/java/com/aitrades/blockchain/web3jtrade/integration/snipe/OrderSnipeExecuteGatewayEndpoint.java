@@ -5,6 +5,7 @@ import java.math.BigInteger;
 import java.time.Duration;
 import java.time.Instant;
 import java.time.LocalDateTime;
+import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -17,6 +18,7 @@ import org.springframework.amqp.core.AmqpTemplate;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.integration.annotation.ServiceActivator;
 import org.springframework.integration.annotation.Transformer;
+import org.springframework.util.CollectionUtils;
 import org.web3j.abi.datatypes.Type;
 import org.web3j.crypto.Credentials;
 
@@ -35,6 +37,7 @@ import com.aitrades.blockchain.web3jtrade.service.Web3jServiceClientFactory;
 import com.aitrades.blockchain.web3jtrade.trade.pendingTransaction.EthereumGethPendingTransactionsRetriever;
 import com.aitrades.blockchain.web3jtrade.trade.pendingTransaction.EthereumParityPendingTransactionsRetriever;
 import com.fasterxml.jackson.databind.ObjectReader;
+import com.google.common.collect.Collections2;
 import com.google.common.collect.Lists;
 @SuppressWarnings({"unused", "rawtypes"})
 public class OrderSnipeExecuteGatewayEndpoint{
@@ -82,8 +85,6 @@ public class OrderSnipeExecuteGatewayEndpoint{
 	
 	@Autowired
 	private LiquidityEventOrReserversFinder liquidityEventOrReserversFinder;
-	@Autowired
-	private LiquidityEventOrReserversFinder2 liquidityEventOrReserversFinder2;
 
 	@Transformer(inputChannel = "rabbitMqSubmitOrderConsumer", outputChannel = "pairCreatedEventChannel")
 	public Map<String, Object> rabbitMqSubmitOrderConsumer(byte[] message) throws Exception{
@@ -113,14 +114,14 @@ public class OrderSnipeExecuteGatewayEndpoint{
 	@ServiceActivator(inputChannel = "liquidityEventOrReservesFinderChannel", outputChannel = "amountsInChannel")
 	public Map<String, Object> liquidityEventOrReservesFinderChannel(Map<String, Object> tradeOrderMap) throws Exception{
 		SnipeTransactionRequest snipeTransactionRequest = (SnipeTransactionRequest)tradeOrderMap.get(TradeConstants.SNIPETRANSACTIONREQUEST);
-		boolean hasLiquidityOrReserves  = liquidityEventOrReserversFinder.hasLiquidityOrReserves(snipeTransactionRequest.getRoute(), 
-																							     snipeTransactionRequest.getPairAddress(), 
-																							     (Credentials)tradeOrderMap.get(TradeConstants.CREDENTIALS),
-																							     snipeTransactionRequest.getGasPrice(), 
-																							     snipeTransactionRequest.getGasLimit(), 
-																							     snipeTransactionRequest.getInputTokenValueAmountAsBigInteger(), snipeTransactionRequest.getGasMode());
+		boolean hasLiquidityOrReserves  = liquidityEventOrReserversFinder.hasReservesMetWithInputAmount(snipeTransactionRequest.getRoute(), 
+																								        snipeTransactionRequest.getPairAddress(), 
+																								        (Credentials)tradeOrderMap.get(TradeConstants.CREDENTIALS),
+																								        snipeTransactionRequest.getGasPrice(), 
+																								        snipeTransactionRequest.getGasLimit(), 
+																								        snipeTransactionRequest.getInputTokenValueAmountAsBigInteger(), snipeTransactionRequest.getGasMode());
 		if(hasLiquidityOrReserves) {
-			tradeOrderMap.put(TradeConstants.HAS_LIQUIDTY_EVENT_OR_HAS_RESERVES, Boolean.TRUE);
+			tradeOrderMap.put(TradeConstants.HAS_LIQUIDTY_EVENT_OR_HAS_RESERVES, hasLiquidityOrReserves);
 			return tradeOrderMap;
 		}else {
 			snipeOrderReQueue.send(snipeTransactionRequest);
@@ -130,91 +131,79 @@ public class OrderSnipeExecuteGatewayEndpoint{
 	
 	@ServiceActivator(inputChannel = "amountsInChannel", outputChannel = "swapETHForTokensChannel")
 	public Map<String, Object> amountsInChannel(Map<String, Object> tradeOrderMap) throws Exception{
-		if (tradeOrderMap != null) {
-			SnipeTransactionRequest snipeTransactionRequest = (SnipeTransactionRequest) tradeOrderMap
-					.get(TradeConstants.SNIPETRANSACTIONREQUEST);
-			try {
-				if (tradeOrderMap.get(TradeConstants.HAS_LIQUIDTY_EVENT_OR_HAS_RESERVES) != null) {
-					BigInteger outputTokens = ethereumDexTradeService.getAmountsIn(snipeTransactionRequest.getRoute(),
-																				   snipeTransactionRequest.getCredentials(),
-																				   snipeTransactionRequest.getInputTokenValueAmountAsBigInteger(),
-																				   snipeTransactionRequest.getSlipageInDouble(),
-																				   Lists.newArrayList(TradeConstants.WETH_MAP.get(snipeTransactionRequest.getRoute().toUpperCase()),
-																																   snipeTransactionRequest.getToAddress()),
-																				   gasProvider.getGasPrice(GasModeEnum.fromValue(snipeTransactionRequest.getGasMode()), snipeTransactionRequest.getGasPrice()),
-																				   gasProvider.getGasPrice(GasModeEnum.fromValue(snipeTransactionRequest.getGasMode()), snipeTransactionRequest.getGasLimit()),
-																				   snipeTransactionRequest.getGasMode());
-					if (outputTokens != null && outputTokens.compareTo(BigInteger.ZERO) > 0) {
-						snipeTransactionRequest.setOuputTokenValueAmounttAsBigInteger(outputTokens);
-						return tradeOrderMap;
-					}
-				}else {
-					snipeOrderReQueue.send(snipeTransactionRequest);
+		SnipeTransactionRequest snipeTransactionRequest = (SnipeTransactionRequest) tradeOrderMap .get(TradeConstants.SNIPETRANSACTIONREQUEST);
+		try {
+			if (tradeOrderMap.get(TradeConstants.HAS_LIQUIDTY_EVENT_OR_HAS_RESERVES) != null) {
+				BigInteger outputTokens = ethereumDexTradeService.getAmountsIn(snipeTransactionRequest.getRoute(),
+																			   snipeTransactionRequest.getCredentials(),
+																			   snipeTransactionRequest.getInputTokenValueAmountAsBigInteger(),
+																			   snipeTransactionRequest.getSlipageInDouble(),
+																			   Lists.newArrayList(TradeConstants.WETH_MAP.get(snipeTransactionRequest.getRoute().toUpperCase()),
+																															   snipeTransactionRequest.getToAddress()),
+																			   gasProvider.getGasPrice(GasModeEnum.fromValue(snipeTransactionRequest.getGasMode()), snipeTransactionRequest.getGasPrice()),
+																			   gasProvider.getGasPrice(GasModeEnum.fromValue(snipeTransactionRequest.getGasMode()), snipeTransactionRequest.getGasLimit()),
+																			   snipeTransactionRequest.getGasMode());
+				
+				if (outputTokens != null && outputTokens.compareTo(BigInteger.ZERO) > 0) {
+					snipeTransactionRequest.setOuputTokenValueAmounttAsBigInteger(outputTokens);
+					return tradeOrderMap;
 				}
-			} catch (Exception e) {
-				if (StringUtils.containsIgnoreCase(e.getMessage(), "INSUFFICIENT_LIQUIDITY")) {
-					if (StringUtils.isBlank(snipeTransactionRequest.getCreatedDateTime())) {
-						snipeTransactionRequest.setCreatedDateTime(LocalDateTime.now().toString());
-					}
-					snipeOrderReQueue.send(snipeTransactionRequest);
-				} else {
-					snipeTransactionRequest.setErrorMessage(e.getMessage());
-					purgeMessage(snipeTransactionRequest);
-				}
-			} 
-		}
+			}else {
+				snipeOrderReQueue.send(snipeTransactionRequest);
+			}
+		} catch (Exception e) {
+			if (StringUtils.containsIgnoreCase(e.getMessage(), TradeConstants.INSUFFICIENT_LIQUIDITY) 
+					|| StringUtils.containsIgnoreCase(e.getMessage(), TradeConstants.DS_MATH_SUB_UNDERFLOW)) {
+				snipeOrderReQueue.send(snipeTransactionRequest);
+			} else {
+				snipeTransactionRequest.setErrorMessage(e.getMessage());
+				purgeMessage(snipeTransactionRequest);
+			}
+		} 
 		return null;
 	}
 	
 	@ServiceActivator(inputChannel = "swapETHForTokensChannel")
 	public Map<String, Object> swapETHForTokensChannel(Map<String, Object> tradeOrderMap) throws Exception{
-		if (tradeOrderMap != null) {
-			SnipeTransactionRequest snipeTransactionRequest = (SnipeTransactionRequest) tradeOrderMap
-					.get(TradeConstants.SNIPETRANSACTIONREQUEST);
-			try {
-				if (snipeTransactionRequest.getOuputTokenValueAmounttAsBigInteger() != null && snipeTransactionRequest
-						.getOuputTokenValueAmounttAsBigInteger().compareTo(BigInteger.ZERO) > 0) {
-					String hash = ethereumDexTradeService.swapETHForTokens(snipeTransactionRequest.getRoute(),
-																			snipeTransactionRequest.getCredentials(),
-																			snipeTransactionRequest.getInputTokenValueAmountAsBigInteger(),
-																			snipeTransactionRequest.getOuputTokenValueAmounttAsBigInteger(),
-																			snipeTransactionRequest.getDeadLine(),
-																			Lists.newArrayList(TradeConstants.WETH_MAP.get(snipeTransactionRequest.getRoute().toUpperCase()),
-																							   snipeTransactionRequest.getToAddress()),
-																			snipeTransactionRequest.isFeeEligible(),
-																			gasProvider.getGasPrice(GasModeEnum.fromValue(snipeTransactionRequest.getGasMode()),
-																			snipeTransactionRequest.getGasPrice()),
-																			gasProvider.getGasPrice(GasModeEnum.fromValue(snipeTransactionRequest.getGasMode()),
-																			snipeTransactionRequest.getGasLimit()),
-																			snipeTransactionRequest.getGasMode());
-					if (StringUtils.isNotBlank(hash)) {
-						tradeOrderMap.put(TradeConstants.SWAP_ETH_FOR_TOKEN_HASH, true);
-						snipeTransactionRequest.setSwappedHash(hash);
-						snipeTransactionRequest.setSnipeStatus(TradeConstants.FILLED);
-						snipeTransactionRequest.setSnipe(true);
-						return tradeOrderMap;
-					}
+		SnipeTransactionRequest snipeTransactionRequest = (SnipeTransactionRequest) tradeOrderMap .get(TradeConstants.SNIPETRANSACTIONREQUEST);
+		try {
+			if (snipeTransactionRequest.getOuputTokenValueAmounttAsBigInteger() != null && snipeTransactionRequest.getOuputTokenValueAmounttAsBigInteger().compareTo(BigInteger.ZERO) > 0) {
+				String hash = ethereumDexTradeService.swapETHForTokens(snipeTransactionRequest.getRoute(),
+																		snipeTransactionRequest.getCredentials(),
+																		snipeTransactionRequest.getInputTokenValueAmountAsBigInteger(),
+																		snipeTransactionRequest.getOuputTokenValueAmounttAsBigInteger(),
+																		snipeTransactionRequest.getDeadLine(),
+																		Lists.newArrayList(TradeConstants.WETH_MAP.get(snipeTransactionRequest.getRoute().toUpperCase()),
+																						   snipeTransactionRequest.getToAddress()),
+																		snipeTransactionRequest.isFeeEligible(),
+																		gasProvider.getGasPrice(GasModeEnum.fromValue(snipeTransactionRequest.getGasMode()),
+																		snipeTransactionRequest.getGasPrice()),
+																		gasProvider.getGasPrice(GasModeEnum.fromValue(snipeTransactionRequest.getGasMode()),
+																		snipeTransactionRequest.getGasLimit()),
+																		snipeTransactionRequest.getGasMode());
+				if (StringUtils.isNotBlank(hash)) {
+					tradeOrderMap.put(TradeConstants.SWAP_ETH_FOR_TOKEN_HASH, true);
+					snipeTransactionRequest.setSwappedHash(hash);
+					snipeTransactionRequest.setSnipeStatus(TradeConstants.FILLED);
+					snipeTransactionRequest.setSnipe(true);
+					return tradeOrderMap;
 				}
-			} catch (Exception e) {
-				snipeTransactionRequest.setErrorMessage(e.getMessage());
-				purgeMessage(snipeTransactionRequest);
-			} 
-		}
+			}
+		} catch (Exception e) {
+			snipeTransactionRequest.setErrorMessage(e.getMessage());
+			purgeMessage(snipeTransactionRequest);
+		} 
+	
 		return null;
 	}
 	
 	@ServiceActivator(inputChannel = "updateOrDeleteSnipeOrderChannel")
 	public Map<String, Object> updateOrDeleteSnipeOrderChannel(Map<String, Object> tradeOrderMap) throws Exception{
-		if (tradeOrderMap != null) {
-			SnipeTransactionRequest snipeTransactionRequest = (SnipeTransactionRequest) tradeOrderMap
-					.get(TradeConstants.SNIPETRANSACTIONREQUEST);
-			if (snipeTransactionRequest.hasSniped()
-					&& tradeOrderMap.get(TradeConstants.SWAP_ETH_FOR_TOKEN_HASH) != null) {
-				purgeMessage(snipeTransactionRequest);
-			} else {
-				snipeOrderReQueue.send(snipeTransactionRequest);
-			}
-			return tradeOrderMap;
+		SnipeTransactionRequest snipeTransactionRequest = (SnipeTransactionRequest) tradeOrderMap.get(TradeConstants.SNIPETRANSACTIONREQUEST);
+		if (snipeTransactionRequest.hasSniped()	&& tradeOrderMap.get(TradeConstants.SWAP_ETH_FOR_TOKEN_HASH) != null) {
+			purgeMessage(snipeTransactionRequest);
+		} else {
+			snipeOrderReQueue.send(snipeTransactionRequest);
 		}
 		return null;
 	}

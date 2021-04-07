@@ -4,7 +4,6 @@ import java.math.BigInteger;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.Executor;
-import java.util.concurrent.Executors;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -18,14 +17,11 @@ import com.aitrades.blockchain.web3jtrade.domain.TradeConstants;
 import com.aitrades.blockchain.web3jtrade.service.Web3jServiceClientFactory;
 
 import io.reactivex.Flowable;
-import io.reactivex.Scheduler;
 import io.reactivex.schedulers.Schedulers;
 
 @Service
 public class LiquidityEventOrReserversFinder2 {
 	
-	private static final Scheduler SCHEDULER = Schedulers.from(Executors.newWorkStealingPool(Runtime.getRuntime().availableProcessors()));
-
 	private static final int ZERO = 0;
 	
 	@Autowired
@@ -40,16 +36,13 @@ public class LiquidityEventOrReserversFinder2 {
 		Flowable.zip(new EthereumDexContract(pairAddress, web3jServiceClientFactory.getWeb3jMap().get(route).getWeb3j(), credentials).getReserves().flowable(), 
 												  EthereumDexEventHandler.mintEventFlowables(web3jServiceClientFactory.getWeb3jMap().get(route).getWeb3j(), pairAddress, TradeConstants.ROUTER_MAP.get(pairAddress)),
 												  (reserves, liquidityEvent) -> hasLiquidityOrReservers1(reserves, liquidityEvent, inputAmount))
-											 .subscribeOn(SCHEDULER)
-											 .blockingSubscribe(resp -> {
-													results.add(resp);
-													return;
-												});
+											 .subscribeOn(Schedulers.io(), false)
+											 .blockingSubscribe(results :: add);
 		return results;
 	}
 	
-	private boolean hasLiquidityOrReservers1(Tuple3<BigInteger, BigInteger, BigInteger> reserves, EthLog liquidityEvent,
-											 BigInteger inputAmount) {
+	private boolean hasLiquidityOrReservers1(final Tuple3<BigInteger, BigInteger, BigInteger> reserves,final  EthLog liquidityEvent,
+			final BigInteger inputAmount) {
 		return (reserves != null && reserves.component1().compareTo(BigInteger.ZERO) > ZERO && reserves.component2().compareTo(inputAmount) >= ZERO) 
 				|| liquidityEvent != null;
 	}

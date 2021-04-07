@@ -24,9 +24,13 @@ public class SnipeOrderReQueue {
 	
 	public void send(SnipeTransactionRequest snipeTransactionRequest) throws Exception {
 		try {
-			Thread.sleep(1000l);
+			Thread.sleep(800l);
 			requeueMessage(snipeTransactionRequest);
 			// For now we ignore it.
+			
+//			if (StringUtils.isBlank(snipeTransactionRequest.getCreatedDateTime())) {
+//			snipeTransactionRequest.setCreatedDateTime(LocalDateTime.now().toString());
+//		}
 //			int response = LocalDateTime.now().getMinute() - LocalDateTime.parse(snipeTransactionRequest.getCreatedDateTime()).getMinute();
 //			if(response <= 30) {
 //				requeueMessage(snipeTransactionRequest);
