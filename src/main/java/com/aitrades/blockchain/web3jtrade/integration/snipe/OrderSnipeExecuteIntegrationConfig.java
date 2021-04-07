@@ -32,16 +32,31 @@ public class OrderSnipeExecuteIntegrationConfig {
 		return IntegrationFlows.from(Amqp.inboundAdapter(rabbitMQOrderSubmitSnipeConfig.orderSubmitSnipeMessageListenerContainer(connectionFactory)))
 							   .handle("orderSnipeExecuteGatewayEndpoint", "rabbitMqSubmitOrderConsumer")
 							   .handle("orderSnipeExecuteGatewayEndpoint", "pairCreatedEventChannel")
-							   .handle("orderSnipeExecuteGatewayEndpoint", "getReservesEventChannel")
-							   .handle("orderSnipeExecuteGatewayEndpoint", "addLiquidityEvent")
-							//   .handle("orderSnipeExecuteGatewayEndpoint", "approveChannel")
+							   .handle("orderSnipeExecuteGatewayEndpoint", "liquidityEventOrReservesFinderChannel")
 							   .handle("orderSnipeExecuteGatewayEndpoint", "amountsInChannel")
 							   .handle("orderSnipeExecuteGatewayEndpoint", "swapETHForTokensChannel")
 							   .handle("orderSnipeExecuteGatewayEndpoint", "updateOrDeleteSnipeOrderChannel")
 							   .channel(IntegrationContextUtils.NULL_CHANNEL_BEAN_NAME)
 							   .get();
 	}
-
+	
+	
+	
+//	@Bean
+//	@Autowired
+//	public IntegrationFlow snipeTrade() {
+//		return IntegrationFlows.from(Amqp.inboundAdapter(rabbitMQOrderSubmitSnipeConfig.orderSubmitSnipeMessageListenerContainer(connectionFactory)))
+//							   .handle("orderSnipeExecuteGatewayEndpoint", "rabbitMqSubmitOrderConsumer")
+//							   .handle("orderSnipeExecuteGatewayEndpoint", "pairCreatedEventChannel")
+//							   .handle("orderSnipeExecuteGatewayEndpoint", "getReservesEventChannel")
+//							   .handle("orderSnipeExecuteGatewayEndpoint", "addLiquidityEvent")
+//							//   .handle("orderSnipeExecuteGatewayEndpoint", "approveChannel")
+//							   .handle("orderSnipeExecuteGatewayEndpoint", "amountsInChannel")
+//							   .handle("orderSnipeExecuteGatewayEndpoint", "swapETHForTokensChannel")
+//							   .handle("orderSnipeExecuteGatewayEndpoint", "updateOrDeleteSnipeOrderChannel")
+//							   .channel(IntegrationContextUtils.NULL_CHANNEL_BEAN_NAME)
+//							   .get();
+//	}
 	@Bean
 	public OrderSnipeExecuteGatewayEndpoint orderSnipeExecuteGatewayEndpoint() {
 		return new OrderSnipeExecuteGatewayEndpoint();

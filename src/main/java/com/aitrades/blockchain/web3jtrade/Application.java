@@ -4,6 +4,7 @@ import java.net.ConnectException;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.time.Duration;
+import java.util.concurrent.Executor;
 import java.util.concurrent.TimeUnit;
 
 import org.apache.http.impl.client.CloseableHttpClient;
@@ -21,6 +22,7 @@ import org.springframework.context.annotation.Primary;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
 import org.springframework.http.client.reactive.ReactorClientHttpConnector;
+import org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor;
 import org.springframework.web.client.RestTemplate;
 import org.springframework.web.reactive.function.client.WebClient;
 import org.web3j.protocol.Web3j;
@@ -41,7 +43,7 @@ import reactor.netty.http.client.HttpClient;
 @SpringBootApplication(scanBasePackages = { "com.aitrades.blockchain.web3jtrade" })
 public class Application {
 
-	private static final String ENDPOINT_WSS = "wss://eth-mainnet.ws.alchemyapi.io/v2/9XymsgNnaJBVR1KHUM6aH9dG2CU1FJ-2";
+	private static final String ENDPOINT_WSS = "wss://eth-mainnet.ws.alchemyapi.io/v2/_KDa5W9WA_53y-f3KD0TUf-YYv0-QJ_7";
 	private static final String BSC_ENDPOINT_WSS ="wss://holy-twilight-violet.bsc.quiknode.pro/9ccdc8c6748f92a972bc9c9c1b8b56de961c0fc6/";
 	
 	//wss://apis.ankr.com/wss/ec81f8a5c07c4660943c684b6fa7b102/4cd1cd0bb6b4e7809163a3de758926bc/binance/full/main
@@ -50,11 +52,22 @@ public class Application {
 	private static final String ETH_GAS_PRICE_ORACLE ="https://www.etherchain.org/api";
 	@SuppressWarnings("unused")
 	private static final String ETH_GAS_STATION ="https://data-api.defipulse.com/api/v1/egs/api/ethgasAPI.json?api-key=2d249b5b77ce8b5d20fdd6a6c09a5ac3a954981252730a2e26dcfbc4a41a";
-	
+	private static final String CREATE_ORDER_TASK_EXECUTOR_THREAD = "createOrder_task_executor_thread";
+
 	private static final int _40 = 40;
 
 	public static void main(String[] args) throws Exception {
 		SpringApplication.run(Application.class, args);
+	}
+	
+	@Bean
+	public Executor executor() {
+		ThreadPoolTaskExecutor executor = new ThreadPoolTaskExecutor();
+		executor.setCorePoolSize(5);
+		executor.setMaxPoolSize(20);
+		executor.setThreadNamePrefix(CREATE_ORDER_TASK_EXECUTOR_THREAD);
+		executor.initialize();
+		return executor;
 	}
 
 	@Bean(name = "web3jClient")

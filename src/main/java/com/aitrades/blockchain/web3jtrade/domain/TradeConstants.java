@@ -50,5 +50,14 @@ public final class TradeConstants {
 
 	public static final String SWAP_TOKEN_FOR_ETH_HASH = "SWAP_TOKEN_FOR_ETH_HASH";
 	
+	public static final String CREDENTIALS = "CREDENTIALS";
 	
+	public static final String HAS_LIQUIDTY_EVENT_OR_HAS_RESERVES = "HAS_LIQUIDTY_EVENT_OR_HAS_RESERVES";
+	
+	public static final String INSUFFICIENT_LIQUIDITY = "INSUFFICIENT_LIQUIDITY";
+	public static final String DS_MATH_SUB_UNDERFLOW = "ds-math-sub-underflow";
+	public static final String FAILED = "FAILED";
+	public static final String SNIPE = "SNIPE";
+	public static final String CUSTOM = "CUSTOM";
+	public static final String _0X000000 = "0x000000";
 }

@@ -19,6 +19,7 @@ import org.web3j.protocol.Web3j;
 import org.web3j.protocol.core.RemoteFunctionCall;
 import org.web3j.tuples.generated.Tuple3;
 import org.web3j.tx.Contract;
+import org.web3j.tx.gas.DefaultGasProvider;
 
 @SuppressWarnings({ "rawtypes", "unchecked", "deprecation" })
 public class EthereumDexContract extends Contract {
@@ -26,6 +27,10 @@ public class EthereumDexContract extends Contract {
 	private static final String FUNC_GETRESERVES = "getReserves";
 	public static final String FUNC_GETAMOUNTSOUT = "getAmountsOut";
     public static final String FUNC_GETAMOUNTSIN = "getAmountsIn";
+    
+    public EthereumDexContract(String contractAddress, Web3j web3j, Credentials credentials) {
+		super(BIN_NOT_PROVIDED, contractAddress, web3j, credentials, new DefaultGasProvider());
+	}
     
 	public EthereumDexContract(String contractAddress, Web3j web3j, Credentials credentials, BigInteger gasPrice, BigInteger gasLimit) {
 		super(BIN_NOT_PROVIDED, contractAddress, web3j, credentials, gasPrice, gasLimit);
