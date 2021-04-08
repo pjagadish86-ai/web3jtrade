@@ -163,7 +163,7 @@ public class OrderSnipeExecuteGatewayEndpoint{
 		return null;
 	}
 	
-	@ServiceActivator(inputChannel = "swapETHForTokensChannel")
+	@ServiceActivator(inputChannel = "swapETHForTokensChannel", outputChannel = "updateOrDeleteSnipeOrderChannel")
 	public Map<String, Object> swapETHForTokensChannel(Map<String, Object> tradeOrderMap) throws Exception{
 		SnipeTransactionRequest snipeTransactionRequest = (SnipeTransactionRequest) tradeOrderMap .get(TradeConstants.SNIPETRANSACTIONREQUEST);
 		try {
