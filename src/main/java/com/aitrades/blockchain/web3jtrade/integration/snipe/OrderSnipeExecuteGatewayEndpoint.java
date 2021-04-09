@@ -99,6 +99,10 @@ public class OrderSnipeExecuteGatewayEndpoint{
 	@ServiceActivator(inputChannel = "pairCreatedEventChannel", outputChannel = "liquidityEventOrReservesFinderChannel")
 	public Map<String, Object> pairCreatedEventChannel(Map<String, Object> tradeOrderMap) throws Exception{
 		SnipeTransactionRequest snipeTransactionRequest = (SnipeTransactionRequest)tradeOrderMap.get(TradeConstants.SNIPETRANSACTIONREQUEST);
+		if(StringUtils.isNotBlank(snipeTransactionRequest.getPairAddress())) {
+			return tradeOrderMap;
+		}
+		
 		Optional<Type> pairAddress  = ethereumDexTradeService.getPairAddress(snipeTransactionRequest.getRoute(), snipeTransactionRequest.getToAddress(), TradeConstants.WETH_MAP.get(snipeTransactionRequest.getRoute()))
 												             .parallelStream()
 												             .findFirst();

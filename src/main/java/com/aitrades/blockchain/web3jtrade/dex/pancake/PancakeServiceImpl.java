@@ -185,7 +185,7 @@ public class PancakeServiceImpl implements DexContractService {
 											   Collections.emptyList());
 		String data = FunctionEncoder.encode(function);
 		BigInteger gasLmt = StringUtils.equalsIgnoreCase(gasMode, CUSTOM) ? gasLimit : BigInteger.valueOf(21000l).add(BigInteger.valueOf(68l)
-																														.multiply(BigInteger.valueOf(data.getBytes().length)));;
+																														.multiply(BigInteger.valueOf(data.getBytes().length)));
 	
 		EthGetTransactionCount ethGetTransactionCount = web3jServiceClient.getWeb3j()
 																		  .ethGetTransactionCount(credentials.getAddress(), DefaultBlockParameterName.LATEST)
