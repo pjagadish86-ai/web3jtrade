@@ -24,7 +24,7 @@ public class SnipeOrderReQueue {
 	
 	public void send(SnipeTransactionRequest snipeTransactionRequest) throws Exception {
 		try {
-			Thread.sleep(800l);
+			Thread.sleep(200l);
 			requeueMessage(snipeTransactionRequest);
 			// For now we ignore it.
 			

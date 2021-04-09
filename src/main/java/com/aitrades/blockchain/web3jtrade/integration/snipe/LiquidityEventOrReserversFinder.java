@@ -30,6 +30,10 @@ public class LiquidityEventOrReserversFinder {
 	@Autowired
 	private DexTradeContractService ethereumDexTradeService;
 	
+	public Tuple3<BigInteger, BigInteger, BigInteger> fetchReserves(final String route, final String  pairAddress, final Credentials credentials,final  BigInteger gasPrice, final  BigInteger gasLimit, BigInteger inputAmount, final String  gasMode) throws Exception {
+		return new EthereumDexContract(pairAddress, web3jServiceClientFactory.getWeb3jMap().get(route).getWeb3j(), credentials).getReserves().flowable().subscribeOn(Schedulers.io()).blockingFirst();
+	}
+	
 	public boolean hasReservesMetWithInputAmount(final String route, final String  pairAddress, final Credentials credentials,final  BigInteger gasPrice, final  BigInteger gasLimit, BigInteger inputAmount, final String  gasMode) throws Exception {
 		Tuple3<BigInteger, BigInteger, BigInteger> reserves = new EthereumDexContract(pairAddress, web3jServiceClientFactory.getWeb3jMap().get(route).getWeb3j(), credentials).getReserves().flowable().subscribeOn(Schedulers.io()).blockingFirst();
 		return reserves != null && reserves.component1().compareTo(BigInteger.ZERO) > ZERO && reserves.component2().compareTo(inputAmount) >= ZERO;

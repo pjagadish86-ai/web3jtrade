@@ -7,6 +7,8 @@ import java.time.Duration;
 import java.util.concurrent.Executor;
 import java.util.concurrent.TimeUnit;
 
+import javax.annotation.Resource;
+
 import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.http.impl.client.HttpClients;
 import org.springframework.amqp.core.AmqpTemplate;
@@ -17,11 +19,13 @@ import org.springframework.amqp.support.converter.MessageConverter;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
+import org.springframework.cache.annotation.EnableCaching;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Primary;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
 import org.springframework.http.client.reactive.ReactorClientHttpConnector;
+import org.springframework.scheduling.annotation.EnableAsync;
 import org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor;
 import org.springframework.web.client.RestTemplate;
 import org.springframework.web.reactive.function.client.WebClient;
@@ -41,6 +45,8 @@ import io.netty.handler.timeout.WriteTimeoutHandler;
 import reactor.netty.http.client.HttpClient;
  
 @SpringBootApplication(scanBasePackages = { "com.aitrades.blockchain.web3jtrade" })
+@EnableAsync
+@EnableCaching
 public class Application {
 
 	private static final String ENDPOINT_WSS = "wss://eth-mainnet.ws.alchemyapi.io/v2/_KDa5W9WA_53y-f3KD0TUf-YYv0-QJ_7";
@@ -69,6 +75,9 @@ public class Application {
 		executor.initialize();
 		return executor;
 	}
+	
+	@Resource(name="bscPriceHttpClient")
+	public CloseableHttpClient closeableHttpClient;
 
 	@Bean(name = "web3jClient")
 	public Web3j web3J() {
@@ -181,4 +190,10 @@ public class Application {
 	public CloseableHttpClient uniswapPriceHttpClient() {
 		return HttpClients.createMinimal();	
 	}
+	
+	@Bean(name ="bscPriceHttpClient")
+	public CloseableHttpClient bscPriceHttpClient() {
+		return HttpClients.createMinimal();	
+	}
+	
 }

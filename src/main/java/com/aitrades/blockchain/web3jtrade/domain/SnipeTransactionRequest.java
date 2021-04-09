@@ -84,6 +84,7 @@ public class SnipeTransactionRequest {
 	private String snipeExpired;
 	private String errorMessage;
 	
+	private Reserves reserves;
 	public String getId() {
 		return id;
 	}
@@ -394,6 +395,14 @@ public class SnipeTransactionRequest {
 
 	public void setSwappedHash(String swappedHash) {
 		this.swappedHash = swappedHash;
+	}
+
+	public Reserves getReserves() {
+		return reserves;
+	}
+
+	public void setReserves(Reserves reserves) {
+		this.reserves = reserves;
 	}
 
 }

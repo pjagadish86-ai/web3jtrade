@@ -7,26 +7,25 @@ import javax.annotation.PostConstruct;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import com.aitrades.blockchain.web3jtrade.domain.TradeConstants;
+
 @Service
 public class DexSubGraphPriceFactoryClient {
-
-	private static final String SUSHI = "SUSHI";
-
-	private static final String UNISWAP = "UNISWAP";
-
-	@Autowired
-	private DexSubGraphPriceServiceClient dexSubGraphPriceServiceClient;
 	
 	@Autowired
-	private Map<String, DexSubGraphPriceServiceClient> typesMap;
+	private DexNativePriceOracleClient priceOracleClient;
+	
+	@Autowired
+	private Map<String, DexSubGraphPriceClient> typesMap;
 
 	@PostConstruct
 	public void init() {
-		typesMap.put(UNISWAP, dexSubGraphPriceServiceClient);
-		typesMap.put(SUSHI, dexSubGraphPriceServiceClient);
+		typesMap.put(TradeConstants.UNISWAP, priceOracleClient);
+		typesMap.put(TradeConstants.SUSHI, priceOracleClient);
+		typesMap.put(TradeConstants.PANCAKE, priceOracleClient);
 	}
 	
-	public DexSubGraphPriceServiceClient getRoute(String condition) {
+	public DexSubGraphPriceClient getRoute(String condition) {
 		return typesMap.get(condition);
 	}
 

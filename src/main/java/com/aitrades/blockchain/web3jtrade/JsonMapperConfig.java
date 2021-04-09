@@ -6,6 +6,7 @@ import org.springframework.context.annotation.Configuration;
 import com.aitrades.blockchain.web3jtrade.domain.GasPriceOracle;
 import com.aitrades.blockchain.web3jtrade.domain.Order;
 import com.aitrades.blockchain.web3jtrade.domain.SnipeTransactionRequest;
+import com.aitrades.blockchain.web3jtrade.domain.price.Cryptonator;
 import com.aitrades.blockchain.web3jtrade.domain.price.EthPrice;
 import com.aitrades.blockchain.web3jtrade.domain.price.PairPrice;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -42,6 +43,11 @@ public class JsonMapperConfig {
 	@Bean(name= "orderRequestObjectReader")
 	public ObjectReader orderRequestObjectReader() {
 		return objectMapper().readerFor(Order.class);
+	}
+	
+	@Bean(name= "cryptonatorObjectReader")
+	public ObjectReader cryptonatorObjectReader() {
+		return objectMapper().readerFor(Cryptonator.class);
 	}
 	
 	

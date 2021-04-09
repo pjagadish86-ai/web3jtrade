@@ -8,7 +8,6 @@ public class PairPrice {
 	public Data data;
 	
 	public PairPrice() {
-		// TODO Auto-generated constructor stub
 	}
 
 	public PairPrice(Data data) {
@@ -27,7 +26,6 @@ public class PairPrice {
 		public Pair pair;
 		
 		public Data() {
-			// TODO Auto-generated constructor stub
 		}
 
 		public Data(Pair pair) {

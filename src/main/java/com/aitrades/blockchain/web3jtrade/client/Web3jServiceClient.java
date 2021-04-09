@@ -8,9 +8,9 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 
 public class Web3jServiceClient {
 
-	protected final Web3j web3j;
-    protected final RestTemplate restTemplate;
-    protected final ObjectMapper objectMapper;
+	private final Web3j web3j;
+	private final RestTemplate restTemplate;
+	private final ObjectMapper objectMapper;
     
 	public Web3jServiceClient(final Web3j web3j, final RestTemplate restTemplate, final ObjectMapper objectMapper) {
 		this.web3j = web3j;

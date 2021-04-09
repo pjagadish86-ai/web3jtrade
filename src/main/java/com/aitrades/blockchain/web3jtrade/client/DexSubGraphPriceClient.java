@@ -2,15 +2,13 @@ package com.aitrades.blockchain.web3jtrade.client;
 
 import java.math.BigDecimal;
 
-import com.aitrades.blockchain.web3jtrade.domain.price.EthPrice;
-import com.aitrades.blockchain.web3jtrade.domain.price.PairPrice;
+import org.web3j.crypto.Credentials;
+
+import com.aitrades.blockchain.web3jtrade.domain.price.Cryptonator;
 
 public interface DexSubGraphPriceClient {
 	
-	public String getResourceUrl(String route);
+	public Cryptonator nativeCoinPrice(String route) throws Exception;
 	
-	public BigDecimal getPriceOfTicker(String pairAddress) throws Exception;
-	
-	public BigDecimal calculateTickerPrice(PairPrice pairPrice, EthPrice ethPrice) throws Exception;
-	
+	public BigDecimal tokenPrice(String pairAddress, String route, Credentials credentials) throws Exception;
 }

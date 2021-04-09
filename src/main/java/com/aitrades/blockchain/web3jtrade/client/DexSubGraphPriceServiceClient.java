@@ -7,10 +7,12 @@ import java.util.Map;
 
 import javax.annotation.Resource;
 
+import org.apache.commons.lang.StringUtils;
 import org.apache.http.client.methods.HttpPost;
 import org.apache.http.entity.StringEntity;
 import org.apache.http.impl.client.CloseableHttpClient;
 import org.springframework.stereotype.Service;
+import org.web3j.crypto.Credentials;
 
 import com.aitrades.blockchain.web3jtrade.domain.price.EthPrice;
 import com.aitrades.blockchain.web3jtrade.domain.price.PairPrice;
@@ -20,8 +22,7 @@ import com.google.common.collect.ImmutableMap;
 import io.reactivex.BackpressureStrategy;
 import io.reactivex.Flowable;
 @Service
-//TODO: come back to  re-factor the ugliest code in universe. wtf you wrote. :-(
-public class DexSubGraphPriceServiceClient implements DexSubGraphPriceClient {
+public class DexSubGraphPriceServiceClient  {
 
 	@Resource(name="graphHqlPriceHttpClient")
 	public CloseableHttpClient closeableHttpClient;
@@ -38,6 +39,7 @@ public class DexSubGraphPriceServiceClient implements DexSubGraphPriceClient {
 	private static final String UNISWAP_SUBGRAPH_URL = "https://api.thegraph.com/subgraphs/name/uniswap/uniswap-v2";
 	private static final String SUSHISWAP_SUBGRAPH_URL = "https://api.thegraph.com/subgraphs/name/sushiswap/exchange";
 
+	@SuppressWarnings("unused")
 	private static final Map<String, String> DEX_PRICE_URL = ImmutableMap.of(UNISWAP, UNISWAP_SUBGRAPH_URL, SUSHI, SUSHISWAP_SUBGRAPH_URL);
 	
 	private static final String QUERY_PAIR_DATA_0= "{	\"query\": \"{ pair(id: ";
@@ -49,16 +51,24 @@ public class DexSubGraphPriceServiceClient implements DexSubGraphPriceClient {
 	
 	private static final String QUERY_ETH_PRICE ="{\"query\":\"{ bundle(id: \\\"1\\\" ) {   ethPrice }}\",\"variables\":null}";
 	
-	public BigDecimal getPriceOfTicker(String pairAddress) throws Exception {
+	public BigDecimal getPriceOfTicker(String pairAddress, Credentials credentials) throws Exception {
+		if(StringUtils.isBlank(pairAddress)) {
+			throw new Exception("Pair Address is empty");
+		}
 		PairPrice pairPrice = null;
 		EthPrice ethPrice = null;
 		try {
 			pairPrice = getPairDataFromUniswap(pairAddress);
+			if(pairPrice == null ||  pairPrice.getData() == null || pairPrice.getData().getPair() == null) {
+				throw new Exception("Unable to find pricess");
+			}
 			ethPrice = getEthPriceFrmGraph();
+			
+			return calculateTickerPrice(pairPrice, ethPrice);
 		} catch (IOException e) {
-			throw e;
+			e.printStackTrace();
 		}
-		return calculateTickerPrice(pairPrice, ethPrice);
+		return null;
 	}
 	
 	//token price = ETH RESR * ETH PRICE / UPI  RESR
@@ -82,11 +92,12 @@ public class DexSubGraphPriceServiceClient implements DexSubGraphPriceClient {
         try {
             return ethPriceObjectReader.readValue(closeableHttpClient.execute(post).getEntity().getContent());
         }catch (Exception e) {
-        	throw e;
+        	e.printStackTrace();
 		}
+        return null;
 	}
 	//TODO: ugly code
-	private PairPrice getPairDataFromUniswap(String pairAddress) throws Exception {
+	private PairPrice getPairDataFromUniswap(String pairAddress) throws IOException {
 		StringBuffer builder = new StringBuffer();
 		builder.append(QUERY_PAIR_DATA_0);
 		builder.append(QUERY_PAIR_DATA_1);
@@ -98,13 +109,9 @@ public class DexSubGraphPriceServiceClient implements DexSubGraphPriceClient {
         try {
 			return pairPriceObjectReader.readValue(closeableHttpClient.execute(post).getEntity().getContent());
         }catch (Exception e) {
-        	throw e;
+        	e.printStackTrace();
 		}
+        return null;
     }
-	
-	@Override
-	public String getResourceUrl(String route) {
-		return DEX_PRICE_URL.get(route);
-	}
 
 }

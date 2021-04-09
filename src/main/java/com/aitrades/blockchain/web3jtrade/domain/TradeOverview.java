@@ -1,5 +1,7 @@
 package com.aitrades.blockchain.web3jtrade.domain;
 
+import java.math.BigDecimal;
+
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonInclude.Include;
@@ -16,6 +18,9 @@ public class TradeOverview {
 	private String approvedHash;
 	private String swappedHash;
 	private String errorMessage;
+	private String route;
+	private BigDecimal executedPrice;
+	private String contractIntreactedWith;
 	
 	public String getId() {
 		return id;
@@ -64,6 +69,18 @@ public class TradeOverview {
 	}
 	public void setErrorMessage(String errorMessage) {
 		this.errorMessage = errorMessage;
+	}
+	public String getRoute() {
+		return route;
+	}
+	public void setRoute(String route) {
+		this.route = route;
+	}
+	public BigDecimal getExecutedPrice() {
+		return executedPrice;
+	}
+	public void setExecutedPrice(BigDecimal executedPrice) {
+		this.executedPrice = executedPrice;
 	}
 	
 }

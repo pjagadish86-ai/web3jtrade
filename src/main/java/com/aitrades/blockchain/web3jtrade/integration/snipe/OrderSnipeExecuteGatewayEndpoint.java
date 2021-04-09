@@ -2,11 +2,6 @@
 package com.aitrades.blockchain.web3jtrade.integration.snipe;
 
 import java.math.BigInteger;
-import java.time.Duration;
-import java.time.Instant;
-import java.time.LocalDateTime;
-import java.util.Collections;
-import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.concurrent.ConcurrentHashMap;
@@ -18,16 +13,20 @@ import org.springframework.amqp.core.AmqpTemplate;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.integration.annotation.ServiceActivator;
 import org.springframework.integration.annotation.Transformer;
-import org.springframework.util.CollectionUtils;
+import org.springframework.scheduling.annotation.Async;
 import org.web3j.abi.datatypes.Type;
 import org.web3j.crypto.Credentials;
+import org.web3j.tuples.generated.Tuple3;
 
+import com.aitrades.blockchain.web3jtrade.client.DexNativePriceOracleClient;
 import com.aitrades.blockchain.web3jtrade.client.DexSubGraphPriceServiceClient;
 import com.aitrades.blockchain.web3jtrade.dex.contract.DexTradeContractService;
 import com.aitrades.blockchain.web3jtrade.domain.GasModeEnum;
+import com.aitrades.blockchain.web3jtrade.domain.Reserves;
 import com.aitrades.blockchain.web3jtrade.domain.SnipeTransactionRequest;
 import com.aitrades.blockchain.web3jtrade.domain.TradeConstants;
 import com.aitrades.blockchain.web3jtrade.domain.TradeOverview;
+import com.aitrades.blockchain.web3jtrade.domain.price.Cryptonator;
 import com.aitrades.blockchain.web3jtrade.integration.snipe.mq.SnipeOrderReQueue;
 import com.aitrades.blockchain.web3jtrade.oracle.gas.GasProvider;
 import com.aitrades.blockchain.web3jtrade.repository.SnipeOrderHistoryRepository;
@@ -37,7 +36,6 @@ import com.aitrades.blockchain.web3jtrade.service.Web3jServiceClientFactory;
 import com.aitrades.blockchain.web3jtrade.trade.pendingTransaction.EthereumGethPendingTransactionsRetriever;
 import com.aitrades.blockchain.web3jtrade.trade.pendingTransaction.EthereumParityPendingTransactionsRetriever;
 import com.fasterxml.jackson.databind.ObjectReader;
-import com.google.common.collect.Collections2;
 import com.google.common.collect.Lists;
 @SuppressWarnings({"unused", "rawtypes"})
 public class OrderSnipeExecuteGatewayEndpoint{
@@ -84,6 +82,9 @@ public class OrderSnipeExecuteGatewayEndpoint{
 	private SnipeOrderReQueue snipeOrderReQueue;
 	
 	@Autowired
+	private DexNativePriceOracleClient dexNativePriceOracleClient;
+	
+	@Autowired
 	private LiquidityEventOrReserversFinder liquidityEventOrReserversFinder;
 
 	@Transformer(inputChannel = "rabbitMqSubmitOrderConsumer", outputChannel = "pairCreatedEventChannel")
@@ -114,21 +115,31 @@ public class OrderSnipeExecuteGatewayEndpoint{
 	@ServiceActivator(inputChannel = "liquidityEventOrReservesFinderChannel", outputChannel = "amountsInChannel")
 	public Map<String, Object> liquidityEventOrReservesFinderChannel(Map<String, Object> tradeOrderMap) throws Exception{
 		SnipeTransactionRequest snipeTransactionRequest = (SnipeTransactionRequest)tradeOrderMap.get(TradeConstants.SNIPETRANSACTIONREQUEST);
-		boolean hasLiquidityOrReserves  = liquidityEventOrReserversFinder.hasReservesMetWithInputAmount(snipeTransactionRequest.getRoute(), 
-																								        snipeTransactionRequest.getPairAddress(), 
-																								        (Credentials)tradeOrderMap.get(TradeConstants.CREDENTIALS),
-																								        snipeTransactionRequest.getGasPrice(), 
-																								        snipeTransactionRequest.getGasLimit(), 
-																								        snipeTransactionRequest.getInputTokenValueAmountAsBigInteger(), snipeTransactionRequest.getGasMode());
-		if(hasLiquidityOrReserves) {
-			tradeOrderMap.put(TradeConstants.HAS_LIQUIDTY_EVENT_OR_HAS_RESERVES, hasLiquidityOrReserves);
+		Tuple3<BigInteger, BigInteger, BigInteger> reserves = liquidityEventOrReserversFinder.fetchReserves(snipeTransactionRequest.getRoute(), 
+																									        snipeTransactionRequest.getPairAddress(), 
+																									        (Credentials)tradeOrderMap.get(TradeConstants.CREDENTIALS),
+																									        snipeTransactionRequest.getGasPrice(), 
+																									        snipeTransactionRequest.getGasLimit(), 
+																									        snipeTransactionRequest.getInputTokenValueAmountAsBigInteger(), 
+																									        snipeTransactionRequest.getGasMode());
+		
+		if(reserves != null && reserves.component1().compareTo(BigInteger.ZERO) > 0 && reserves.component2().compareTo(snipeTransactionRequest.getInputTokenValueAmountAsBigInteger()) >= 0) {
+			snipeTransactionRequest.setReserves(mapReserves(reserves));
+			tradeOrderMap.put(TradeConstants.HAS_LIQUIDTY_EVENT_OR_HAS_RESERVES, Boolean.TRUE);
 			return tradeOrderMap;
 		}else {
-			snipeOrderReQueue.send(snipeTransactionRequest);
+			snipeOrderReQueue.send(snipeTransactionRequest);	
 		}
 		return null;
 	}
 	
+	private Reserves mapReserves(Tuple3<BigInteger, BigInteger, BigInteger> reserves) {
+		Reserves reserves2 = new Reserves();
+		reserves2.setReserve0(reserves.component1());
+		reserves2.setReserve1(reserves.component2());
+		return reserves2;
+	}
+
 	@ServiceActivator(inputChannel = "amountsInChannel", outputChannel = "swapETHForTokensChannel")
 	public Map<String, Object> amountsInChannel(Map<String, Object> tradeOrderMap) throws Exception{
 		SnipeTransactionRequest snipeTransactionRequest = (SnipeTransactionRequest) tradeOrderMap .get(TradeConstants.SNIPETRANSACTIONREQUEST);
@@ -214,7 +225,7 @@ public class OrderSnipeExecuteGatewayEndpoint{
 		snipeOrderRepository.delete(snipeTransactionRequest);
 	}
 
-	private TradeOverview mapRequestToTradeOverView(SnipeTransactionRequest request) {
+	private TradeOverview mapRequestToTradeOverView(SnipeTransactionRequest request) throws Exception {
 		TradeOverview overview = new TradeOverview();
 		overview.setApprovedHash(request.getApprovedHash());
 		overview.setSwappedHash(request.getSwappedHash());
@@ -224,6 +235,9 @@ public class OrderSnipeExecuteGatewayEndpoint{
 		overview.setOrderSide(null);
 		overview.setOrderState(StringUtils.isNotBlank(request.getErrorMessage())? FAILED: request.getSnipeStatus());
 		overview.setOrderType(SNIPE);
+		overview.setRoute(request.getRoute());
+		Cryptonator price  = dexNativePriceOracleClient.nativeCoinPrice(request.getRoute());
+		overview.setExecutedPrice(request.getReserves().tokenPrice(price.getTicker().getPrice()));
 		return overview;
 	}
 	
