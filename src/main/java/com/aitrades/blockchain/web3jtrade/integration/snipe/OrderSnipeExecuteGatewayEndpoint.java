@@ -1,6 +1,7 @@
 
 package com.aitrades.blockchain.web3jtrade.integration.snipe;
 
+import java.math.BigDecimal;
 import java.math.BigInteger;
 import java.util.Map;
 import java.util.Optional;
@@ -201,6 +202,7 @@ public class OrderSnipeExecuteGatewayEndpoint{
 					snipeTransactionRequest.setSwappedHash(hash);
 					snipeTransactionRequest.setSnipeStatus(TradeConstants.FILLED);
 					snipeTransactionRequest.setSnipe(true);
+					tradeOverviewRepository.save(mapRequestToTradeOverView(snipeTransactionRequest, tradeOrderMap));
 					return tradeOrderMap;
 				}
 			}
@@ -224,12 +226,11 @@ public class OrderSnipeExecuteGatewayEndpoint{
 	}
 
 	private void purgeMessage(SnipeTransactionRequest snipeTransactionRequest) throws Exception {
-		tradeOverviewRepository.save(mapRequestToTradeOverView(snipeTransactionRequest));
 		snipeOrderHistoryRepository.save(snipeTransactionRequest);
 		snipeOrderRepository.delete(snipeTransactionRequest);
 	}
 
-	private TradeOverview mapRequestToTradeOverView(SnipeTransactionRequest request) throws Exception {
+	private TradeOverview mapRequestToTradeOverView(SnipeTransactionRequest request, Map<String, Object> tradeOrderMap) throws Exception {
 		TradeOverview overview = new TradeOverview();
 		overview.setApprovedHash(request.getApprovedHash());
 		overview.setSwappedHash(request.getSwappedHash());
@@ -240,8 +241,11 @@ public class OrderSnipeExecuteGatewayEndpoint{
 		overview.setOrderState(StringUtils.isNotBlank(request.getErrorMessage())? FAILED: request.getSnipeStatus());
 		overview.setOrderType(SNIPE);
 		overview.setRoute(request.getRoute());
-		Cryptonator price  = dexNativePriceOracleClient.nativeCoinPrice(request.getRoute());
-		overview.setExecutedPrice(request.getReserves().tokenPrice(price.getTicker().getPrice()));
+		try {
+			overview.setExecutedPrice(dexNativePriceOracleClient.tokenPrice(request.getPairAddress(), request.getRoute(), (Credentials)tradeOrderMap.get(TradeConstants.CREDENTIALS)));
+		} catch (Exception e) {
+			overview.setErrorMessage(request.getErrorMessage()+" your fucking code sucks!!!");
+		}
 		return overview;
 	}
 	

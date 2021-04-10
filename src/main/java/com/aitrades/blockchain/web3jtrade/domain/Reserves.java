@@ -23,10 +23,4 @@ public class Reserves {
 		this.reserve1 = reserve1;
 	}
 	
-	@JsonIgnore
-	public BigDecimal tokenPrice(String bnbPrice) {
-		Double priceOFToken = (Double.valueOf(1)/ (getReserve1().divide(getReserve0())).doubleValue()) * Double.valueOf(bnbPrice);
-		return BigDecimal.valueOf(priceOFToken);
-	}
-	
 }
