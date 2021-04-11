@@ -111,13 +111,13 @@ public class OrderSellExecuteGatewayEndpoint {
 	public Map<String, Object> updateSellOrderChannel(Map<String, Object> tradeOrderMap) throws Exception{
 		Order order = (Order) tradeOrderMap.get(TradeConstants.ORDER);
 		if(tradeOrderMap.get(TradeConstants.SWAP_TOKEN_FOR_ETH_HASH) != null) {
+			tradeOverviewRepository.save(mapRequestToTradeOverView(order));
 			purgeMessage(order);
 		}
 		return tradeOrderMap;
 	}
 
 	private void purgeMessage(Order order) throws Exception {
-		tradeOverviewRepository.save(mapRequestToTradeOverView(order));
 		orderHistoryRepository.save(order);
 		orderRepository.delete(order);
 	}
