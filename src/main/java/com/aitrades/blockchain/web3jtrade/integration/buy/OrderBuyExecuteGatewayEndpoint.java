@@ -1,5 +1,6 @@
 package com.aitrades.blockchain.web3jtrade.integration.buy;
 
+import java.math.BigDecimal;
 import java.math.BigInteger;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
@@ -130,6 +131,7 @@ public class OrderBuyExecuteGatewayEndpoint {
 		overview.setOrderSide(request.getOrderEntity().getOrderSide());
 		overview.setOrderState(request.getOrderEntity().getOrderState());
 		overview.setOrderType(request.getOrderEntity().getOrderType());
+		overview.setExecutedPrice(request.getExecutionPrice());
 		return overview;
 	}
 	
