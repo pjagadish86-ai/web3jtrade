@@ -31,6 +31,9 @@ import org.web3j.protocol.core.methods.response.EthCall;
 import org.web3j.protocol.core.methods.response.EthGetTransactionCount;
 import org.web3j.protocol.core.methods.response.EthSendTransaction;
 import org.web3j.tuples.generated.Tuple3;
+import org.web3j.tx.FastRawTransactionManager;
+import org.web3j.tx.response.NoOpProcessor;
+import org.web3j.tx.response.PollingTransactionReceiptProcessor;
 import org.web3j.utils.Numeric;
 
 import com.aitrades.blockchain.web3jtrade.client.Web3jServiceClient;
@@ -45,12 +48,20 @@ import io.reactivex.schedulers.Schedulers;
 @SuppressWarnings({ "rawtypes", "unchecked" })
 public class PancakeServiceImpl implements DexContractService {
 
+	private static final Uint256 DEAD_LINE = new Uint256(BigInteger.valueOf(Instant.now().plus(600, ChronoUnit.SECONDS).getEpochSecond()));
+
 	private static final String GET_AMOUNTS_OUT_RETURNED_ZERO = "GetAmounts Out Returned ZERO";
 
 	private static final String CUSTOM = "CUSTOM";
 	
 	@Resource(name = "web3jBscServiceClient")
 	private Web3jServiceClient web3jServiceClient;
+	
+	@Resource(name = "pollingTransactionReceiptProcessor")
+	private PollingTransactionReceiptProcessor pollingTransactionReceiptProcessor;
+	
+	@Resource(name= "noOpProcessor")
+	private NoOpProcessor noOpProcessor;
 
 	@Override
 	public List<Type> getPair(String tokenA, String tokenB) throws Exception{
@@ -58,12 +69,11 @@ public class PancakeServiceImpl implements DexContractService {
 		final Function function = new Function(FUNC_GETPAIR, Arrays.asList(new Address(tokenA), new Address(tokenB)),
 											   Arrays.asList(new TypeReference<Address>() {
 											}));
-
-		Transaction transaction = Transaction.createEthCallTransaction(TradeConstants.FACTORY_MAP.get(TradeConstants.PANCAKE), 
-																	  TradeConstants.FACTORY_MAP.get(TradeConstants.PANCAKE), 
-																	  FunctionEncoder.encode(function));
 		EthCall ethCall = web3jServiceClient.getWeb3j()
-										    .ethCall(transaction, DefaultBlockParameterName.LATEST)
+										    .ethCall(Transaction.createEthCallTransaction(TradeConstants.PANCAKE_FACTORY_ADDRESS, 
+													 TradeConstants.PANCAKE_FACTORY_ADDRESS, 
+													 FunctionEncoder.encode(function)),
+										    		DefaultBlockParameterName.LATEST)
 										    .flowable()
 										    .blockingSingle();
 		if(ethCall.hasError()) {
@@ -74,16 +84,14 @@ public class PancakeServiceImpl implements DexContractService {
 
 	@Override
 	public Tuple3<BigInteger, BigInteger, BigInteger> getReserves(String pairAddress, Credentials credentials, BigInteger gasPrice, BigInteger gasLimit, String gasMode)  throws Exception{
-		
-		EthereumDexContract dexContract = new EthereumDexContract(pairAddress, 
-															      web3jServiceClient.getWeb3j(), 
-															      credentials,
-															      gasPrice,
-															      gasLimit);
-		return dexContract.getReserves()
-						  .flowable()
-				          .subscribeOn(Schedulers.io())
-				          .blockingSingle();
+		return new EthereumDexContract(pairAddress,
+									   web3jServiceClient.getWeb3j(), 
+									   credentials,
+									   gasPrice,
+									   gasLimit).getReserves()
+											    .flowable()
+									            .subscribeOn(Schedulers.io())
+									            .blockingSingle();
 	}
 
 
@@ -106,33 +114,19 @@ public class PancakeServiceImpl implements DexContractService {
 	@Override
 	public String swapETHForTokens(Credentials credentials, BigInteger inputEthers, BigInteger outputTokens, 
 								   long deadLine, List<Address> memoryPathAddress, boolean hasFee, BigInteger gasPrice, BigInteger gasLimit, String gasMode) throws Exception{
-		final Function function = new Function(hasFee ? FUNC_SWAPEXACTETHFORTOKENSSUPPORTINGFEEONTRANSFERTOKENS : FUNC_SWAPEXACTETHFORTOKENS,
-											   Lists.newArrayList(new Uint256(outputTokens), 
-													   			  new DynamicArray(Address.class, memoryPathAddress),
-													   			  new Address(credentials.getAddress()), 
-													   			  new Uint256(BigInteger.valueOf(Instant.now().plus(deadLine, ChronoUnit.SECONDS).getEpochSecond()))),
-											   Collections.emptyList());
-		String data = FunctionEncoder.encode(function);
-		BigInteger gasLmt = StringUtils.equalsIgnoreCase(gasMode, CUSTOM) ? gasLimit : BigInteger.valueOf(21000l).add(BigInteger.valueOf(68l)
-																														.multiply(BigInteger.valueOf(data.getBytes().length)));
-	
-		EthGetTransactionCount ethGetTransactionCount = web3jServiceClient.getWeb3j()
-																		  .ethGetTransactionCount(credentials.getAddress(), DefaultBlockParameterName.LATEST)
-																		  .flowable()
-																		  .subscribeOn(Schedulers.io())
-																		  .blockingSingle();
-		
-		RawTransaction rawTransaction = RawTransaction.createTransaction(ethGetTransactionCount.getTransactionCount(),
-																		 gasPrice, 
-																		 gasLmt, 
-																		 TradeConstants.ROUTER_MAP.get(TradeConstants.PANCAKE), 
-																		 inputEthers,
-																		 data);
-		
-		EthSendTransaction ethSendTransaction = web3jServiceClient.getWeb3j()
-																  .ethSendRawTransaction(Numeric.toHexString(TransactionEncoder.signMessage(rawTransaction, credentials)))
-																  .flowable()
-																  .blockingSingle();
+		EthSendTransaction ethSendTransaction = new FastRawTransactionManager(web3jServiceClient.getWeb3j(), 
+																			   credentials,
+																			   noOpProcessor)
+															.sendTransaction(gasPrice, 
+																			 gasLimit, 
+																			 TradeConstants.PANCAKE_ROUTER_ADDRESS, 
+																			 FunctionEncoder.encode(new Function(hasFee ? FUNC_SWAPEXACTETHFORTOKENSSUPPORTINGFEEONTRANSFERTOKENS : FUNC_SWAPEXACTETHFORTOKENS,
+																										   Lists.newArrayList(new Uint256(outputTokens), 
+																												   			  new DynamicArray(Address.class, memoryPathAddress),
+																												   			  new Address(credentials.getAddress()), 
+																												   			  DEAD_LINE),
+																								   Collections.emptyList())), 
+																			 inputEthers);
 		if(ethSendTransaction.hasError()) {
 			throw new Exception(ethSendTransaction.getError().getMessage());
 		}

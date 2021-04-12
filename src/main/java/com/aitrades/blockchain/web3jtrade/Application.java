@@ -178,7 +178,6 @@ public class Application {
 		return new Jackson2JsonMessageConverter();
 	}
 	
-	//TODO: async rabitamq
 	@Bean(name = "orderSubmitRabbitTemplate")
 	public AmqpTemplate postorderRabbitTemplate(ConnectionFactory connectionFactory) {
 		final RabbitTemplate rabbitTemplate = new RabbitTemplate(connectionFactory);
