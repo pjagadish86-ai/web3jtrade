@@ -9,6 +9,7 @@ import org.apache.commons.lang.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.integration.annotation.ServiceActivator;
 import org.springframework.integration.annotation.Transformer;
+import org.web3j.abi.datatypes.Address;
 
 import com.aitrades.blockchain.web3jtrade.dex.contract.DexTradeContractService;
 import com.aitrades.blockchain.web3jtrade.domain.GasModeEnum;
@@ -59,7 +60,7 @@ public class OrderBuyExecuteGatewayEndpoint {
 																		   order.getCredentials(), 
 																		   order.getFrom().getAmountAsBigInteger(),
 																		   order.getSlippage().getSlipageInBipsInDouble(),
-																           Lists.newArrayList(order.getTo().getTicker().getAddress(), TradeConstants.WETH_MAP.get(order.getRoute().toUpperCase())),
+																           Lists.newArrayList(new Address(order.getTo().getTicker().getAddress()), new Address(TradeConstants.WETH_MAP.get(order.getRoute().toUpperCase()))),
 																           gasProvider.getGasPrice(GasModeEnum.fromValue(order.getGasMode()), order.getGasPrice().getValueBigInteger()),
 																	       gasProvider.getGasPrice(GasModeEnum.fromValue(order.getGasMode()), order.getGasLimit().getValueBigInteger()),
 																	       order.getGasMode());
@@ -87,7 +88,8 @@ public class OrderBuyExecuteGatewayEndpoint {
 																	   order.getFrom().getAmountAsBigInteger(), 
 																	   outputTokens, 
 																	   300l, 
-																	   Lists.newArrayList( TradeConstants.WETH_MAP.get(order.getRoute().toUpperCase()), order.getTo().getTicker().getAddress()),
+																	   Lists.newArrayList(new Address(TradeConstants.WETH_MAP.get(order.getRoute().toUpperCase())),
+																			   			  new Address(order.getTo().getTicker().getAddress())),
 																	   order.isFee(), 
 																	   gasProvider.getGasPrice(GasModeEnum.fromValue(order.getGasMode()), order.getGasPrice().getValueBigInteger()),
 																       gasProvider.getGasPrice(GasModeEnum.fromValue(order.getGasMode()), order.getGasLimit().getValueBigInteger()),

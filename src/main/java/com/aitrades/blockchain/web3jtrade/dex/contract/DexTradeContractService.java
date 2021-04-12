@@ -5,6 +5,7 @@ import java.util.List;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
+import org.web3j.abi.datatypes.Address;
 import org.web3j.abi.datatypes.Type;
 import org.web3j.crypto.Credentials;
 import org.web3j.tuples.generated.Tuple3;
@@ -25,12 +26,12 @@ public class DexTradeContractService {
 	};
 	
 	public BigInteger getAmountsIn(String route, Credentials credentials, BigInteger inputEthers, Double slipage,
-								   List<String> memoryPathAddress, BigInteger gasPrice, BigInteger gasLimit, String gasMode) throws Exception{
+								   List<Address> memoryPathAddress, BigInteger gasPrice, BigInteger gasLimit, String gasMode) throws Exception{
 		return factory.getInstance(route).getAmountsIn(credentials, inputEthers, slipage, memoryPathAddress, gasPrice, gasLimit, gasMode);
 	};
 	
 	public String swapETHForTokens(String route, Credentials credentials, BigInteger inputEthers,BigInteger outputTokens,
-								   long deadLine, List<String> memoryPathAddress, boolean hasFee, BigInteger gasPrice, BigInteger gasLimit, String gasMode) throws Exception{
+								   long deadLine, List<Address> memoryPathAddress, boolean hasFee, BigInteger gasPrice, BigInteger gasLimit, String gasMode) throws Exception{
 		return factory.getInstance(route).swapETHForTokens(credentials, inputEthers, outputTokens, deadLine, memoryPathAddress, hasFee, gasPrice, gasLimit, gasMode);
 	};
 	

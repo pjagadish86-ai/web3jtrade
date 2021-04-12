@@ -57,10 +57,10 @@ public class EthereumDexContract extends Contract {
 
     
 
-	public RemoteFunctionCall<List> getAmountsIn(BigInteger amountOut, List<String> path) {
+	public RemoteFunctionCall<List> getAmountsIn(BigInteger amountOut, List<Address> path) {
         final Function function = new Function(FUNC_GETAMOUNTSIN, 
                 Arrays.<Type>asList(new Uint256(amountOut), 
-                new DynamicArray<Address>(Address.class, getAddress(path))), 
+                new DynamicArray<Address>(Address.class, path)), 
                 Arrays.<TypeReference<?>>asList(new TypeReference<DynamicArray<Uint256>>() {}));
         return new RemoteFunctionCall<>(function,
                 new Callable<List>() {

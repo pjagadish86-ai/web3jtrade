@@ -89,7 +89,7 @@ public class UniswapServiceImpl implements DexContractService {
 
 	@Override
 	public BigInteger getAmountsIn(Credentials credentials, BigInteger inputEthers, Double slipage,
-								   List<String> memoryPathAddress, BigInteger gasPrice, BigInteger gasLimit, String gasMode) throws Exception {
+								   List<Address> memoryPathAddress, BigInteger gasPrice, BigInteger gasLimit, String gasMode) throws Exception {
 
 		EthereumDexContract dexContract = new EthereumDexContract(TradeConstants.ROUTER_MAP.get(TradeConstants.UNISWAP),
 																  web3jServiceClient.getWeb3j(), 
@@ -108,10 +108,10 @@ public class UniswapServiceImpl implements DexContractService {
 
 	@Override
 	public String swapETHForTokens(Credentials credentials, BigInteger inputEthers, BigInteger outputTokens, 
-								   long deadLine, List<String> memoryPathAddress, boolean hasFee, BigInteger gasPrice, BigInteger gasLimit, String gasMode) throws Exception{
+								   long deadLine, List<Address> memoryPathAddress, boolean hasFee, BigInteger gasPrice, BigInteger gasLimit, String gasMode) throws Exception{
 		final Function function = new Function(hasFee ? FUNC_SWAPEXACTETHFORTOKENSSUPPORTINGFEEONTRANSFERTOKENS : FUNC_SWAPEXACTETHFORTOKENS,
 											   Lists.newArrayList(new Uint256(outputTokens), 
-													   			  new DynamicArray(Address.class, getAddress(memoryPathAddress)),
+													   			  new DynamicArray(Address.class, memoryPathAddress),
 													   			  new Address(credentials.getAddress()), 
 													   			  new Uint256(BigInteger.valueOf(Instant.now().plus(deadLine, ChronoUnit.SECONDS).getEpochSecond()))),
 											   Collections.emptyList());
