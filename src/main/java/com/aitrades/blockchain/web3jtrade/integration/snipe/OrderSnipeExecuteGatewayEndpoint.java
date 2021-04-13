@@ -1,11 +1,9 @@
 
 package com.aitrades.blockchain.web3jtrade.integration.snipe;
 
-import java.math.BigDecimal;
 import java.math.BigInteger;
-import java.util.Map;
+import java.util.Arrays;
 import java.util.Optional;
-import java.util.concurrent.ConcurrentHashMap;
 
 import javax.annotation.Resource;
 
@@ -14,10 +12,8 @@ import org.springframework.amqp.core.AmqpTemplate;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.integration.annotation.ServiceActivator;
 import org.springframework.integration.annotation.Transformer;
-import org.springframework.scheduling.annotation.Async;
 import org.web3j.abi.datatypes.Address;
 import org.web3j.abi.datatypes.Type;
-import org.web3j.crypto.Credentials;
 import org.web3j.tuples.generated.Tuple3;
 
 import com.aitrades.blockchain.web3jtrade.client.DexNativePriceOracleClient;
@@ -28,7 +24,6 @@ import com.aitrades.blockchain.web3jtrade.domain.Reserves;
 import com.aitrades.blockchain.web3jtrade.domain.SnipeTransactionRequest;
 import com.aitrades.blockchain.web3jtrade.domain.TradeConstants;
 import com.aitrades.blockchain.web3jtrade.domain.TradeOverview;
-import com.aitrades.blockchain.web3jtrade.domain.price.Cryptonator;
 import com.aitrades.blockchain.web3jtrade.integration.snipe.mq.SnipeOrderReQueue;
 import com.aitrades.blockchain.web3jtrade.oracle.gas.GasProvider;
 import com.aitrades.blockchain.web3jtrade.repository.SnipeOrderHistoryRepository;
@@ -38,7 +33,6 @@ import com.aitrades.blockchain.web3jtrade.service.Web3jServiceClientFactory;
 import com.aitrades.blockchain.web3jtrade.trade.pendingTransaction.EthereumGethPendingTransactionsRetriever;
 import com.aitrades.blockchain.web3jtrade.trade.pendingTransaction.EthereumParityPendingTransactionsRetriever;
 import com.fasterxml.jackson.databind.ObjectReader;
-import com.google.common.collect.Lists;
 @SuppressWarnings({"unused", "rawtypes"})
 public class OrderSnipeExecuteGatewayEndpoint{
 	
@@ -144,7 +138,7 @@ public class OrderSnipeExecuteGatewayEndpoint{
 																		   snipeTransactionRequest.getCredentials(),
 																		   snipeTransactionRequest.getInputTokenValueAmountAsBigInteger(),
 																		   snipeTransactionRequest.getSlipageInDouble(),
-																		   Lists.newArrayList(new Address(TradeConstants.WETH_MAP.get(snipeTransactionRequest.getRoute().toUpperCase())),
+																		   Arrays.asList(new Address(TradeConstants.WETH_MAP.get(snipeTransactionRequest.getRoute().toUpperCase())),
 																				   			  new Address(snipeTransactionRequest.getToAddress())),
 																		   gasProvider.getGasPrice(GasModeEnum.fromValue(snipeTransactionRequest.getGasMode()), snipeTransactionRequest.getGasPrice()),
 																		   gasProvider.getGasPrice(GasModeEnum.fromValue(snipeTransactionRequest.getGasMode()), snipeTransactionRequest.getGasLimit()),
@@ -173,8 +167,8 @@ public class OrderSnipeExecuteGatewayEndpoint{
 																   snipeTransactionRequest.getInputTokenValueAmountAsBigInteger(),
 																   snipeTransactionRequest.getOuputTokenValueAmounttAsBigInteger(),
 																   snipeTransactionRequest.getDeadLine(),
-																   Lists.newArrayList(new Address(TradeConstants.WETH_MAP.get(snipeTransactionRequest.getRoute().toUpperCase())),
-																				     new Address(snipeTransactionRequest.getToAddress())),
+																   Arrays.asList(new Address(TradeConstants.WETH_MAP.get(snipeTransactionRequest.getRoute().toUpperCase())),
+																				 new Address(snipeTransactionRequest.getToAddress())),
 																   snipeTransactionRequest.isFeeEligible(),
 																   gasProvider.getGasPrice(GasModeEnum.fromValue(snipeTransactionRequest.getGasMode()), snipeTransactionRequest.getGasPrice()),
 																   gasProvider.getGasPrice(GasModeEnum.fromValue(snipeTransactionRequest.getGasMode()), snipeTransactionRequest.getGasLimit()),

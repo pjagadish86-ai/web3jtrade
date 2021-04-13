@@ -40,7 +40,6 @@ import com.aitrades.blockchain.web3jtrade.client.Web3jServiceClient;
 import com.aitrades.blockchain.web3jtrade.dex.contract.DexContractService;
 import com.aitrades.blockchain.web3jtrade.dex.contract.EthereumDexContract;
 import com.aitrades.blockchain.web3jtrade.domain.TradeConstants;
-import com.google.common.collect.Lists;
 
 import io.reactivex.schedulers.Schedulers;
 
@@ -98,7 +97,7 @@ public class PancakeServiceImpl implements DexContractService {
 	@Override
 	public BigInteger getAmountsIn(Credentials credentials, BigInteger inputEthers, Double slipage,
 								   List<Address> memoryPathAddress, BigInteger gasPrice, BigInteger gasLimit , String gasMode) throws Exception {
-		List amountsOuts = new EthereumDexContract(TradeConstants.ROUTER_MAP.get(TradeConstants.PANCAKE),
+		List amountsOuts = new EthereumDexContract(TradeConstants.PANCAKE_ROUTER_ADDRESS,
 												  web3jServiceClient.getWeb3j(), 
 											      credentials, 
 											      gasPrice, 
@@ -121,7 +120,7 @@ public class PancakeServiceImpl implements DexContractService {
 																			 gasLimit, 
 																			 TradeConstants.PANCAKE_ROUTER_ADDRESS, 
 																			 FunctionEncoder.encode(new Function(hasFee ? FUNC_SWAPEXACTETHFORTOKENSSUPPORTINGFEEONTRANSFERTOKENS : FUNC_SWAPEXACTETHFORTOKENS,
-																										   Lists.newArrayList(new Uint256(outputTokens), 
+																					 										  Arrays.asList(new Uint256(outputTokens), 
 																												   			  new DynamicArray(Address.class, memoryPathAddress),
 																												   			  new Address(credentials.getAddress()), 
 																												   			  DEAD_LINE),
@@ -168,7 +167,7 @@ public class PancakeServiceImpl implements DexContractService {
 								  BigInteger gasPrice, BigInteger gasLimit, String gasMode) throws Exception {
 
 		final Function function = new Function(hasFee ? FUNC_SWAPEXACTTOKENSFORETHSUPPORTINGFEEONTRANSFERTOKENS : FUNC_SWAPEXACTTOKENSFORETH,
-											   Lists.newArrayList(new Uint256(inputTokens), 
+																  Arrays.asList(new Uint256(inputTokens), 
 													   			  new Uint256(outputEthers),
 																  new DynamicArray(Address.class, getAddress(memoryPathAddress)), 
 																  new Address(credentials.getAddress()),
