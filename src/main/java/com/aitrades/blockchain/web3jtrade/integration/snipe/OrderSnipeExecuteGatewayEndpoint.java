@@ -33,6 +33,7 @@ import com.aitrades.blockchain.web3jtrade.service.Web3jServiceClientFactory;
 import com.aitrades.blockchain.web3jtrade.trade.pendingTransaction.EthereumGethPendingTransactionsRetriever;
 import com.aitrades.blockchain.web3jtrade.trade.pendingTransaction.EthereumParityPendingTransactionsRetriever;
 import com.fasterxml.jackson.databind.ObjectReader;
+import com.google.common.collect.Lists;
 @SuppressWarnings({"unused", "rawtypes"})
 public class OrderSnipeExecuteGatewayEndpoint{
 	
@@ -116,8 +117,10 @@ public class OrderSnipeExecuteGatewayEndpoint{
 																									        snipeTransactionRequest.getGasMode());
 		
 		if(reserves != null && reserves.component1().compareTo(BigInteger.ZERO) > 0 && reserves.component2().compareTo(snipeTransactionRequest.getInputTokenValueAmountAsBigInteger()) >= 0) {
-			snipeTransactionRequest.setReserves(mapReserves(reserves));
-			return snipeTransactionRequest;
+			if(reserves.component2().compareTo(new BigInteger("25000000000000000000")) >=0) {
+				snipeTransactionRequest.setReserves(mapReserves(reserves));
+				return snipeTransactionRequest;
+			}
 		}else {
 			snipeOrderReQueue.send(snipeTransactionRequest);	
 		}
@@ -138,7 +141,7 @@ public class OrderSnipeExecuteGatewayEndpoint{
 																		   snipeTransactionRequest.getCredentials(),
 																		   snipeTransactionRequest.getInputTokenValueAmountAsBigInteger(),
 																		   snipeTransactionRequest.getSlipageInDouble(),
-																		   Arrays.asList(new Address(TradeConstants.WETH_MAP.get(snipeTransactionRequest.getRoute().toUpperCase())),
+																		   Lists.newArrayList(new Address(TradeConstants.WETH_MAP.get(snipeTransactionRequest.getRoute().toUpperCase())),
 																				   			  new Address(snipeTransactionRequest.getToAddress())),
 																		   gasProvider.getGasPrice(GasModeEnum.fromValue(snipeTransactionRequest.getGasMode()), snipeTransactionRequest.getGasPrice()),
 																		   gasProvider.getGasPrice(GasModeEnum.fromValue(snipeTransactionRequest.getGasMode()), snipeTransactionRequest.getGasLimit()),
@@ -167,8 +170,8 @@ public class OrderSnipeExecuteGatewayEndpoint{
 																   snipeTransactionRequest.getInputTokenValueAmountAsBigInteger(),
 																   snipeTransactionRequest.getOuputTokenValueAmounttAsBigInteger(),
 																   snipeTransactionRequest.getDeadLine(),
-																   Arrays.asList(new Address(TradeConstants.WETH_MAP.get(snipeTransactionRequest.getRoute().toUpperCase())),
-																				 new Address(snipeTransactionRequest.getToAddress())),
+																   Lists.newArrayList(new Address(TradeConstants.WETH_MAP.get(snipeTransactionRequest.getRoute().toUpperCase())),
+																				 	  new Address(snipeTransactionRequest.getToAddress())),
 																   snipeTransactionRequest.isFeeEligible(),
 																   gasProvider.getGasPrice(GasModeEnum.fromValue(snipeTransactionRequest.getGasMode()), snipeTransactionRequest.getGasPrice()),
 																   gasProvider.getGasPrice(GasModeEnum.fromValue(snipeTransactionRequest.getGasMode()), snipeTransactionRequest.getGasLimit()),

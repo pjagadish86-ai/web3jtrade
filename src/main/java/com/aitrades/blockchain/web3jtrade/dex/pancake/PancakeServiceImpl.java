@@ -105,7 +105,7 @@ public class PancakeServiceImpl implements DexContractService {
 									   .getAmountsIn(inputEthers, memoryPathAddress)
 									  .flowable()
 									  .blockingSingle();
-		BigInteger amountsOut = (BigInteger)amountsOuts.get(0);					  
+		BigInteger amountsOut = (BigInteger)amountsOuts.get(1);					  
 		double slipageWithCal  = amountsOut.doubleValue() * slipage;
 		return BigDecimal.valueOf(amountsOut.doubleValue() - slipageWithCal).setScale(0, RoundingMode.DOWN).toBigInteger();
 	}
@@ -150,15 +150,13 @@ public class PancakeServiceImpl implements DexContractService {
 																 gasPrice, 
 																 gasLimit);
 		
-		BigInteger amountsIn = (BigInteger) dexContract.getAmountsOut(inputTokens, memoryPathAddress)
+		List amountsIn = dexContract.getAmountsOut(inputTokens, memoryPathAddress)
 													   .flowable()
-													   .blockingSingle()
-													   .stream()
-													   .reduce((first, second) -> second)
-													   .orElseThrow(() -> new Exception(GET_AMOUNTS_OUT_RETURNED_ZERO));
+													   .blockingSingle();
 		
-		double slipageWithCal  = amountsIn.doubleValue() * slipage;
-		return BigDecimal.valueOf(amountsIn.doubleValue() - slipageWithCal).setScale(0, RoundingMode.DOWN).toBigInteger();
+		BigInteger amountsOut = (BigInteger)amountsIn.get(1);	
+		double slipageWithCal  = amountsOut.doubleValue() * slipage;
+		return BigDecimal.valueOf(amountsOut.doubleValue() - slipageWithCal).setScale(0, RoundingMode.DOWN).toBigInteger();
 	}
 
 	@Override

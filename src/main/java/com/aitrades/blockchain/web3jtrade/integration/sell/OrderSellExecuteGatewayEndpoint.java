@@ -1,6 +1,5 @@
 package com.aitrades.blockchain.web3jtrade.integration.sell;
 
-import java.math.BigDecimal;
 import java.math.BigInteger;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
@@ -45,7 +44,7 @@ public class OrderSellExecuteGatewayEndpoint {
 	@Transformer(inputChannel = "transformSellOrderChannel", outputChannel = "amountsOutChannel")
 	public Map<String, Object> transformSellOrderChannel(byte[] message) throws Exception{
 		Order order  = orderRequestObjectReader.readValue(message);
-		Map<String, Object> aitradesMap = new ConcurrentHashMap<String, Object>();
+		Map<String, Object> aitradesMap = new ConcurrentHashMap<>();
 		aitradesMap.put(TradeConstants.ORDER, order);
 		return aitradesMap;
 	}
