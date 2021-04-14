@@ -108,7 +108,7 @@ public class SushiServiceImpl implements DexContractService {
 	}
 
 	@Override
-	public String swapETHForTokens(Credentials credentials, BigInteger inputEthers, BigInteger outputTokens, 
+	public String swapExactTokensForTokens(Credentials credentials, BigInteger inputEthers, BigInteger outputTokens, 
 								   long deadLine, List<Address> memoryPathAddress, boolean hasFee, BigInteger gasPrice, BigInteger gasLimit, String gasMode) throws Exception{
 		final Function function = new Function(hasFee ? FUNC_SWAPEXACTETHFORTOKENSSUPPORTINGFEEONTRANSFERTOKENS : FUNC_SWAPEXACTETHFORTOKENS,
 											   Lists.newArrayList(new Uint256(outputTokens), 

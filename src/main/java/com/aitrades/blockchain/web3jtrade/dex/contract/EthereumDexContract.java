@@ -36,6 +36,8 @@ public class EthereumDexContract extends Contract {
     public static final String FUNC_WITHDRAW = "withdraw";
     public static final String FUNC_DEPOSIT = "deposit";
     
+    public static final String FUNC_SWAPTOKENSFOREXACTTOKENS = "swapTokensForExactTokens";
+
     private static final ContractGasProvider CONTRACT_GAS_PROVIDER = new DefaultGasProvider();
     
     public EthereumDexContract(String contractAddress, Web3j web3j, Credentials credentials) {
@@ -139,6 +141,21 @@ public class EthereumDexContract extends Contract {
 	                FUNC_TRANSFER, 
 	                Arrays.<Type>asList(new org.web3j.abi.datatypes.Address(160, dst), 
 	                new org.web3j.abi.datatypes.generated.Uint256(wad)), 
+	                Collections.<TypeReference<?>>emptyList());
+	        return executeRemoteCallTransaction(function);
+	    }
+
+	    
+	    public RemoteFunctionCall<TransactionReceipt> swapTokensForExactTokens(BigInteger amountOut, BigInteger amountInMax, List<String> path, String to, BigInteger deadline) {
+	        final Function function = new Function(
+	                FUNC_SWAPTOKENSFOREXACTTOKENS, 
+	                Arrays.<Type>asList(new org.web3j.abi.datatypes.generated.Uint256(amountOut), 
+	                new org.web3j.abi.datatypes.generated.Uint256(amountInMax), 
+	                new org.web3j.abi.datatypes.DynamicArray<org.web3j.abi.datatypes.Address>(
+	                        org.web3j.abi.datatypes.Address.class,
+	                        org.web3j.abi.Utils.typeMap(path, org.web3j.abi.datatypes.Address.class)), 
+	                new org.web3j.abi.datatypes.Address(160, to), 
+	                new org.web3j.abi.datatypes.generated.Uint256(deadline)), 
 	                Collections.<TypeReference<?>>emptyList());
 	        return executeRemoteCallTransaction(function);
 	    }

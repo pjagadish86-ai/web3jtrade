@@ -33,7 +33,7 @@ public class DexTradeContractService {
 	
 	public String swapETHForTokens(String route, Credentials credentials, BigInteger inputEthers,BigInteger outputTokens,
 								   long deadLine, List<Address> memoryPathAddress, boolean hasFee, BigInteger gasPrice, BigInteger gasLimit, String gasMode) throws Exception{
-		return factory.getInstance(route).swapETHForTokens(credentials, inputEthers, outputTokens, deadLine, memoryPathAddress, hasFee, gasPrice, gasLimit, gasMode);
+		return factory.getInstance(route).swapExactTokensForTokens(credentials, inputEthers, outputTokens, deadLine, memoryPathAddress, hasFee, gasPrice, gasLimit, gasMode);
 	};
 	
 	public BigInteger getAmountsOut(String route, Credentials credentials,BigInteger inputTokens,Double slipage, 

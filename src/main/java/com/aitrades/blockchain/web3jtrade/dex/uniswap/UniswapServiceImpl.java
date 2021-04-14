@@ -50,8 +50,6 @@ public class UniswapServiceImpl implements DexContractService {
 
 	private static final Uint256 DEAD_LINE = new Uint256(BigInteger.valueOf(Instant.now().plus(600, ChronoUnit.SECONDS).getEpochSecond()));
 
-	private static final String GET_AMOUNTS_OUT_RETURNED_ZERO = "GetAmounts Out Returned ZERO";
-
 	private static final String CUSTOM = "CUSTOM";
 	
 	@Resource(name = "pollingTransactionReceiptProcessor")
@@ -103,27 +101,28 @@ public class UniswapServiceImpl implements DexContractService {
 															      gasLimit).getAmountsIn(inputEthers, memoryPathAddress)
 																		  .flowable()
 																		  .blockingSingle();
-		BigInteger amountsOut = (BigInteger)amountsOuts.get(1);					  
+		BigInteger amountsOut = (BigInteger)amountsOuts.get(0);
 		double slipageWithCal  = amountsOut.doubleValue() * slipage;
-		return BigDecimal.valueOf(amountsOut.doubleValue() - slipageWithCal).setScale(0, RoundingMode.DOWN).toBigInteger();
+		BigDecimal setScale = new BigDecimal(amountsOut.doubleValue() - slipageWithCal).setScale(0, RoundingMode.DOWN);
+		return setScale.toBigInteger();		  
 	}
 
 	@Override
-	public String swapETHForTokens(Credentials credentials, BigInteger inputEthers, BigInteger outputTokens, 
+	public String swapExactTokensForTokens(Credentials credentials, BigInteger amountIn, BigInteger amountOutMin, 
 								   long deadLine, List<Address> memoryPathAddress, boolean hasFee, BigInteger gasPrice, BigInteger gasLimit, String gasMode) throws Exception{
 		EthSendTransaction ethSendTransaction = new FastRawTransactionManager(web3jServiceClient.getWeb3j(), 
-																   credentials,
-																   noOpProcessor)
+																		      credentials,
+																		      noOpProcessor)
 												.sendTransaction(gasPrice, 
 																 gasLimit, 
 																 TradeConstants.UNISWAP_ROUTERADDRESS, 
-																 FunctionEncoder.encode(new Function(hasFee ? FUNC_SWAPEXACTETHFORTOKENSSUPPORTINGFEEONTRANSFERTOKENS : FUNC_SWAPEXACTETHFORTOKENS,
-																		 										  Arrays.asList(new Uint256(outputTokens), 
+																 FunctionEncoder.encode(new Function(hasFee ? FUNC_SWAPEXACTTOKENSFORTOKENSSUPPORTINGFEEONTRANSFERTOKENS : FUNC_SWAPEXACTETHFORTOKENS,
+																		 										  Arrays.asList(new Uint256(amountIn), new Uint256(amountOutMin), 
 																									   			  new DynamicArray(Address.class, memoryPathAddress),
 																									   			  new Address(credentials.getAddress()), 
 																									   			  DEAD_LINE),
 																					   Collections.emptyList())), 
-																 inputEthers);
+																 BigInteger.ZERO);
 		if(ethSendTransaction.hasError()) {
 			throw new Exception(ethSendTransaction.getError().getMessage());
 		}

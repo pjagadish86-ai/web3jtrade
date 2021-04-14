@@ -2,6 +2,7 @@ package com.aitrades.blockchain.web3jtrade.client;
 
 import java.math.BigDecimal;
 import java.math.BigInteger;
+import java.math.RoundingMode;
 import java.util.Map;
 import java.util.concurrent.TimeUnit;
 
@@ -46,7 +47,7 @@ public class DexNativePriceOracleClient implements DexSubGraphPriceClient {
 	@Autowired
     private DexNativePriceOracleClient() {
         tokenCache = Caffeine.newBuilder()
-                             .expireAfterWrite(1, TimeUnit.MINUTES)
+                             .expireAfterWrite(3, TimeUnit.MINUTES)
                              .build();
     }
 
@@ -82,6 +83,10 @@ public class DexNativePriceOracleClient implements DexSubGraphPriceClient {
         return getNtvPrice(route).getTicker().getPrice();
     }
 
+    public BigDecimal getPriceBigDec(String route) throws Exception  {
+        return new BigDecimal(getNtvPrice(route).getTicker().getPrice()).setScale(2, RoundingMode.DOWN);
+    }
+    
 	@Override
 	public BigDecimal tokenPrice(String pairAddress, String route, Credentials credentials) throws Exception {
 		Tuple3<BigInteger, BigInteger, BigInteger> reserves  =  getReserves(pairAddress, route, credentials);

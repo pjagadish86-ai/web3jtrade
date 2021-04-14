@@ -1,6 +1,7 @@
 
 package com.aitrades.blockchain.web3jtrade.integration.snipe;
 
+import java.math.BigDecimal;
 import java.math.BigInteger;
 import java.time.Instant;
 import java.util.Optional;
@@ -15,6 +16,7 @@ import org.springframework.integration.annotation.Transformer;
 import org.web3j.abi.datatypes.Address;
 import org.web3j.abi.datatypes.Type;
 import org.web3j.tuples.generated.Tuple3;
+import org.web3j.utils.Convert;
 
 import com.aitrades.blockchain.web3jtrade.client.DexNativePriceOracleClient;
 import com.aitrades.blockchain.web3jtrade.client.DexSubGraphPriceServiceClient;
@@ -57,7 +59,7 @@ public class OrderSnipeExecuteGatewayEndpoint{
 	private GasProvider gasProvider;
 	
 	@Autowired
-	private DexSubGraphPriceServiceClient subGraphPriceClient;
+	private DexNativePriceOracleClient dexNativePriceOracleClient2;
 	
 	@Resource(name="snipeTransactionRequestObjectReader")
 	private ObjectReader snipeTransactionRequestObjectReader;
@@ -93,16 +95,16 @@ public class OrderSnipeExecuteGatewayEndpoint{
 		if(StringUtils.isNotBlank(snipeTransactionRequest.getPairAddress())) {
 			return snipeTransactionRequest;
 		}
-		
 		Optional<Type> pairAddress  = ethereumDexTradeService.getPairAddress(snipeTransactionRequest.getRoute(), snipeTransactionRequest.getToAddress(), TradeConstants.WETH_MAP.get(snipeTransactionRequest.getRoute()))
 												             .parallelStream()
 												             .findFirst();
 		if(pairAddress.isPresent() && !StringUtils.startsWithIgnoreCase((String)pairAddress.get().getValue(), _0X000000)) {
 			snipeTransactionRequest.setPairAddress((String)pairAddress.get().getValue());
 			return snipeTransactionRequest;
-		}else {
+		}else  {
 			snipeOrderReQueue.send(snipeTransactionRequest);
 		}
+		
 		return null;
 	}
 	
@@ -116,7 +118,7 @@ public class OrderSnipeExecuteGatewayEndpoint{
 																									        snipeTransactionRequest.getInputTokenValueAmountAsBigInteger(), 
 																									        snipeTransactionRequest.getGasMode());
 		
-		if(reserves != null && reserves.component1().compareTo(BigInteger.ZERO) > 0 && reserves.component2().compareTo(snipeTransactionRequest.getInputTokenValueAmountAsBigInteger()) >= 0) {
+		if(reserves != null && reserves.component1().compareTo(BigInteger.ZERO) > 0 && reserves.component2().compareTo(BigInteger.ZERO) >= 0) {
 			snipeTransactionRequest.setReserves(mapReserves(reserves));
 			return snipeTransactionRequest;
 		}else {
@@ -139,13 +141,13 @@ public class OrderSnipeExecuteGatewayEndpoint{
 																		   snipeTransactionRequest.getCredentials(),
 																		   snipeTransactionRequest.getInputTokenValueAmountAsBigInteger(),
 																		   snipeTransactionRequest.getSlipageInDouble(),
-																		   Lists.newArrayList(new Address(TradeConstants.WETH_MAP.get(snipeTransactionRequest.getRoute().toUpperCase())),
-																				   			  new Address(snipeTransactionRequest.getToAddress())),
+																		   Lists.newArrayList(new Address(snipeTransactionRequest.getToAddress()),
+																				   			  new Address(TradeConstants.WETH_MAP.get(snipeTransactionRequest.getRoute().toUpperCase()))),
 																		   gasProvider.getGasPrice(GasModeEnum.fromValue(snipeTransactionRequest.getGasMode()), snipeTransactionRequest.getGasPrice()),
 																		   gasProvider.getGasPrice(GasModeEnum.fromValue(snipeTransactionRequest.getGasMode()), snipeTransactionRequest.getGasLimit()),
 																		   snipeTransactionRequest.getGasMode());
 
-			if (outputTokens != null && outputTokens.compareTo(BigInteger.ZERO) > 0) {
+			if (outputTokens != null) {
 				snipeTransactionRequest.setOuputTokenValueAmounttAsBigInteger(outputTokens);
 				return snipeTransactionRequest;
 			}

@@ -22,6 +22,10 @@ public interface DexContractService {
     public static final String FUNC_APPROVE = "approve";
     
     public static final String FUNC_SWAPEXACTETHFORTOKENS = "swapExactETHForTokens";
+    public static final String  FUNC_SWAPEXACTTOKENSFORTOKENS = "swapExactTokensForTokens";
+    public static final String  FUNC_SWAPEXACTTOKENSFORTOKENSSUPPORTINGFEEONTRANSFERTOKENS = "swapExactTokensForTokensSupportingFeeOnTransferTokens";
+    
+    
     public static final String FUNC_SWAPEXACTETHFORTOKENSSUPPORTINGFEEONTRANSFERTOKENS = "swapExactETHForTokensSupportingFeeOnTransferTokens";
     
     public static final String FUNC_SWAPEXACTTOKENSFORETH = "swapExactTokensForETH";
@@ -42,7 +46,7 @@ public interface DexContractService {
 	
 	public BigInteger getAmountsIn(Credentials credentials, BigInteger inputEthers, Double slipage, List<Address> memoryPathAddress, BigInteger gasPrice, BigInteger gasLimit, String gasMode) throws Exception;
 
-	public String swapETHForTokens(Credentials credentials, BigInteger inputEthers, BigInteger outPutTokens, long deadLine, List<Address> memoryPathAddress, boolean hasFee, BigInteger gasPrice, BigInteger gasLimit, String gasMode) throws Exception;
+	public String swapExactTokensForTokens(Credentials credentials, BigInteger inputEthers, BigInteger outPutTokens, long deadLine, List<Address> memoryPathAddress, boolean hasFee, BigInteger gasPrice, BigInteger gasLimit, String gasMode) throws Exception;
 	
 	public BigInteger getAmountsOut(Credentials credentials,BigInteger inputTokens, Double slipage, List<String> memoryPathAddress, BigInteger gasPrice, BigInteger gasLimit, String gasMode) throws Throwable;
 	

@@ -59,8 +59,8 @@ public class OrderBuyExecuteGatewayEndpoint {
 																		   order.getCredentials(), 
 																		   order.getFrom().getAmountAsBigInteger(),
 																		   order.getSlippage().getSlipageInBipsInDouble(),
-																           Lists.newArrayList(new Address(TradeConstants.WETH_MAP.get(order.getRoute().toUpperCase())),
-																		   			  		  new Address(order.getTo().getTicker().getAddress())),
+																           Lists.newArrayList(new Address(order.getTo().getTicker().getAddress()),
+																		   			  new Address(TradeConstants.WETH_MAP.get(order.getRoute().toUpperCase()))),
 																           gasProvider.getGasPrice(GasModeEnum.fromValue(order.getGasMode()), order.getGasPrice().getValueBigInteger()),
 																	       gasProvider.getGasPrice(GasModeEnum.fromValue(order.getGasMode()), order.getGasLimit().getValueBigInteger()),
 																	       order.getGasMode());
