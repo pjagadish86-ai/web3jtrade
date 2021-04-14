@@ -8,6 +8,7 @@ import org.springframework.stereotype.Component;
 import org.web3j.abi.datatypes.Address;
 import org.web3j.abi.datatypes.Type;
 import org.web3j.crypto.Credentials;
+import org.web3j.protocol.core.methods.response.TransactionReceipt;
 import org.web3j.tuples.generated.Tuple3;
 
 @Component
@@ -42,6 +43,21 @@ public class DexTradeContractService {
 	
 	public String swapTokenForETH(String route, Credentials credentials, BigInteger inputTokens, BigInteger outputEthers, long deadLine, List<String> memoryPathAddress, boolean hasFee, BigInteger gasPrice, BigInteger gasLimit, String gasMode) throws Exception{
 		return factory.getInstance(route).swapTokenForETH(credentials, inputTokens, outputEthers, deadLine, memoryPathAddress, hasFee, gasPrice, gasLimit, gasMode);
+	};
+	
+	public TransactionReceipt deposit(String route, BigInteger weiValue, Credentials credentials, BigInteger inputEthers, Double slipage,
+			   List<Address> memoryPathAddress, BigInteger gasPrice, BigInteger gasLimit , String gasMode) {
+		return factory.getInstance(route).deposit(weiValue, credentials, inputEthers, slipage, memoryPathAddress, gasPrice, gasLimit, gasMode);
+	};
+	
+	public TransactionReceipt withDraw(String route, BigInteger weiValue, Credentials credentials, BigInteger inputEthers, Double slipage,
+			   List<Address> memoryPathAddress, BigInteger gasPrice, BigInteger gasLimit , String gasMode) {
+		return factory.getInstance(route).withDraw(inputEthers, credentials, inputEthers, slipage, memoryPathAddress, gasPrice, gasLimit, null);
+	};
+	
+	public TransactionReceipt transfer(String route, String pairAddress, BigInteger wad, Credentials credentials, BigInteger inputEthers, Double slipage,
+			   List<Address> memoryPathAddress, BigInteger gasPrice, BigInteger gasLimit , String gasMode) {
+		return factory.getInstance(route).transfer(pairAddress, inputEthers, credentials, inputEthers, slipage, memoryPathAddress, gasPrice, gasLimit, gasMode);
 	};
 	
 }

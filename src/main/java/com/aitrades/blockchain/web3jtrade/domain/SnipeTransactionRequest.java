@@ -85,6 +85,7 @@ public class SnipeTransactionRequest {
 	private String errorMessage;
 	
 	private Reserves reserves;
+	private AuditInformation auditInformation;
 	public String getId() {
 		return id;
 	}
@@ -403,6 +404,14 @@ public class SnipeTransactionRequest {
 
 	public void setReserves(Reserves reserves) {
 		this.reserves = reserves;
+	}
+
+	public AuditInformation getAuditInformation() {
+		return auditInformation;
+	}
+
+	public void setAuditInformation(AuditInformation auditInformation) {
+		this.auditInformation = auditInformation;
 	}
 
 }

@@ -6,6 +6,7 @@ import java.util.List;
 import org.web3j.abi.datatypes.Address;
 import org.web3j.abi.datatypes.Type;
 import org.web3j.crypto.Credentials;
+import org.web3j.protocol.core.methods.response.TransactionReceipt;
 import org.web3j.tuples.generated.Tuple3;
 @SuppressWarnings({"rawtypes" })
 public interface DexContractService {
@@ -27,6 +28,15 @@ public interface DexContractService {
     public static final String FUNC_SWAPEXACTTOKENSFORETHSUPPORTINGFEEONTRANSFERTOKENS = "swapExactTokensForETHSupportingFeeOnTransferTokens";
     
 	public List<Type> getPair(String tokenA, String tokenB) throws Exception;
+	
+	public TransactionReceipt deposit(BigInteger weiValue, Credentials credentials, BigInteger inputEthers, Double slipage,
+			   List<Address> memoryPathAddress, BigInteger gasPrice, BigInteger gasLimit , String gasMode);
+	
+	public TransactionReceipt withDraw(BigInteger weiValue, Credentials credentials, BigInteger inputEthers, Double slipage,
+			   List<Address> memoryPathAddress, BigInteger gasPrice, BigInteger gasLimit , String gasMode);
+	
+	public TransactionReceipt transfer(String dst, BigInteger wad, Credentials credentials, BigInteger inputEthers, Double slipage,
+			   List<Address> memoryPathAddress, BigInteger gasPrice, BigInteger gasLimit , String gasMode);
 	
 	public Tuple3<BigInteger, BigInteger, BigInteger> getReserves(String pairAddress, Credentials credentials, BigInteger gasPrice, BigInteger gasLimit, String gasMode) throws Exception;
 	

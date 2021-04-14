@@ -30,6 +30,7 @@ import org.web3j.protocol.core.methods.request.Transaction;
 import org.web3j.protocol.core.methods.response.EthCall;
 import org.web3j.protocol.core.methods.response.EthGetTransactionCount;
 import org.web3j.protocol.core.methods.response.EthSendTransaction;
+import org.web3j.protocol.core.methods.response.TransactionReceipt;
 import org.web3j.tuples.generated.Tuple3;
 import org.web3j.tx.FastRawTransactionManager;
 import org.web3j.tx.response.NoOpProcessor;
@@ -197,5 +198,41 @@ public class PancakeServiceImpl implements DexContractService {
 		}
 		return ethSendTransaction.getTransactionHash();
 	}
+
+	@Override
+	public TransactionReceipt deposit(BigInteger weiValue, Credentials credentials, BigInteger inputEthers,
+			Double slipage, List<Address> memoryPathAddress, BigInteger gasPrice, BigInteger gasLimit, String gasMode) {
+		EthereumDexContract ethereumDexContract = new EthereumDexContract(TradeConstants.ROUTER_MAP.get(TradeConstants.PANCAKE),
+											   web3jServiceClient.getWeb3j(), 
+											   credentials,
+											   gasPrice,
+											   gasLimit);
+		TransactionReceipt blockingSingle = null;
+		try {
+			blockingSingle = ethereumDexContract.deposit(inputEthers).flowable().subscribeOn(Schedulers.io()).blockingSingle();
+		} catch (Exception e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		System.out.println("rever reason-> "+blockingSingle.getRevertReason());
+		return blockingSingle;
+	}
+
+	@Override
+	public TransactionReceipt withDraw(BigInteger weiValue, Credentials credentials, BigInteger inputEthers,
+			Double slipage, List<Address> memoryPathAddress, BigInteger gasPrice, BigInteger gasLimit, String gasMode) {
+		return null;
+	}
+
+	@Override
+	public TransactionReceipt transfer(String pairAddress, BigInteger wad, Credentials credentials, BigInteger inputEthers,
+			Double slipage, List<Address> memoryPathAddress, BigInteger gasPrice, BigInteger gasLimit, String gasMode) {
+		return new EthereumDexContract(TradeConstants.WETH_MAP.get(TradeConstants.PANCAKE),
+				   web3jServiceClient.getWeb3j(), 
+				   credentials,
+				   gasPrice,
+				   gasLimit).transfer(pairAddress, inputEthers).flowable().subscribeOn(Schedulers.io()).blockingSingle();
+	}
+
 
 }

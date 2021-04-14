@@ -30,6 +30,7 @@ import org.web3j.protocol.core.methods.request.Transaction;
 import org.web3j.protocol.core.methods.response.EthCall;
 import org.web3j.protocol.core.methods.response.EthGetTransactionCount;
 import org.web3j.protocol.core.methods.response.EthSendTransaction;
+import org.web3j.protocol.core.methods.response.TransactionReceipt;
 import org.web3j.tuples.generated.Tuple3;
 import org.web3j.utils.Numeric;
 
@@ -209,6 +210,27 @@ public class SushiServiceImpl implements DexContractService {
 			throw new Exception(ethSendTransaction.getError().getMessage());
 		}
 		return ethSendTransaction.getTransactionHash();
+	}
+
+	@Override
+	public TransactionReceipt deposit(BigInteger weiValue, Credentials credentials, BigInteger inputEthers,
+			Double slipage, List<Address> memoryPathAddress, BigInteger gasPrice, BigInteger gasLimit, String gasMode) {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
+	@Override
+	public TransactionReceipt withDraw(BigInteger weiValue, Credentials credentials, BigInteger inputEthers,
+			Double slipage, List<Address> memoryPathAddress, BigInteger gasPrice, BigInteger gasLimit, String gasMode) {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
+	@Override
+	public TransactionReceipt transfer(String dst, BigInteger wad, Credentials credentials, BigInteger inputEthers,
+			Double slipage, List<Address> memoryPathAddress, BigInteger gasPrice, BigInteger gasLimit, String gasMode) {
+		// TODO Auto-generated method stub
+		return null;
 	}
 
 }

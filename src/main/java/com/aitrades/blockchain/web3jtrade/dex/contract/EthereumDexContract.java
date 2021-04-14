@@ -3,6 +3,7 @@ package com.aitrades.blockchain.web3jtrade.dex.contract;
 import java.math.BigInteger;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
 import java.util.concurrent.Callable;
 
@@ -17,6 +18,7 @@ import org.web3j.abi.datatypes.generated.Uint32;
 import org.web3j.crypto.Credentials;
 import org.web3j.protocol.Web3j;
 import org.web3j.protocol.core.RemoteFunctionCall;
+import org.web3j.protocol.core.methods.response.TransactionReceipt;
 import org.web3j.tuples.generated.Tuple3;
 import org.web3j.tx.Contract;
 import org.web3j.tx.gas.ContractGasProvider;
@@ -28,6 +30,11 @@ public class EthereumDexContract extends Contract {
 	private static final String FUNC_GETRESERVES = "getReserves";
 	public static final String FUNC_GETAMOUNTSOUT = "getAmountsOut";
     public static final String FUNC_GETAMOUNTSIN = "getAmountsIn";
+    
+    public static final String FUNC_TRANSFER = "transfer";
+    public static final String FUNC_TRANSFERFROM = "transferFrom";
+    public static final String FUNC_WITHDRAW = "withdraw";
+    public static final String FUNC_DEPOSIT = "deposit";
     
     private static final ContractGasProvider CONTRACT_GAS_PROVIDER = new DefaultGasProvider();
     
@@ -99,4 +106,42 @@ public class EthereumDexContract extends Contract {
                     }
                 });
     }
+	
+	
+	  public RemoteFunctionCall<TransactionReceipt> deposit(BigInteger weiValue) {
+	        final Function function = new Function(
+	                FUNC_DEPOSIT, 
+	                Arrays.<Type>asList(), 
+	                Collections.<TypeReference<?>>emptyList());
+	        return executeRemoteCallTransaction(function, weiValue);
+	    }
+	  
+	    public RemoteFunctionCall<TransactionReceipt> withdraw(BigInteger wad) {
+	        final Function function = new Function(
+	                FUNC_WITHDRAW, 
+	                Arrays.<Type>asList(new org.web3j.abi.datatypes.generated.Uint256(wad)), 
+	                Collections.<TypeReference<?>>emptyList());
+	        return executeRemoteCallTransaction(function);
+	    }
+	    
+	    public RemoteFunctionCall<TransactionReceipt> transferFrom(String src, String dst, BigInteger wad) {
+	        final Function function = new Function(
+	                FUNC_TRANSFERFROM, 
+	                Arrays.<Type>asList(new org.web3j.abi.datatypes.Address(160, src), 
+	                new org.web3j.abi.datatypes.Address(160, dst), 
+	                new org.web3j.abi.datatypes.generated.Uint256(wad)), 
+	                Collections.<TypeReference<?>>emptyList());
+	        return executeRemoteCallTransaction(function);
+	    }
+	    
+	    public RemoteFunctionCall<TransactionReceipt> transfer(String dst, BigInteger wad) {
+	        final Function function = new Function(
+	                FUNC_TRANSFER, 
+	                Arrays.<Type>asList(new org.web3j.abi.datatypes.Address(160, dst), 
+	                new org.web3j.abi.datatypes.generated.Uint256(wad)), 
+	                Collections.<TypeReference<?>>emptyList());
+	        return executeRemoteCallTransaction(function);
+	    }
+
+
 }

@@ -2,7 +2,7 @@
 package com.aitrades.blockchain.web3jtrade.integration.snipe;
 
 import java.math.BigInteger;
-import java.util.Arrays;
+import java.time.Instant;
 import java.util.Optional;
 
 import javax.annotation.Resource;
@@ -117,10 +117,8 @@ public class OrderSnipeExecuteGatewayEndpoint{
 																									        snipeTransactionRequest.getGasMode());
 		
 		if(reserves != null && reserves.component1().compareTo(BigInteger.ZERO) > 0 && reserves.component2().compareTo(snipeTransactionRequest.getInputTokenValueAmountAsBigInteger()) >= 0) {
-			if(reserves.component2().compareTo(new BigInteger("25000000000000000000")) >=0) {
-				snipeTransactionRequest.setReserves(mapReserves(reserves));
-				return snipeTransactionRequest;
-			}
+			snipeTransactionRequest.setReserves(mapReserves(reserves));
+			return snipeTransactionRequest;
 		}else {
 			snipeOrderReQueue.send(snipeTransactionRequest);	
 		}
@@ -180,6 +178,7 @@ public class OrderSnipeExecuteGatewayEndpoint{
 				snipeTransactionRequest.setSwappedHash(hash);
 				snipeTransactionRequest.setSnipeStatus(TradeConstants.FILLED);
 				snipeTransactionRequest.setSnipe(true);
+				snipeTransactionRequest.getAuditInformation().setUpdatedDateTime(Instant.now().toString());
 				tradeOverviewRepository.save(mapRequestToTradeOverView(snipeTransactionRequest));
 				return snipeTransactionRequest;
 			}

@@ -4,6 +4,8 @@ import java.net.ConnectException;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.time.Duration;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.concurrent.Executor;
 import java.util.concurrent.TimeUnit;
 
@@ -50,7 +52,8 @@ import reactor.netty.http.client.HttpClient;
 public class Application {
 
 	private static final String ENDPOINT_WSS = "wss://eth-mainnet.ws.alchemyapi.io/v2/_KDa5W9WA_53y-f3KD0TUf-YYv0-QJ_7";
-	private static final String BSC_ENDPOINT_WSS ="wss://holy-twilight-violet.bsc.quiknode.pro/9ccdc8c6748f92a972bc9c9c1b8b56de961c0fc6/";
+	private static final String BSC_ENDPOINT_WSS ="wss://apis.ankr.com/wss/5e52d1499a03423db8b6cc43559beeb1/4cd1cd0bb6b4e7809163a3de758926bc/binance/full/main";
+			//"wss://holy-twilight-violet.bsc.quiknode.pro/9ccdc8c6748f92a972bc9c9c1b8b56de961c0fc6/";
 	
 	//wss://apis.ankr.com/wss/ec81f8a5c07c4660943c684b6fa7b102/4cd1cd0bb6b4e7809163a3de758926bc/binance/full/main
 
@@ -91,6 +94,9 @@ public class Application {
 	
 	@Bean(name = "webBSCSocketService")
 	public WebSocketService webBSCSocketService() {
+		Map<String, String> headers = new HashMap<>();
+		headers.put("x-api-key", "eeda04fc-aec0-4606-944c-ae3a6292a1be");
+		//WebSocketService webSocketService = new WebSocketService(new WebSocketClient(parseURI(BSC_ENDPOINT_WSS), headers), false);
 		WebSocketService webSocketService = new WebSocketService(new WebSocketClient(parseURI(BSC_ENDPOINT_WSS)), false);
 		try {
 			webSocketService.connect();
