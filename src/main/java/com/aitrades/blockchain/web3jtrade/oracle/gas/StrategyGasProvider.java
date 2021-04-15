@@ -14,6 +14,7 @@ import org.springframework.util.LinkedCaseInsensitiveMap;
 import org.springframework.web.reactive.function.client.WebClient;
 import org.web3j.protocol.core.DefaultBlockParameterName;
 import org.web3j.protocol.core.methods.request.Transaction;
+import org.web3j.tx.gas.DefaultGasProvider;
 import org.web3j.utils.Convert;
 
 import com.aitrades.blockchain.web3jtrade.domain.GasModeEnum;
@@ -72,7 +73,7 @@ public class StrategyGasProvider {
 	
 	public BigInteger getGasLimitOfPancake(){
 		return  web3jServiceClientFactory.getWeb3jMap().get(PANCAKE).getWeb3j()
-				 .ethGetBlockByNumber(DefaultBlockParameterName.LATEST, false)
+				 .ethGetBlockByNumber(DefaultBlockParameterName.EARLIEST, false)
 				 .flowable()
 				 .subscribeOn(io.reactivex.schedulers.Schedulers.newThread())
 				 .blockingLast()
@@ -87,7 +88,7 @@ public class StrategyGasProvider {
 										 .flowable()
 										 .subscribeOn(io.reactivex.schedulers.Schedulers.newThread())
 										 .blockingLast()
-										 .getAmountUsed();
+										 .getAmountUsed().add(BigInteger.valueOf(21000l));
 	}
 
 }

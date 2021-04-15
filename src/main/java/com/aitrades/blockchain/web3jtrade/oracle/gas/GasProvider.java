@@ -33,5 +33,14 @@ public class GasProvider{
 			return strategyGasProvider.getGasLimit(transaction, TradeConstants.UNISWAP);
 		}
 	}
+	
+	public BigInteger gasLimitPancake(String address, String data, String route) {
+		try {
+			return strategyGasProvider.getGasLimit(Transaction.createFunctionCallTransaction(address,  null, null, null, TradeConstants.PANCAKE_ROUTER_ADDRESS, data), route);
+		} catch (Exception e) {
+			return BigInteger.valueOf(21000l).add(BigInteger.valueOf(68l)
+					.multiply(BigInteger.valueOf(data.getBytes().length)));
+		}
+	}
 
 }

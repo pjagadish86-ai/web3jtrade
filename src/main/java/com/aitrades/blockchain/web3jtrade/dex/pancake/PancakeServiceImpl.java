@@ -13,6 +13,7 @@ import java.util.List;
 import javax.annotation.Resource;
 
 import org.apache.commons.lang.StringUtils;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.web3j.abi.FunctionEncoder;
 import org.web3j.abi.FunctionReturnDecoder;
@@ -41,6 +42,7 @@ import com.aitrades.blockchain.web3jtrade.client.Web3jServiceClient;
 import com.aitrades.blockchain.web3jtrade.dex.contract.DexContractService;
 import com.aitrades.blockchain.web3jtrade.dex.contract.EthereumDexContract;
 import com.aitrades.blockchain.web3jtrade.domain.TradeConstants;
+import com.aitrades.blockchain.web3jtrade.oracle.gas.GasProvider;
 
 import io.reactivex.schedulers.Schedulers;
 
@@ -60,7 +62,10 @@ public class PancakeServiceImpl implements DexContractService {
 	
 	@Resource(name= "noOpProcessor")
 	private NoOpProcessor noOpProcessor;
-
+	
+	@Autowired
+	private GasProvider gasProvider;
+	
 	@Override
 	public List<Type> getPair(String tokenA, String tokenB) throws Exception{
 		
@@ -113,18 +118,20 @@ public class PancakeServiceImpl implements DexContractService {
 	@Override
 	public String swapExactTokensForTokens(Credentials credentials, BigInteger amountIn, BigInteger amountOutMin, 
 								   long deadLine, List<Address> memoryPathAddress, boolean hasFee, BigInteger gasPrice, BigInteger gasLimit, String gasMode) throws Exception{
+		final String data = FunctionEncoder.encode(new Function(hasFee ? FUNC_SWAPEXACTTOKENSFORTOKENSSUPPORTINGFEEONTRANSFERTOKENS : FUNC_SWAPEXACTTOKENSFORTOKENS,
+					 										    Arrays.asList(new Uint256(amountIn), new Uint256(amountOutMin),
+					 										    			  new DynamicArray(Address.class, memoryPathAddress),
+					 										    			  new Address(credentials.getAddress()), 
+					 										    			  DEAD_LINE),
+														        Collections.emptyList()));
+		final BigInteger gasLimitPancake = gasProvider.gasLimitPancake(credentials.getAddress(), data, TradeConstants.PANCAKE);
 		EthSendTransaction ethSendTransaction = new FastRawTransactionManager(web3jServiceClient.getWeb3j(), 
 																			   credentials,
 																			   noOpProcessor)
 															.sendTransaction(gasPrice, 
-																			 gasLimit, 
+																			 gasLimitPancake, 
 																			 TradeConstants.PANCAKE_ROUTER_ADDRESS, 
-																			 FunctionEncoder.encode(new Function(hasFee ? FUNC_SWAPEXACTTOKENSFORTOKENSSUPPORTINGFEEONTRANSFERTOKENS : FUNC_SWAPEXACTTOKENSFORTOKENS,
-																					 										  Arrays.asList(new Uint256(amountIn), new Uint256(amountOutMin),
-																												   			  new DynamicArray(Address.class, memoryPathAddress),
-																												   			  new Address(credentials.getAddress()), 
-																												   			  DEAD_LINE),
-																								   Collections.emptyList())), 
+																			 data, 
 																			 BigInteger.ZERO);
 		if(ethSendTransaction.hasError()) {
 			throw new Exception(ethSendTransaction.getError().getMessage());
@@ -164,7 +171,7 @@ public class PancakeServiceImpl implements DexContractService {
 								  long deadLine, List<String> memoryPathAddress,  boolean hasFee, 
 								  BigInteger gasPrice, BigInteger gasLimit, String gasMode) throws Exception {
 
-		final Function function = new Function(hasFee ? FUNC_SWAPEXACTTOKENSFORETHSUPPORTINGFEEONTRANSFERTOKENS : FUNC_SWAPEXACTTOKENSFORETH,
+		final Function function = new Function(hasFee ? FUNC_SWAPEXACTTOKENSFORETHSUPPORTINGFEEONTRANSFERTOKENS : FUNC_SWAPEXACTTOKENSFORTOKENS,
 																  Arrays.asList(new Uint256(inputTokens), 
 													   			  new Uint256(outputEthers),
 																  new DynamicArray(Address.class, getAddress(memoryPathAddress)), 
@@ -172,26 +179,14 @@ public class PancakeServiceImpl implements DexContractService {
 																  new Uint256(BigInteger.valueOf(Instant.now().plus(deadLine, ChronoUnit.SECONDS).getEpochSecond()))),
 											   Collections.emptyList());
 		String data = FunctionEncoder.encode(function);
-		BigInteger gasLmt = StringUtils.equalsIgnoreCase(gasMode, CUSTOM) ? gasLimit : BigInteger.valueOf(21000l).add(BigInteger.valueOf(68l)
-																														.multiply(BigInteger.valueOf(data.getBytes().length)));
-	
-		EthGetTransactionCount ethGetTransactionCount = web3jServiceClient.getWeb3j()
-																		  .ethGetTransactionCount(credentials.getAddress(), DefaultBlockParameterName.LATEST)
-																		  .flowable()
-																		  .subscribeOn(Schedulers.io()).blockingSingle();
-
-		RawTransaction rawTransaction = RawTransaction.createTransaction(ethGetTransactionCount.getTransactionCount(),
-																		 gasPrice, 
-																		 gasLmt, 
-																		 TradeConstants.ROUTER_MAP.get(TradeConstants.PANCAKE),
-																		 BigInteger.ZERO, 
-																		 data);
-		
-		EthSendTransaction ethSendTransaction = web3jServiceClient.getWeb3j()
-																  .ethSendRawTransaction(Numeric.toHexString(TransactionEncoder.signMessage(rawTransaction, credentials)))
-																  .flowable()
-																  .subscribeOn(Schedulers.io())
-																  .blockingSingle();
+		EthSendTransaction ethSendTransaction = new FastRawTransactionManager(web3jServiceClient.getWeb3j(), 
+																		      credentials,
+																		      noOpProcessor)
+															.sendTransaction(gasPrice, 
+																			 gasProvider.gasLimitPancake(credentials.getAddress(), data, TradeConstants.PANCAKE), 
+																			 TradeConstants.PANCAKE_ROUTER_ADDRESS, 
+																			 data, 
+																			 BigInteger.ZERO);
 		if(ethSendTransaction.hasError()) {
 			throw new Exception(ethSendTransaction.getError().getMessage());
 		}
