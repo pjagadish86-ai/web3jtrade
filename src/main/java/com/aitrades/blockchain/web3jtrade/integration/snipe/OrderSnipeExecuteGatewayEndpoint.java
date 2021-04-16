@@ -1,7 +1,6 @@
 
 package com.aitrades.blockchain.web3jtrade.integration.snipe;
 
-import java.math.BigDecimal;
 import java.math.BigInteger;
 import java.time.Instant;
 import java.util.Optional;
@@ -16,10 +15,8 @@ import org.springframework.integration.annotation.Transformer;
 import org.web3j.abi.datatypes.Address;
 import org.web3j.abi.datatypes.Type;
 import org.web3j.tuples.generated.Tuple3;
-import org.web3j.utils.Convert;
 
 import com.aitrades.blockchain.web3jtrade.client.DexNativePriceOracleClient;
-import com.aitrades.blockchain.web3jtrade.client.DexSubGraphPriceServiceClient;
 import com.aitrades.blockchain.web3jtrade.dex.contract.DexTradeContractService;
 import com.aitrades.blockchain.web3jtrade.domain.GasModeEnum;
 import com.aitrades.blockchain.web3jtrade.domain.Reserves;
@@ -118,13 +115,24 @@ public class OrderSnipeExecuteGatewayEndpoint{
 																									        snipeTransactionRequest.getInputTokenValueAmountAsBigInteger(), 
 																									        snipeTransactionRequest.getGasMode());
 		
-		if(reserves != null && reserves.component1().compareTo(BigInteger.ZERO) > 0 && reserves.component2().compareTo(BigInteger.ZERO) >= 0) {
+		if(preChecksForTrade(snipeTransactionRequest, reserves) ) {
 			snipeTransactionRequest.setReserves(mapReserves(reserves));
 			return snipeTransactionRequest;
 		}else {
 			snipeOrderReQueue.send(snipeTransactionRequest);	
 		}
 		return null;
+	}
+
+	private boolean preChecksForTrade(SnipeTransactionRequest snipeTransactionRequest,
+									  Tuple3<BigInteger, BigInteger, BigInteger> reserves) {
+		boolean hasReserves = reserves != null  && reserves.component1().compareTo(BigInteger.ZERO) > 0
+												&& reserves.component2().compareTo(BigInteger.ZERO) >= 0;
+		if(hasReserves && snipeTransactionRequest.getLiquidityQuantity() != null
+					   && reserves.component2().compareTo(snipeTransactionRequest.getLiquidityQuantity()) >= 0) {
+			return true;
+		}
+		return hasReserves;
 	}
 	
 	private Reserves mapReserves(Tuple3<BigInteger, BigInteger, BigInteger> reserves) {
@@ -137,6 +145,11 @@ public class OrderSnipeExecuteGatewayEndpoint{
 	@ServiceActivator(inputChannel = "amountsInChannel", outputChannel = "swapETHForTokensChannel")
 	public SnipeTransactionRequest amountsInChannel(SnipeTransactionRequest snipeTransactionRequest) throws Exception{
 		try {
+			if(snipeTransactionRequest.getExpectedOutPutToken() != null) {
+				snipeTransactionRequest.setOuputTokenValueAmounttAsBigInteger(snipeTransactionRequest.getExpectedOutPutToken().toBigInteger());
+				return snipeTransactionRequest;
+			}
+			
 			BigInteger outputTokens = ethereumDexTradeService.getAmountsIn(snipeTransactionRequest.getRoute(),
 																		   snipeTransactionRequest.getCredentials(),
 																		   snipeTransactionRequest.getInputTokenValueAmountAsBigInteger(),
