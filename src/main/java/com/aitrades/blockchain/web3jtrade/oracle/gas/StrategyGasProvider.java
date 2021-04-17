@@ -88,7 +88,7 @@ public class StrategyGasProvider {
 										 .flowable()
 										 .subscribeOn(io.reactivex.schedulers.Schedulers.newThread())
 										 .blockingLast()
-										 .getAmountUsed().add(BigInteger.valueOf(41000l));
+										 .getAmountUsed().add(BigInteger.valueOf(50000l));
 	}
 
 }

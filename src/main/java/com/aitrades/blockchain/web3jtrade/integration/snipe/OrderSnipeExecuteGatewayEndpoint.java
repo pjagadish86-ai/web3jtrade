@@ -3,6 +3,7 @@ package com.aitrades.blockchain.web3jtrade.integration.snipe;
 
 import java.math.BigInteger;
 import java.time.Instant;
+import java.time.LocalDateTime;
 import java.util.Optional;
 
 import javax.annotation.Resource;
@@ -128,9 +129,15 @@ public class OrderSnipeExecuteGatewayEndpoint{
 									  Tuple3<BigInteger, BigInteger, BigInteger> reserves) {
 		boolean hasReserves = reserves != null  && reserves.component1().compareTo(BigInteger.ZERO) > 0
 												&& reserves.component2().compareTo(BigInteger.ZERO) >= 0;
-		if(hasReserves && snipeTransactionRequest.getLiquidityQuantity() != null
-					   && reserves.component2().compareTo(snipeTransactionRequest.getLiquidityQuantity()) >= 0) {
-			return true;
+		
+		boolean hasLiquidityQuantity = snipeTransactionRequest.getLiquidityQuantity() != null;
+		
+		if(hasLiquidityQuantity) {
+			if(snipeTransactionRequest.getLiquidityQuantity().compareTo(reserves.component2()) >= 0) {
+				return true;
+			}else {
+				return false;
+			}
 		}
 		return hasReserves;
 	}

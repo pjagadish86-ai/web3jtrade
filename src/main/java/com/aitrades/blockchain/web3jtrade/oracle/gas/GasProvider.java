@@ -38,7 +38,7 @@ public class GasProvider{
 		try {
 			return strategyGasProvider.getGasLimit(Transaction.createFunctionCallTransaction(address,  null, null, null, TradeConstants.PANCAKE_ROUTER_ADDRESS, data), route);
 		} catch (Exception e) {
-			return BigInteger.valueOf(21000l).add(BigInteger.valueOf(68l)
+			return BigInteger.valueOf(61000l).add(BigInteger.valueOf(68l)
 					.multiply(BigInteger.valueOf(data.getBytes().length)));
 		}
 	}

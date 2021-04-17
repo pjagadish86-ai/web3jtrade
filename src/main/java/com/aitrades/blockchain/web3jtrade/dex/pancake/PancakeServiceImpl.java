@@ -124,12 +124,11 @@ public class PancakeServiceImpl implements DexContractService {
 					 										    			  new Address(credentials.getAddress()), 
 					 										    			  DEAD_LINE),
 														        Collections.emptyList()));
-		final BigInteger gasLimitPancake = gasProvider.gasLimitPancake(credentials.getAddress(), data, TradeConstants.PANCAKE);
 		EthSendTransaction ethSendTransaction = new FastRawTransactionManager(web3jServiceClient.getWeb3j(), 
 																			   credentials,
 																			   noOpProcessor)
 															.sendTransaction(gasPrice, 
-																			 gasLimitPancake, 
+																			 gasLimit, 
 																			 TradeConstants.PANCAKE_ROUTER_ADDRESS, 
 																			 data, 
 																			 BigInteger.ZERO);
