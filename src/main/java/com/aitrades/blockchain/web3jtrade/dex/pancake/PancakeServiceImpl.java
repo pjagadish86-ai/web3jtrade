@@ -12,7 +12,6 @@ import java.util.List;
 
 import javax.annotation.Resource;
 
-import org.apache.commons.lang.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.web3j.abi.FunctionEncoder;
@@ -24,19 +23,15 @@ import org.web3j.abi.datatypes.Function;
 import org.web3j.abi.datatypes.Type;
 import org.web3j.abi.datatypes.generated.Uint256;
 import org.web3j.crypto.Credentials;
-import org.web3j.crypto.RawTransaction;
-import org.web3j.crypto.TransactionEncoder;
 import org.web3j.protocol.core.DefaultBlockParameterName;
 import org.web3j.protocol.core.methods.request.Transaction;
 import org.web3j.protocol.core.methods.response.EthCall;
-import org.web3j.protocol.core.methods.response.EthGetTransactionCount;
 import org.web3j.protocol.core.methods.response.EthSendTransaction;
 import org.web3j.protocol.core.methods.response.TransactionReceipt;
 import org.web3j.tuples.generated.Tuple3;
 import org.web3j.tx.FastRawTransactionManager;
 import org.web3j.tx.response.NoOpProcessor;
 import org.web3j.tx.response.PollingTransactionReceiptProcessor;
-import org.web3j.utils.Numeric;
 
 import com.aitrades.blockchain.web3jtrade.client.Web3jServiceClient;
 import com.aitrades.blockchain.web3jtrade.dex.contract.DexContractService;
@@ -49,6 +44,8 @@ import io.reactivex.schedulers.Schedulers;
 @Service("pancake")
 @SuppressWarnings({ "rawtypes", "unchecked" })
 public class PancakeServiceImpl implements DexContractService {
+
+	private static final List<TypeReference<?>> GET_AMTS_IN_OUT_PARAMS = Arrays.<TypeReference<?>>asList(new TypeReference<DynamicArray<Uint256>>() {});
 
 	private static final Uint256 DEAD_LINE = new Uint256(BigInteger.valueOf(Instant.now().plus(600, ChronoUnit.SECONDS).getEpochSecond()));
 
@@ -101,18 +98,23 @@ public class PancakeServiceImpl implements DexContractService {
 	@Override
 	public BigInteger getAmountsIn(Credentials credentials, BigInteger inputEthers, Double slipage,
 								   List<Address> memoryPathAddress, BigInteger gasPrice, BigInteger gasLimit , String gasMode) throws Exception {
-		List amountsOuts = new EthereumDexContract(TradeConstants.PANCAKE_ROUTER_ADDRESS,
-												  web3jServiceClient.getWeb3j(), 
-											      credentials, 
-											      gasPrice, 
-											      gasLimit)
-									   .getAmountsIn(inputEthers, memoryPathAddress)
-									  .flowable()
-									  .blockingSingle();
-		BigInteger amountsOut = (BigInteger)amountsOuts.get(0);
-		double slipageWithCal  = amountsOut.doubleValue() * slipage;
-		BigDecimal setScale = new BigDecimal(amountsOut.doubleValue() - slipageWithCal).setScale(0, RoundingMode.DOWN);
-		return setScale.toBigInteger();
+		final Function function = new Function(FUNC_GETAMOUNTIN, 
+							                   Arrays.<Type>asList(new Uint256(inputEthers), 
+							                   new DynamicArray<Address>(Address.class, memoryPathAddress)), 
+							                   GET_AMTS_IN_OUT_PARAMS);
+		String data = FunctionEncoder.encode(function);
+		EthCall resp =  web3jServiceClient.getWeb3j().ethCall(Transaction.createEthCallTransaction(memoryPathAddress.get(0).getValue(), 
+																									TradeConstants.PANCAKE_ROUTER_ADDRESS, 
+																									data), 
+													          DefaultBlockParameterName.LATEST)
+										              .flowable()
+										              .subscribeOn(Schedulers.io())
+										              .blockingSingle();
+		
+		final List<Type> response  = FunctionReturnDecoder.decode(resp.getValue(), function.getOutputParameters());
+		final BigInteger amountsOut = (BigInteger)(((DynamicArray<Type>)response.get(0)).getValue().get(0).getValue());
+		final double slipageWithCal  = amountsOut.doubleValue() * slipage;
+		return new BigDecimal(amountsOut.doubleValue() - slipageWithCal).setScale(0, RoundingMode.DOWN).toBigInteger();
 	}
 
 	@Override

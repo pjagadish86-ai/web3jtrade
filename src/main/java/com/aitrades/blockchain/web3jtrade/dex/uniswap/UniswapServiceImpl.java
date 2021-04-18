@@ -48,6 +48,8 @@ import io.reactivex.schedulers.Schedulers;
 @SuppressWarnings({ "rawtypes", "unchecked" })
 public class UniswapServiceImpl implements DexContractService {
 
+	private static final List<TypeReference<?>> GET_AMOUNTS_IN_OUTPUT = Arrays.<TypeReference<?>>asList(new TypeReference<DynamicArray<Uint256>>() {});
+
 	private static final Uint256 DEAD_LINE = new Uint256(BigInteger.valueOf(Instant.now().plus(600, ChronoUnit.SECONDS).getEpochSecond()));
 
 	private static final String CUSTOM = "CUSTOM";
@@ -94,22 +96,29 @@ public class UniswapServiceImpl implements DexContractService {
 	@Override
 	public BigInteger getAmountsIn(Credentials credentials, BigInteger inputEthers, Double slipage,
 								   List<Address> memoryPathAddress, BigInteger gasPrice, BigInteger gasLimit, String gasMode) throws Exception {
-		List amountsOuts = new EthereumDexContract(TradeConstants.UNISWAP_ROUTERADDRESS,
-																  web3jServiceClient.getWeb3j(), 
-															      credentials, 
-															      gasPrice, 
-															      gasLimit).getAmountsIn(inputEthers, memoryPathAddress)
-																		  .flowable()
-																		  .blockingSingle();
-		BigInteger amountsOut = (BigInteger)amountsOuts.get(0);
-		double slipageWithCal  = amountsOut.doubleValue() * slipage;
-		BigDecimal setScale = new BigDecimal(amountsOut.doubleValue() - slipageWithCal).setScale(0, RoundingMode.DOWN);
-		return setScale.toBigInteger();		  
+		final Function function = new Function(FUNC_GETAMOUNTIN, 
+								                Arrays.<Type>asList(new Uint256(inputEthers), 
+								                new DynamicArray<Address>(Address.class, memoryPathAddress)), 
+								                GET_AMOUNTS_IN_OUTPUT);
+		final String data = FunctionEncoder.encode(function);
+		EthCall resp =  web3jServiceClient.getWeb3j().ethCall(Transaction.createEthCallTransaction(memoryPathAddress.get(0).getValue(), 
+																				TradeConstants.UNISWAP_ROUTERADDRESS, 
+																				data), 
+								          DefaultBlockParameterName.LATEST)
+					              .flowable()
+					              .subscribeOn(Schedulers.io())
+					              .blockingSingle();
+		
+		final List<Type> response  = FunctionReturnDecoder.decode(resp.getValue(), function.getOutputParameters());
+		final BigInteger amountsOut = (BigInteger)(((DynamicArray<Type>)response.get(0)).getValue().get(0).getValue());
+		final double slipageWithCal  = amountsOut.doubleValue() * slipage;
+		return new BigDecimal(amountsOut.doubleValue() - slipageWithCal).setScale(0, RoundingMode.DOWN).toBigInteger();
 	}
 
 	@Override
 	public String swapExactTokensForTokens(Credentials credentials, BigInteger amountIn, BigInteger amountOutMin, 
-								   long deadLine, List<Address> memoryPathAddress, boolean hasFee, BigInteger gasPrice, BigInteger gasLimit, String gasMode) throws Exception{
+								   		   long deadLine, List<Address> memoryPathAddress, boolean hasFee, 
+								   		   BigInteger gasPrice, BigInteger gasLimit, String gasMode) throws Exception{
 		EthSendTransaction ethSendTransaction = new FastRawTransactionManager(web3jServiceClient.getWeb3j(), 
 																		      credentials,
 																		      noOpProcessor)
