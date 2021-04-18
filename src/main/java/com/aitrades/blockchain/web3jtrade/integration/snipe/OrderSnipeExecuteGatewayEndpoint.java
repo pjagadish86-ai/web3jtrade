@@ -82,9 +82,9 @@ public class OrderSnipeExecuteGatewayEndpoint{
 	
 	@Autowired
 	private LiquidityEventOrReserversFinder liquidityEventOrReserversFinder;
-
+	
 	@Transformer(inputChannel = "rabbitMqSubmitOrderConsumer", outputChannel = "pairCreatedEventChannel")
-	public SnipeTransactionRequest rabbitMqSubmitOrderConsumer(byte[] message) throws Exception{
+	public SnipeTransactionRequest rabbitMqSubmitOrderConsumer(byte[] message ) throws Exception{
 		return snipeTransactionRequestObjectReader.readValue(message);
 	}
 	
@@ -99,11 +99,12 @@ public class OrderSnipeExecuteGatewayEndpoint{
 		if(pairAddress.isPresent() && !StringUtils.startsWithIgnoreCase((String)pairAddress.get().getValue(), _0X000000)) {
 			snipeTransactionRequest.setPairAddress((String)pairAddress.get().getValue());
 			return snipeTransactionRequest;
-		}else  {
+		}
+		else  {
 			snipeOrderReQueue.send(snipeTransactionRequest);
 		}
 		
-		return null;
+		return null;// pairCreatedEventChannel(snipeTransactionRequest);
 	}
 	
 	@ServiceActivator(inputChannel = "liquidityEventOrReservesFinderChannel", outputChannel = "amountsInChannel")
@@ -120,7 +121,8 @@ public class OrderSnipeExecuteGatewayEndpoint{
 			snipeTransactionRequest.setReserves(mapReserves(reserves));
 			return snipeTransactionRequest;
 		}else {
-			snipeOrderReQueue.send(snipeTransactionRequest);	
+			//return liquidityEventOrReservesFinderChannel(snipeTransactionRequest);
+			snipeOrderReQueue.send(snipeTransactionRequest);
 		}
 		return null;
 	}
@@ -173,6 +175,7 @@ public class OrderSnipeExecuteGatewayEndpoint{
 			}
 		} catch (Exception e) {
 			if (StringUtils.containsIgnoreCase(e.getMessage(), TradeConstants.INSUFFICIENT_LIQUIDITY) || StringUtils.containsIgnoreCase(e.getMessage(), TradeConstants.DS_MATH_SUB_UNDERFLOW)) {
+				//return amountsInChannel(snipeTransactionRequest);
 				snipeOrderReQueue.send(snipeTransactionRequest);
 			} else {
 				snipeTransactionRequest.setErrorMessage(e.getMessage());

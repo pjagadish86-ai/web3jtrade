@@ -1,0 +1,134 @@
+2021-04-16 00:55:30,952 INFO com.aitrades.blockchain.web3jtrade.Application [main] Starting Application using Java 11.0.10 on JayMSI with PID 11268 (C:\Users\jay\git\repository3\com.aitrades.blockchain.web3jtrade\target\classes started by jay in C:\Users\jay\git\repository3\com.aitrades.blockchain.web3jtrade)
+2021-04-16 00:55:30,958 DEBUG com.aitrades.blockchain.web3jtrade.Application [main] Running with Spring Boot v2.4.3, Spring v5.3.4
+2021-04-16 00:55:30,958 INFO com.aitrades.blockchain.web3jtrade.Application [main] No active profile set, falling back to default profiles: default
+2021-04-16 00:55:37,416 INFO com.aitrades.blockchain.web3jtrade.Application [main] Started Application in 6.747 seconds (JVM running for 7.962)
+2021-04-16 01:08:30,012 INFO com.aitrades.blockchain.web3jtrade.Application [main] Starting Application using Java 11.0.10 on JayMSI with PID 10536 (C:\Users\jay\git\repository3\com.aitrades.blockchain.web3jtrade\target\classes started by jay in C:\Users\jay\git\repository3\com.aitrades.blockchain.web3jtrade)
+2021-04-16 01:08:30,014 DEBUG com.aitrades.blockchain.web3jtrade.Application [main] Running with Spring Boot v2.4.3, Spring v5.3.4
+2021-04-16 01:08:30,014 INFO com.aitrades.blockchain.web3jtrade.Application [main] No active profile set, falling back to default profiles: default
+2021-04-16 01:08:35,157 INFO com.aitrades.blockchain.web3jtrade.Application [main] Started Application in 5.487 seconds (JVM running for 6.67)
+2021-04-16 01:28:17,920 INFO com.aitrades.blockchain.web3jtrade.Application [main] Starting Application using Java 11.0.10 on JayMSI with PID 9852 (C:\Users\jay\git\repository3\com.aitrades.blockchain.web3jtrade\target\classes started by jay in C:\Users\jay\git\repository3\com.aitrades.blockchain.web3jtrade)
+2021-04-16 01:28:17,924 DEBUG com.aitrades.blockchain.web3jtrade.Application [main] Running with Spring Boot v2.4.3, Spring v5.3.4
+2021-04-16 01:28:17,924 INFO com.aitrades.blockchain.web3jtrade.Application [main] No active profile set, falling back to default profiles: default
+2021-04-16 01:28:23,783 INFO com.aitrades.blockchain.web3jtrade.Application [main] Started Application in 6.186 seconds (JVM running for 9.158)
+2021-04-16 09:17:13,832 INFO com.aitrades.blockchain.web3jtrade.Application [main] Starting Application using Java 11.0.10 on JayMSI with PID 15204 (C:\Users\jay\git\repository3\com.aitrades.blockchain.web3jtrade\target\classes started by jay in C:\Users\jay\git\repository3\com.aitrades.blockchain.web3jtrade)
+2021-04-16 09:17:13,833 DEBUG com.aitrades.blockchain.web3jtrade.Application [main] Running with Spring Boot v2.4.3, Spring v5.3.4
+2021-04-16 09:17:13,834 INFO com.aitrades.blockchain.web3jtrade.Application [main] No active profile set, falling back to default profiles: default
+2021-04-16 09:17:18,763 INFO com.aitrades.blockchain.web3jtrade.Application [main] Started Application in 5.22 seconds (JVM running for 6.263)
+2021-04-16 10:07:03,811 INFO com.aitrades.blockchain.web3jtrade.Application [main] Starting Application using Java 11.0.10 on JayMSI with PID 12096 (C:\Users\jay\git\repository3\com.aitrades.blockchain.web3jtrade\target\classes started by jay in C:\Users\jay\git\repository3\com.aitrades.blockchain.web3jtrade)
+2021-04-16 10:07:03,815 DEBUG com.aitrades.blockchain.web3jtrade.Application [main] Running with Spring Boot v2.4.3, Spring v5.3.4
+2021-04-16 10:07:03,816 INFO com.aitrades.blockchain.web3jtrade.Application [main] No active profile set, falling back to default profiles: default
+2021-04-16 10:07:11,562 INFO com.aitrades.blockchain.web3jtrade.Application [main] Started Application in 8.128 seconds (JVM running for 9.534)
+2021-04-16 12:11:00,415 INFO com.aitrades.blockchain.web3jtrade.Application [main] Starting Application using Java 11.0.10 on JayMSI with PID 9212 (C:\Users\jay\git\repository3\com.aitrades.blockchain.web3jtrade\target\classes started by jay in C:\Users\jay\git\repository3\com.aitrades.blockchain.web3jtrade)
+2021-04-16 12:11:00,418 DEBUG com.aitrades.blockchain.web3jtrade.Application [main] Running with Spring Boot v2.4.3, Spring v5.3.4
+2021-04-16 12:11:00,419 INFO com.aitrades.blockchain.web3jtrade.Application [main] No active profile set, falling back to default profiles: default
+2021-04-16 12:11:05,392 INFO com.aitrades.blockchain.web3jtrade.Application [main] Started Application in 5.3 seconds (JVM running for 6.542)
+2021-04-16 12:58:39,204 INFO com.aitrades.blockchain.web3jtrade.Application [main] Starting Application using Java 11.0.10 on JayMSI with PID 16268 (C:\Users\jay\git\repository3\com.aitrades.blockchain.web3jtrade\target\classes started by jay in C:\Users\jay\git\repository3\com.aitrades.blockchain.web3jtrade)
+2021-04-16 12:58:39,210 DEBUG com.aitrades.blockchain.web3jtrade.Application [main] Running with Spring Boot v2.4.3, Spring v5.3.4
+2021-04-16 12:58:39,210 INFO com.aitrades.blockchain.web3jtrade.Application [main] No active profile set, falling back to default profiles: default
+2021-04-16 12:58:46,457 INFO com.aitrades.blockchain.web3jtrade.Application [main] Started Application in 7.646 seconds (JVM running for 12.494)
+2021-04-16 14:26:45,679 INFO com.aitrades.blockchain.web3jtrade.Application [main] Starting Application using Java 11.0.10 on JayMSI with PID 3796 (C:\Users\jay\git\repository3\com.aitrades.blockchain.web3jtrade\target\classes started by jay in C:\Users\jay\git\repository3\com.aitrades.blockchain.web3jtrade)
+2021-04-16 14:26:45,683 DEBUG com.aitrades.blockchain.web3jtrade.Application [main] Running with Spring Boot v2.4.3, Spring v5.3.4
+2021-04-16 14:26:45,683 INFO com.aitrades.blockchain.web3jtrade.Application [main] No active profile set, falling back to default profiles: default
+2021-04-16 14:26:51,791 INFO com.aitrades.blockchain.web3jtrade.Application [main] Started Application in 6.472 seconds (JVM running for 7.775)
+2021-04-16 15:19:09,152 INFO com.aitrades.blockchain.web3jtrade.Application [main] Starting Application using Java 11.0.10 on JayMSI with PID 16808 (C:\Users\jay\git\repository3\com.aitrades.blockchain.web3jtrade\target\classes started by jay in C:\Users\jay\git\repository3\com.aitrades.blockchain.web3jtrade)
+2021-04-16 15:19:09,156 DEBUG com.aitrades.blockchain.web3jtrade.Application [main] Running with Spring Boot v2.4.3, Spring v5.3.4
+2021-04-16 15:19:09,156 INFO com.aitrades.blockchain.web3jtrade.Application [main] No active profile set, falling back to default profiles: default
+2021-04-16 15:19:14,968 INFO com.aitrades.blockchain.web3jtrade.Application [main] Started Application in 6.166 seconds (JVM running for 7.433)
+2021-04-16 15:22:04,916 INFO com.aitrades.blockchain.web3jtrade.Application [main] Starting Application using Java 11.0.10 on JayMSI with PID 8916 (C:\Users\jay\git\repository3\com.aitrades.blockchain.web3jtrade\target\classes started by jay in C:\Users\jay\git\repository3\com.aitrades.blockchain.web3jtrade)
+2021-04-16 15:22:04,920 DEBUG com.aitrades.blockchain.web3jtrade.Application [main] Running with Spring Boot v2.4.3, Spring v5.3.4
+2021-04-16 15:22:04,920 INFO com.aitrades.blockchain.web3jtrade.Application [main] No active profile set, falling back to default profiles: default
+2021-04-16 15:22:10,640 INFO com.aitrades.blockchain.web3jtrade.Application [main] Started Application in 6.066 seconds (JVM running for 7.36)
+2021-04-16 15:23:06,822 INFO com.aitrades.blockchain.web3jtrade.Application [main] Starting Application using Java 11.0.10 on JayMSI with PID 7908 (C:\Users\jay\git\repository3\com.aitrades.blockchain.web3jtrade\target\classes started by jay in C:\Users\jay\git\repository3\com.aitrades.blockchain.web3jtrade)
+2021-04-16 15:23:06,826 DEBUG com.aitrades.blockchain.web3jtrade.Application [main] Running with Spring Boot v2.4.3, Spring v5.3.4
+2021-04-16 15:23:06,826 INFO com.aitrades.blockchain.web3jtrade.Application [main] No active profile set, falling back to default profiles: default
+2021-04-16 15:23:12,855 INFO com.aitrades.blockchain.web3jtrade.Application [main] Started Application in 6.39 seconds (JVM running for 7.666)
+2021-04-16 16:10:43,707 INFO com.aitrades.blockchain.web3jtrade.Application [main] Starting Application using Java 11.0.10 on JayMSI with PID 9392 (C:\Users\jay\git\repository3\com.aitrades.blockchain.web3jtrade\target\classes started by jay in C:\Users\jay\git\repository3\com.aitrades.blockchain.web3jtrade)
+2021-04-16 16:10:43,711 DEBUG com.aitrades.blockchain.web3jtrade.Application [main] Running with Spring Boot v2.4.3, Spring v5.3.4
+2021-04-16 16:10:43,711 INFO com.aitrades.blockchain.web3jtrade.Application [main] No active profile set, falling back to default profiles: default
+2021-04-16 16:10:49,641 INFO com.aitrades.blockchain.web3jtrade.Application [main] Started Application in 6.298 seconds (JVM running for 7.593)
+2021-04-16 16:12:24,981 INFO com.aitrades.blockchain.web3jtrade.Application [main] Starting Application using Java 11.0.10 on JayMSI with PID 16844 (C:\Users\jay\git\repository3\com.aitrades.blockchain.web3jtrade\target\classes started by jay in C:\Users\jay\git\repository3\com.aitrades.blockchain.web3jtrade)
+2021-04-16 16:12:24,985 DEBUG com.aitrades.blockchain.web3jtrade.Application [main] Running with Spring Boot v2.4.3, Spring v5.3.4
+2021-04-16 16:12:24,985 INFO com.aitrades.blockchain.web3jtrade.Application [main] No active profile set, falling back to default profiles: default
+2021-04-16 16:12:30,741 INFO com.aitrades.blockchain.web3jtrade.Application [main] Started Application in 6.101 seconds (JVM running for 7.378)
+2021-04-16 18:18:07,538 INFO com.aitrades.blockchain.web3jtrade.Application [main] Starting Application using Java 11.0.10 on JayMSI with PID 13232 (C:\Users\jay\git\repository3\com.aitrades.blockchain.web3jtrade\target\classes started by jay in C:\Users\jay\git\repository3\com.aitrades.blockchain.web3jtrade)
+2021-04-16 18:18:07,541 DEBUG com.aitrades.blockchain.web3jtrade.Application [main] Running with Spring Boot v2.4.3, Spring v5.3.4
+2021-04-16 18:18:07,542 INFO com.aitrades.blockchain.web3jtrade.Application [main] No active profile set, falling back to default profiles: default
+2021-04-16 18:18:13,051 ERROR org.springframework.boot.SpringApplication [main] Application run failed
+java.lang.IllegalArgumentException: org.springframework.integration.handler.support.MessagingMethodInvokerHelper$IneligibleMethodException: Found more than one parameter type candidate: [org.springframework.amqp.core.Message] and [org.springframework.amqp.core.MessageProperties]
+	at org.springframework.integration.handler.support.MessagingMethodInvokerHelper.createHandlerMethod(MessagingMethodInvokerHelper.java:396)
+	at org.springframework.integration.handler.support.MessagingMethodInvokerHelper.<init>(MessagingMethodInvokerHelper.java:255)
+	at org.springframework.integration.handler.support.MessagingMethodInvokerHelper.<init>(MessagingMethodInvokerHelper.java:206)
+	at org.springframework.integration.handler.support.MessagingMethodInvokerHelper.<init>(MessagingMethodInvokerHelper.java:210)
+	at org.springframework.integration.handler.MethodInvokingMessageProcessor.<init>(MethodInvokingMessageProcessor.java:50)
+	at org.springframework.integration.transformer.MethodInvokingTransformer.<init>(MethodInvokingTransformer.java:38)
+	at org.springframework.integration.config.annotation.TransformerAnnotationPostProcessor.createHandler(TransformerAnnotationPostProcessor.java:71)
+	at org.springframework.integration.config.annotation.AbstractMethodAnnotationPostProcessor.postProcess(AbstractMethodAnnotationPostProcessor.java:158)
+	at org.springframework.integration.config.annotation.MessagingAnnotationPostProcessor.postProcessMethodAndRegisterEndpointIfAny(MessagingAnnotationPostProcessor.java:230)
+	at org.springframework.integration.config.annotation.MessagingAnnotationPostProcessor.lambda$processAnnotationTypeOnMethod$1(MessagingAnnotationPostProcessor.java:220)
+	at java.base/java.util.ArrayList.forEach(ArrayList.java:1541)
+	at org.springframework.integration.config.annotation.MessagingAnnotationPostProcessor.afterSingletonsInstantiated(MessagingAnnotationPostProcessor.java:141)
+	at org.springframework.beans.factory.support.DefaultListableBeanFactory.preInstantiateSingletons(DefaultListableBeanFactory.java:963)
+	at org.springframework.context.support.AbstractApplicationContext.finishBeanFactoryInitialization(AbstractApplicationContext.java:917)
+	at org.springframework.context.support.AbstractApplicationContext.refresh(AbstractApplicationContext.java:582)
+	at org.springframework.boot.web.servlet.context.ServletWebServerApplicationContext.refresh(ServletWebServerApplicationContext.java:144)
+	at org.springframework.boot.SpringApplication.refresh(SpringApplication.java:767)
+	at org.springframework.boot.SpringApplication.refresh(SpringApplication.java:759)
+	at org.springframework.boot.SpringApplication.refreshContext(SpringApplication.java:426)
+	at org.springframework.boot.SpringApplication.run(SpringApplication.java:326)
+	at org.springframework.boot.SpringApplication.run(SpringApplication.java:1311)
+	at org.springframework.boot.SpringApplication.run(SpringApplication.java:1300)
+	at com.aitrades.blockchain.web3jtrade.Application.main(Application.java:68)
+Caused by: org.springframework.integration.handler.support.MessagingMethodInvokerHelper$IneligibleMethodException: Found more than one parameter type candidate: [org.springframework.amqp.core.Message] and [org.springframework.amqp.core.MessageProperties]
+	at org.springframework.integration.handler.support.MessagingMethodInvokerHelper$HandlerMethod.setExclusiveTargetParameterType(MessagingMethodInvokerHelper.java:1334)
+	at org.springframework.integration.handler.support.MessagingMethodInvokerHelper$HandlerMethod.processMethodParameterForExpression(MessagingMethodInvokerHelper.java:1199)
+	at org.springframework.integration.handler.support.MessagingMethodInvokerHelper$HandlerMethod.generateExpression(MessagingMethodInvokerHelper.java:1152)
+	at org.springframework.integration.handler.support.MessagingMethodInvokerHelper$HandlerMethod.<init>(MessagingMethodInvokerHelper.java:1091)
+	at org.springframework.integration.handler.support.MessagingMethodInvokerHelper.createHandlerMethod(MessagingMethodInvokerHelper.java:391)
+	... 22 common frames omitted
+2021-04-16 18:20:19,796 INFO com.aitrades.blockchain.web3jtrade.Application [main] Starting Application using Java 11.0.10 on JayMSI with PID 12124 (C:\Users\jay\git\repository3\com.aitrades.blockchain.web3jtrade\target\classes started by jay in C:\Users\jay\git\repository3\com.aitrades.blockchain.web3jtrade)
+2021-04-16 18:20:19,800 DEBUG com.aitrades.blockchain.web3jtrade.Application [main] Running with Spring Boot v2.4.3, Spring v5.3.4
+2021-04-16 18:20:19,801 INFO com.aitrades.blockchain.web3jtrade.Application [main] No active profile set, falling back to default profiles: default
+2021-04-16 18:20:25,641 ERROR org.springframework.boot.SpringApplication [main] Application run failed
+java.lang.IllegalArgumentException: org.springframework.integration.handler.support.MessagingMethodInvokerHelper$IneligibleMethodException: Found more than one parameter type candidate: [org.springframework.amqp.core.Message] and [org.springframework.amqp.core.MessageProperties]
+	at org.springframework.integration.handler.support.MessagingMethodInvokerHelper.createHandlerMethod(MessagingMethodInvokerHelper.java:396)
+	at org.springframework.integration.handler.support.MessagingMethodInvokerHelper.<init>(MessagingMethodInvokerHelper.java:255)
+	at org.springframework.integration.handler.support.MessagingMethodInvokerHelper.<init>(MessagingMethodInvokerHelper.java:206)
+	at org.springframework.integration.handler.support.MessagingMethodInvokerHelper.<init>(MessagingMethodInvokerHelper.java:210)
+	at org.springframework.integration.handler.MethodInvokingMessageProcessor.<init>(MethodInvokingMessageProcessor.java:50)
+	at org.springframework.integration.transformer.MethodInvokingTransformer.<init>(MethodInvokingTransformer.java:38)
+	at org.springframework.integration.config.annotation.TransformerAnnotationPostProcessor.createHandler(TransformerAnnotationPostProcessor.java:71)
+	at org.springframework.integration.config.annotation.AbstractMethodAnnotationPostProcessor.postProcess(AbstractMethodAnnotationPostProcessor.java:158)
+	at org.springframework.integration.config.annotation.MessagingAnnotationPostProcessor.postProcessMethodAndRegisterEndpointIfAny(MessagingAnnotationPostProcessor.java:230)
+	at org.springframework.integration.config.annotation.MessagingAnnotationPostProcessor.lambda$processAnnotationTypeOnMethod$1(MessagingAnnotationPostProcessor.java:220)
+	at java.base/java.util.ArrayList.forEach(ArrayList.java:1541)
+	at org.springframework.integration.config.annotation.MessagingAnnotationPostProcessor.afterSingletonsInstantiated(MessagingAnnotationPostProcessor.java:141)
+	at org.springframework.beans.factory.support.DefaultListableBeanFactory.preInstantiateSingletons(DefaultListableBeanFactory.java:963)
+	at org.springframework.context.support.AbstractApplicationContext.finishBeanFactoryInitialization(AbstractApplicationContext.java:917)
+	at org.springframework.context.support.AbstractApplicationContext.refresh(AbstractApplicationContext.java:582)
+	at org.springframework.boot.web.servlet.context.ServletWebServerApplicationContext.refresh(ServletWebServerApplicationContext.java:144)
+	at org.springframework.boot.SpringApplication.refresh(SpringApplication.java:767)
+	at org.springframework.boot.SpringApplication.refresh(SpringApplication.java:759)
+	at org.springframework.boot.SpringApplication.refreshContext(SpringApplication.java:426)
+	at org.springframework.boot.SpringApplication.run(SpringApplication.java:326)
+	at org.springframework.boot.SpringApplication.run(SpringApplication.java:1311)
+	at org.springframework.boot.SpringApplication.run(SpringApplication.java:1300)
+	at com.aitrades.blockchain.web3jtrade.Application.main(Application.java:68)
+Caused by: org.springframework.integration.handler.support.MessagingMethodInvokerHelper$IneligibleMethodException: Found more than one parameter type candidate: [org.springframework.amqp.core.Message] and [org.springframework.amqp.core.MessageProperties]
+	at org.springframework.integration.handler.support.MessagingMethodInvokerHelper$HandlerMethod.setExclusiveTargetParameterType(MessagingMethodInvokerHelper.java:1334)
+	at org.springframework.integration.handler.support.MessagingMethodInvokerHelper$HandlerMethod.processMethodParameterForExpression(MessagingMethodInvokerHelper.java:1199)
+	at org.springframework.integration.handler.support.MessagingMethodInvokerHelper$HandlerMethod.generateExpression(MessagingMethodInvokerHelper.java:1152)
+	at org.springframework.integration.handler.support.MessagingMethodInvokerHelper$HandlerMethod.<init>(MessagingMethodInvokerHelper.java:1091)
+	at org.springframework.integration.handler.support.MessagingMethodInvokerHelper.createHandlerMethod(MessagingMethodInvokerHelper.java:391)
+	... 22 common frames omitted
+2021-04-16 18:34:04,350 INFO com.aitrades.blockchain.web3jtrade.Application [main] Starting Application using Java 11.0.10 on JayMSI with PID 11112 (C:\Users\jay\git\repository3\com.aitrades.blockchain.web3jtrade\target\classes started by jay in C:\Users\jay\git\repository3\com.aitrades.blockchain.web3jtrade)
+2021-04-16 18:34:04,354 DEBUG com.aitrades.blockchain.web3jtrade.Application [main] Running with Spring Boot v2.4.3, Spring v5.3.4
+2021-04-16 18:34:04,355 INFO com.aitrades.blockchain.web3jtrade.Application [main] No active profile set, falling back to default profiles: default
+2021-04-16 18:34:18,838 INFO com.aitrades.blockchain.web3jtrade.Application [main] Started Application in 14.827 seconds (JVM running for 16.102)
+2021-04-16 18:35:17,107 INFO com.aitrades.blockchain.web3jtrade.Application [main] Starting Application using Java 11.0.10 on JayMSI with PID 1544 (C:\Users\jay\git\repository3\com.aitrades.blockchain.web3jtrade\target\classes started by jay in C:\Users\jay\git\repository3\com.aitrades.blockchain.web3jtrade)
+2021-04-16 18:35:17,112 DEBUG com.aitrades.blockchain.web3jtrade.Application [main] Running with Spring Boot v2.4.3, Spring v5.3.4
+2021-04-16 18:35:17,112 INFO com.aitrades.blockchain.web3jtrade.Application [main] No active profile set, falling back to default profiles: default
+2021-04-16 18:35:23,249 INFO com.aitrades.blockchain.web3jtrade.Application [main] Started Application in 6.478 seconds (JVM running for 7.746)
+2021-04-16 18:37:35,056 INFO com.aitrades.blockchain.web3jtrade.Application [main] Starting Application using Java 11.0.10 on JayMSI with PID 15884 (C:\Users\jay\git\repository3\com.aitrades.blockchain.web3jtrade\target\classes started by jay in C:\Users\jay\git\repository3\com.aitrades.blockchain.web3jtrade)
+2021-04-16 18:37:35,060 DEBUG com.aitrades.blockchain.web3jtrade.Application [main] Running with Spring Boot v2.4.3, Spring v5.3.4
+2021-04-16 18:37:35,060 INFO com.aitrades.blockchain.web3jtrade.Application [main] No active profile set, falling back to default profiles: default
+2021-04-16 18:37:40,907 INFO com.aitrades.blockchain.web3jtrade.Application [main] Started Application in 6.196 seconds (JVM running for 7.458)
