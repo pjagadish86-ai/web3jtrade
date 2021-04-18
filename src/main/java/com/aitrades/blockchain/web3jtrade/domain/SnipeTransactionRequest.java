@@ -83,7 +83,7 @@ public class SnipeTransactionRequest {
 	
 	private String snipeExpired;
 	private String errorMessage;
-	private BigDecimal expectedOutPutToken;
+	private BigInteger expectedOutPutToken;
 	private BigInteger liquidityQuantity;
 	private Reserves reserves;
 	private AuditInformation auditInformation;
@@ -415,11 +415,11 @@ public class SnipeTransactionRequest {
 		this.auditInformation = auditInformation;
 	}
 
-	public BigDecimal getExpectedOutPutToken() {
+	public BigInteger getExpectedOutPutToken() {
 		return expectedOutPutToken;
 	}
 
-	public void setExpectedOutPutToken(BigDecimal expectedOutPutToken) {
+	public void setExpectedOutPutToken(BigInteger expectedOutPutToken) {
 		this.expectedOutPutToken = expectedOutPutToken;
 	}
 

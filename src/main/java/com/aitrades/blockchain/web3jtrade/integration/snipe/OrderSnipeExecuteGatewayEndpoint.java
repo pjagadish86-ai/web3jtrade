@@ -155,7 +155,7 @@ public class OrderSnipeExecuteGatewayEndpoint{
 	public SnipeTransactionRequest amountsInChannel(SnipeTransactionRequest snipeTransactionRequest) throws Exception{
 		try {
 			if(snipeTransactionRequest.getExpectedOutPutToken() != null) {
-				snipeTransactionRequest.setOuputTokenValueAmounttAsBigInteger(snipeTransactionRequest.getExpectedOutPutToken().toBigInteger());
+				snipeTransactionRequest.setOuputTokenValueAmounttAsBigInteger(snipeTransactionRequest.getExpectedOutPutToken());
 				return snipeTransactionRequest;
 			}
 			
