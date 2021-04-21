@@ -38,6 +38,7 @@ import com.aitrades.blockchain.web3jtrade.dex.contract.DexContractService;
 import com.aitrades.blockchain.web3jtrade.dex.contract.EthereumDexContract;
 import com.aitrades.blockchain.web3jtrade.domain.TradeConstants;
 import com.aitrades.blockchain.web3jtrade.oracle.gas.GasProvider;
+import com.hazelcast.internal.util.CollectionUtil;
 
 import io.reactivex.schedulers.Schedulers;
 
@@ -111,10 +112,14 @@ public class PancakeServiceImpl implements DexContractService {
 										              .subscribeOn(Schedulers.io())
 										              .blockingSingle();
 		
-		final List<Type> response  = FunctionReturnDecoder.decode(resp.getValue(), function.getOutputParameters());
-		final BigInteger amountsOut = (BigInteger)(((DynamicArray<Type>)response.get(0)).getValue().get(0).getValue());
-		final double slipageWithCal  = amountsOut.doubleValue() * slipage;
-		return new BigDecimal(amountsOut.doubleValue() - slipageWithCal).setScale(0, RoundingMode.DOWN).toBigInteger();
+		try {
+			final List<Type> response  = FunctionReturnDecoder.decode(resp.getValue(), function.getOutputParameters());
+			final BigInteger amountsOut = (BigInteger)(((DynamicArray<Type>)response.get(0)).getValue().get(0).getValue());
+			final double slipageWithCal  = amountsOut.doubleValue() * slipage;
+			return new BigDecimal(amountsOut.doubleValue() - slipageWithCal).setScale(0, RoundingMode.DOWN).toBigInteger();
+		} catch (Exception e) {
+			throw new Exception("INSUFFICIENT_LIQUIDITY");
+		} 
 	}
 
 	@Override

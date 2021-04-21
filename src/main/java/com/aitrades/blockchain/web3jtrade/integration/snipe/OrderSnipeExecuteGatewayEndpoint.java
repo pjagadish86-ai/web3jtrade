@@ -130,12 +130,12 @@ public class OrderSnipeExecuteGatewayEndpoint{
 	private boolean preChecksForTrade(SnipeTransactionRequest snipeTransactionRequest,
 									  Tuple3<BigInteger, BigInteger, BigInteger> reserves) {
 		boolean hasReserves = reserves != null  && reserves.component1().compareTo(BigInteger.ZERO) > 0
-												&& reserves.component2().compareTo(BigInteger.ZERO) >= 0;
+												&& reserves.component2().compareTo(BigInteger.ZERO) > 0;
 		
 		boolean hasLiquidityQuantity = snipeTransactionRequest.getLiquidityQuantity() != null;
 		
-		if(hasLiquidityQuantity) {
-			if(snipeTransactionRequest.getLiquidityQuantity().compareTo(reserves.component2()) >= 0) {
+		if(hasReserves && hasLiquidityQuantity) {
+			if(reserves.component2().compareTo(snipeTransactionRequest.getLiquidityQuantity()) >= 0) {
 				return true;
 			}else {
 				return false;
@@ -170,10 +170,12 @@ public class OrderSnipeExecuteGatewayEndpoint{
 																		   snipeTransactionRequest.getGasMode());
 
 			if (outputTokens != null) {
+				System.out.println("1");
 				snipeTransactionRequest.setOuputTokenValueAmounttAsBigInteger(outputTokens);
 				return snipeTransactionRequest;
 			}
 		} catch (Exception e) {
+			System.out.println("2");
 			if (StringUtils.containsIgnoreCase(e.getMessage(), TradeConstants.INSUFFICIENT_LIQUIDITY) || StringUtils.containsIgnoreCase(e.getMessage(), TradeConstants.DS_MATH_SUB_UNDERFLOW)) {
 				//return amountsInChannel(snipeTransactionRequest);
 				snipeOrderReQueue.send(snipeTransactionRequest);

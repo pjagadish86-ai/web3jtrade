@@ -4,8 +4,6 @@ import java.net.ConnectException;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.time.Duration;
-import java.util.HashMap;
-import java.util.Map;
 import java.util.concurrent.Executor;
 import java.util.concurrent.TimeUnit;
 
@@ -51,8 +49,8 @@ import reactor.netty.http.client.HttpClient;
 @EnableCaching
 public class Application {
 
-	private static final String ENDPOINT_WSS = "wss://eth-mainnet.ws.alchemyapi.io/v2/_KDa5W9WA_53y-f3KD0TUf-YYv0-QJ_7";
-	private static final String BSC_ENDPOINT_WSS ="wss://holy-twilight-violet.bsc.quiknode.pro/9ccdc8c6748f92a972bc9c9c1b8b56de961c0fc6/";
+	private static final String ENDPOINT_WSS = "wss://silent-dark-resonance.quiknode.pro/4822e969e7caaa2fdfac46a52ef94ec9c2ba169a/";
+	private static final String BSC_ENDPOINT_WSS ="wss://misty-bitter-violet.bsc.quiknode.pro/91f2afbd1c5e6240c56eef7233c38502b288803a/";
 	
 	//wss://apis.ankr.com/wss/ec81f8a5c07c4660943c684b6fa7b102/4cd1cd0bb6b4e7809163a3de758926bc/binance/full/main
 
@@ -93,10 +91,7 @@ public class Application {
 	
 	@Bean(name = "webBSCSocketService")
 	public WebSocketService webBSCSocketService() {
-		Map<String, String> headers = new HashMap<>();
-		headers.put("x-api-key", "eeda04fc-aec0-4606-944c-ae3a6292a1be");
-		//WebSocketService webSocketService = new WebSocketService(new WebSocketClient(parseURI(BSC_ENDPOINT_WSS), headers), false);
-		WebSocketService webSocketService = new WebSocketService(new WebSocketClient(parseURI(BSC_ENDPOINT_WSS)), false);
+		WebSocketService webSocketService = new WebSocketService(new CustomWebSocketClient(parseURI(BSC_ENDPOINT_WSS)), false);
 		try {
 			webSocketService.connect();
 		} catch (ConnectException e) {
@@ -106,7 +101,7 @@ public class Application {
 	}
 	@Bean(name = "webSocketService")
 	public WebSocketService webSocketService() {
-		WebSocketService webSocketService = new WebSocketService(new WebSocketClient(parseURI(ENDPOINT_WSS)), false);
+		WebSocketService webSocketService = new WebSocketService(new CustomWebSocketClient(parseURI(ENDPOINT_WSS)), false);
 		try {
 			webSocketService.connect();
 		} catch (ConnectException e) {
