@@ -170,12 +170,10 @@ public class OrderSnipeExecuteGatewayEndpoint{
 																		   snipeTransactionRequest.getGasMode());
 
 			if (outputTokens != null) {
-				System.out.println("1");
 				snipeTransactionRequest.setOuputTokenValueAmounttAsBigInteger(outputTokens);
 				return snipeTransactionRequest;
 			}
 		} catch (Exception e) {
-			System.out.println("2");
 			if (StringUtils.containsIgnoreCase(e.getMessage(), TradeConstants.INSUFFICIENT_LIQUIDITY) || StringUtils.containsIgnoreCase(e.getMessage(), TradeConstants.DS_MATH_SUB_UNDERFLOW)) {
 				//return amountsInChannel(snipeTransactionRequest);
 				snipeOrderReQueue.send(snipeTransactionRequest);
