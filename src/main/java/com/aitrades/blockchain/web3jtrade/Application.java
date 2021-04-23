@@ -21,6 +21,7 @@ import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.cache.annotation.EnableCaching;
 import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.Lazy;
 import org.springframework.context.annotation.Primary;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
@@ -31,7 +32,6 @@ import org.springframework.web.client.RestTemplate;
 import org.springframework.web.reactive.function.client.WebClient;
 import org.web3j.protocol.Web3j;
 import org.web3j.protocol.parity.Parity;
-import org.web3j.protocol.websocket.WebSocketClient;
 import org.web3j.protocol.websocket.WebSocketService;
 import org.web3j.tx.response.NoOpProcessor;
 import org.web3j.tx.response.PollingTransactionReceiptProcessor;
@@ -80,32 +80,46 @@ public class Application {
 	public CloseableHttpClient closeableHttpClient;
 
 	@Bean(name = "web3jClient")
-	public Web3j web3J() {
+	public Web3j web3J() throws Exception {
 		return Web3j.build(webSocketService());
 	}
 
 	@Bean(name = "web3bscjClient")
-	public Web3j web3bscjClient() {
+	public Web3j web3bscjClient() throws Exception {
 		return Web3j.build(webBSCSocketService());
 	}
 	
 	@Bean(name = "webBSCSocketService")
-	public WebSocketService webBSCSocketService() {
+	public WebSocketService webBSCSocketService() throws Exception {
 		WebSocketService webSocketService = new WebSocketService(new CustomWebSocketClient(parseURI(BSC_ENDPOINT_WSS)), false);
 		try {
 			webSocketService.connect();
 		} catch (ConnectException e) {
-			e.printStackTrace();
+			System.out.println("sleeping -->>");
+			Thread.sleep(6000l);
+			try {
+				webSocketService.connect();
+				System.out.println("web3j trade reconnected to bsc!!!");
+			} catch (ConnectException e1) {
+				System.err.println("BSC node WSS failed, restart app -> web3j trade");
+			}
 		}
 		return webSocketService;
 	}
 	@Bean(name = "webSocketService")
-	public WebSocketService webSocketService() {
+	public WebSocketService webSocketService() throws Exception {
 		WebSocketService webSocketService = new WebSocketService(new CustomWebSocketClient(parseURI(ENDPOINT_WSS)), false);
 		try {
 			webSocketService.connect();
 		} catch (ConnectException e) {
-			e.printStackTrace();
+			System.out.println("sleeping -->>");
+			Thread.sleep(6000l);
+			try {
+				webSocketService.connect();
+				System.out.println("web3j trade reconnected to eth!!!");
+			} catch (ConnectException e1) {
+				System.err.println("ETH node WSS failed, restart app -> web3j trade");
+			}
 		}
 		return webSocketService;
 	}
@@ -119,7 +133,7 @@ public class Application {
     }
     
 	@Bean
-	public Parity Parity() {
+	public Parity Parity() throws Exception {
 		return Parity.build(webSocketService());
 	}
 	
@@ -162,13 +176,13 @@ public class Application {
 	}
 	
 	@Bean(name= "pollingTransactionReceiptProcessor")
-	public PollingTransactionReceiptProcessor pollingTransactionReceiptProcessor() {
+	public PollingTransactionReceiptProcessor pollingTransactionReceiptProcessor() throws Exception {
 		return new PollingTransactionReceiptProcessor(web3J(), 4000, _40);
 	}
 	
 	
 	@Bean(name= "noOpProcessor")
-	public NoOpProcessor noOpProcessor() {
+	public NoOpProcessor noOpProcessor() throws Exception {
 		return new NoOpProcessor(web3J());
 	}
 	
