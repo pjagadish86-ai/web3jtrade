@@ -93,11 +93,18 @@ public class OrderSnipeExecuteGatewayEndpoint{
 		if(StringUtils.isNotBlank(snipeTransactionRequest.getPairAddress())) {
 			return snipeTransactionRequest;
 		}
-		Optional<Type> pairAddress  = ethereumDexTradeService.getPairAddress(snipeTransactionRequest.getRoute(), snipeTransactionRequest.getToAddress(), TradeConstants.WETH_MAP.get(snipeTransactionRequest.getRoute()))
-												             .parallelStream()
-												             .findFirst();
-		if(pairAddress.isPresent() && !StringUtils.startsWithIgnoreCase((String)pairAddress.get().getValue(), _0X000000)) {
-			snipeTransactionRequest.setPairAddress((String)pairAddress.get().getValue());
+		Type pairAddress = null;
+		try {
+			pairAddress = ethereumDexTradeService.getPairAddress(snipeTransactionRequest.getRoute(), snipeTransactionRequest.getToAddress(), TradeConstants.WETH_MAP.get(snipeTransactionRequest.getRoute()))
+													   .get(0);
+		} catch (Exception e) {
+			pairAddress  = ethereumDexTradeService.getPairAddress(snipeTransactionRequest.getRoute(), snipeTransactionRequest.getToAddress(), TradeConstants.WETH_MAP.get(snipeTransactionRequest.getRoute()))
+		             .parallelStream()
+		             .findFirst().get();
+		}
+		
+		if(pairAddress != null && !StringUtils.startsWithIgnoreCase((String)pairAddress.getValue(), _0X000000)) {
+			snipeTransactionRequest.setPairAddress((String)pairAddress.getValue());
 			return snipeTransactionRequest;
 		}
 		else  {
@@ -178,6 +185,7 @@ public class OrderSnipeExecuteGatewayEndpoint{
 				//return amountsInChannel(snipeTransactionRequest);
 				snipeOrderReQueue.send(snipeTransactionRequest);
 			} else {
+				System.err.println("error in amountsin purging order-> "+ e.getMessage());
 				snipeTransactionRequest.setErrorMessage(e.getMessage());
 				purgeMessage(snipeTransactionRequest);
 			}
@@ -200,6 +208,7 @@ public class OrderSnipeExecuteGatewayEndpoint{
 																   gasProvider.getGasPrice(GasModeEnum.fromValue(snipeTransactionRequest.getGasMode()), snipeTransactionRequest.getGasLimit()),
 																   snipeTransactionRequest.getGasMode());	
 			if (StringUtils.isNotBlank(hash)) {
+				System.out.println("hash->"+ hash);
 				snipeTransactionRequest.setSwappedHash(hash);
 				snipeTransactionRequest.setSnipeStatus(TradeConstants.FILLED);
 				snipeTransactionRequest.setSnipe(true);
