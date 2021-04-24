@@ -35,6 +35,7 @@ import org.web3j.tuples.generated.Tuple3;
 import org.web3j.tx.FastRawTransactionManager;
 import org.web3j.tx.response.NoOpProcessor;
 import org.web3j.tx.response.PollingTransactionReceiptProcessor;
+import org.web3j.utils.Convert;
 import org.web3j.utils.Numeric;
 
 import com.aitrades.blockchain.web3jtrade.client.Web3jServiceClient;
@@ -109,10 +110,18 @@ public class UniswapServiceImpl implements DexContractService {
 					              .subscribeOn(Schedulers.io())
 					              .blockingSingle();
 		
-		final List<Type> response  = FunctionReturnDecoder.decode(resp.getValue(), function.getOutputParameters());
-		final BigInteger amountsOut = (BigInteger)(((DynamicArray<Type>)response.get(0)).getValue().get(0).getValue());
-		final double slipageWithCal  = amountsOut.doubleValue() * slipage;
-		return new BigDecimal(amountsOut.doubleValue() - slipageWithCal).setScale(0, RoundingMode.DOWN).toBigInteger();
+		try {
+			final List<Type> response  = FunctionReturnDecoder.decode(resp.getValue(), function.getOutputParameters());
+			final BigInteger amountsOut = (BigInteger)(((DynamicArray<Type>)response.get(0)).getValue().get(0).getValue());
+			final double slipageWithCal  = amountsOut.doubleValue() * slipage;
+			//return new BigDecimal(amountsOut.doubleValue() - slipageWithCal).setScale(0, RoundingMode.DOWN).toBigInteger();
+			return Convert.toWei(Convert.fromWei(new BigDecimal(amountsOut.doubleValue() - slipageWithCal).setScale(0, RoundingMode.DOWN), 
+											     Convert.Unit.ETHER).setScale(0, RoundingMode.DOWN), 
+								 Convert.Unit.ETHER).setScale(0, RoundingMode.DOWN)
+					      .toBigInteger();
+		} catch (Exception e) {
+			throw new Exception("INSUFFICIENT_LIQUIDITY");
+		} 
 	}
 
 	@Override

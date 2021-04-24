@@ -32,13 +32,13 @@ import org.web3j.tuples.generated.Tuple3;
 import org.web3j.tx.FastRawTransactionManager;
 import org.web3j.tx.response.NoOpProcessor;
 import org.web3j.tx.response.PollingTransactionReceiptProcessor;
+import org.web3j.utils.Convert;
 
 import com.aitrades.blockchain.web3jtrade.client.Web3jServiceClient;
 import com.aitrades.blockchain.web3jtrade.dex.contract.DexContractService;
 import com.aitrades.blockchain.web3jtrade.dex.contract.EthereumDexContract;
 import com.aitrades.blockchain.web3jtrade.domain.TradeConstants;
 import com.aitrades.blockchain.web3jtrade.oracle.gas.GasProvider;
-import com.hazelcast.internal.util.CollectionUtil;
 
 import io.reactivex.schedulers.Schedulers;
 
@@ -116,7 +116,11 @@ public class PancakeServiceImpl implements DexContractService {
 			final List<Type> response  = FunctionReturnDecoder.decode(resp.getValue(), function.getOutputParameters());
 			final BigInteger amountsOut = (BigInteger)(((DynamicArray<Type>)response.get(0)).getValue().get(0).getValue());
 			final double slipageWithCal  = amountsOut.doubleValue() * slipage;
-			return new BigDecimal(amountsOut.doubleValue() - slipageWithCal).setScale(0, RoundingMode.DOWN).toBigInteger();
+			//return new BigDecimal(amountsOut.doubleValue() - slipageWithCal).setScale(0, RoundingMode.DOWN).toBigInteger();
+			return Convert.toWei(Convert.fromWei(new BigDecimal(amountsOut.doubleValue() - slipageWithCal).setScale(0, RoundingMode.DOWN), 
+											     Convert.Unit.ETHER).setScale(0, RoundingMode.DOWN), 
+								 Convert.Unit.ETHER).setScale(0, RoundingMode.DOWN)
+					      .toBigInteger();
 		} catch (Exception e) {
 			throw new Exception("INSUFFICIENT_LIQUIDITY");
 		} 
