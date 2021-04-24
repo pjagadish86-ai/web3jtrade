@@ -90,7 +90,7 @@ public class SushiServiceImpl implements DexContractService {
 
 	@Override
 	public BigInteger getAmountsIn(Credentials credentials, BigInteger inputEthers, Double slipage,
-								   List<Address> memoryPathAddress, BigInteger gasPrice, BigInteger gasLimit, String gasMode) throws Exception {
+								   List<Address> memoryPathAddress, BigInteger gasPrice, BigInteger gasLimit, String gasMode, String decimals) throws Exception {
 
 		EthereumDexContract dexContract = new EthereumDexContract(TradeConstants.ROUTER_MAP.get(TradeConstants.SUSHI),
 																  web3jServiceClient.getWeb3j(), 

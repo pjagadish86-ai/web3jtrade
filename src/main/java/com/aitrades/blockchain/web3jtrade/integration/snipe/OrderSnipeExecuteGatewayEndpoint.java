@@ -174,9 +174,10 @@ public class OrderSnipeExecuteGatewayEndpoint{
 																				   			  new Address(TradeConstants.WETH_MAP.get(snipeTransactionRequest.getRoute().toUpperCase()))),
 																		   gasProvider.getGasPrice(GasModeEnum.fromValue(snipeTransactionRequest.getGasMode()), snipeTransactionRequest.getGasPrice()),
 																		   gasProvider.getGasPrice(GasModeEnum.fromValue(snipeTransactionRequest.getGasMode()), snipeTransactionRequest.getGasLimit()),
-																		   snipeTransactionRequest.getGasMode());
+																		   snipeTransactionRequest.getGasMode(),
+																		   snipeTransactionRequest.getToAddressDecimals());
 
-			if (outputTokens != null) {
+			if (outputTokens != null && outputTokens.compareTo(BigInteger.ZERO) > 0) {
 				snipeTransactionRequest.setOuputTokenValueAmounttAsBigInteger(outputTokens);
 				return snipeTransactionRequest;
 			}

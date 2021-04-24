@@ -27,8 +27,8 @@ public class DexTradeContractService {
 	};
 	
 	public BigInteger getAmountsIn(String route, Credentials credentials, BigInteger inputEthers, Double slipage,
-								   List<Address> memoryPathAddress, BigInteger gasPrice, BigInteger gasLimit, String gasMode) throws Exception{
-		return factory.getInstance(route).getAmountsIn(credentials, inputEthers, slipage, memoryPathAddress, gasPrice, gasLimit, gasMode);
+								   List<Address> memoryPathAddress, BigInteger gasPrice, BigInteger gasLimit, String gasMode,  String decimals) throws Exception{
+		return factory.getInstance(route).getAmountsIn(credentials, inputEthers, slipage, memoryPathAddress, gasPrice, gasLimit, gasMode, decimals);
 	};
 	
 	public String swapETHForTokens(String route, Credentials credentials, BigInteger inputEthers,BigInteger outputTokens,

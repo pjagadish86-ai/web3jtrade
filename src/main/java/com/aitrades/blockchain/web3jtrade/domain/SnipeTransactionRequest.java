@@ -28,6 +28,7 @@ public class SnipeTransactionRequest {
 	
 	private String fromAddress;
 	private String toAddress;
+	private String toAddressDecimals;
 	
 	private String pairAddress;
 	
@@ -431,4 +432,12 @@ public class SnipeTransactionRequest {
 		this.liquidityQuantity = liquidityQuantity;
 	}
 
+	public String getToAddressDecimals() {
+		return toAddressDecimals;
+	}
+
+	public void setToAddressDecimals(String toAddressDecimals) {
+		this.toAddressDecimals = toAddressDecimals;
+	}
+	
 }

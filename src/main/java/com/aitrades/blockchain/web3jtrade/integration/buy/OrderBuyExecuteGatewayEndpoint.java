@@ -63,7 +63,8 @@ public class OrderBuyExecuteGatewayEndpoint {
 																		   			          new Address(TradeConstants.WETH_MAP.get(order.getRoute().toUpperCase()))),
 																           gasProvider.getGasPrice(GasModeEnum.fromValue(order.getGasMode()), order.getGasPrice().getValueBigInteger()),
 																	       gasProvider.getGasPrice(GasModeEnum.fromValue(order.getGasMode()), order.getGasLimit().getValueBigInteger()),
-																	       order.getGasMode());
+																	       order.getGasMode(),
+																	       order.getTo().getTicker().getDecimals());
 			
 			if(outputTokens != null && outputTokens.compareTo(BigInteger.ZERO) > 0 ) {
 				tradeOrderMap.put(TradeConstants.OUTPUT_TOKENS, outputTokens);

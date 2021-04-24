@@ -1,5 +1,6 @@
 package com.aitrades.blockchain.web3jtrade.domain;
 
+import java.util.HashMap;
 import java.util.Map;
 
 import com.google.common.collect.ImmutableMap;
@@ -60,4 +61,23 @@ public final class TradeConstants {
 	public static final String SNIPE = "SNIPE";
 	public static final String CUSTOM = "CUSTOM";
 	public static final String _0X000000 = "0x000000";
+	
+	
+	public static Map<String, String> DECIMAL_MAP = null;
+	
+	static {
+		DECIMAL_MAP = new HashMap<String, String>();
+		DECIMAL_MAP.put("0", "WEI");
+		DECIMAL_MAP.put("3", "KWEI");
+		DECIMAL_MAP.put("6", "MWEI");
+		DECIMAL_MAP.put("9", "GWEI");
+		DECIMAL_MAP.put("12", "SZABO");
+		DECIMAL_MAP.put("15", "FINNEY");
+		DECIMAL_MAP.put( "18", "ETHER");
+		DECIMAL_MAP.put("21", "KETHER");
+		DECIMAL_MAP.put("24", "METHER");
+		DECIMAL_MAP.put("27", "GETHER");
+		
+	}
+	
 }

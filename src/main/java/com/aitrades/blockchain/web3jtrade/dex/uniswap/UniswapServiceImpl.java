@@ -96,7 +96,7 @@ public class UniswapServiceImpl implements DexContractService {
 
 	@Override
 	public BigInteger getAmountsIn(Credentials credentials, BigInteger inputEthers, Double slipage,
-								   List<Address> memoryPathAddress, BigInteger gasPrice, BigInteger gasLimit, String gasMode) throws Exception {
+								   List<Address> memoryPathAddress, BigInteger gasPrice, BigInteger gasLimit, String gasMode, String decimals) throws Exception {
 		final Function function = new Function(FUNC_GETAMOUNTIN, 
 								                Arrays.<Type>asList(new Uint256(inputEthers), 
 								                new DynamicArray<Address>(Address.class, memoryPathAddress)), 
@@ -116,8 +116,8 @@ public class UniswapServiceImpl implements DexContractService {
 			final double slipageWithCal  = amountsOut.doubleValue() * slipage;
 			//return new BigDecimal(amountsOut.doubleValue() - slipageWithCal).setScale(0, RoundingMode.DOWN).toBigInteger();
 			return Convert.toWei(Convert.fromWei(new BigDecimal(amountsOut.doubleValue() - slipageWithCal).setScale(0, RoundingMode.DOWN), 
-											     Convert.Unit.ETHER).setScale(0, RoundingMode.DOWN), 
-								 Convert.Unit.ETHER).setScale(0, RoundingMode.DOWN)
+												Convert.Unit.fromString(TradeConstants.DECIMAL_MAP.get(decimals))).setScale(0, RoundingMode.DOWN), 
+									Convert.Unit.fromString(TradeConstants.DECIMAL_MAP.get(decimals))).setScale(0, RoundingMode.DOWN)
 					      .toBigInteger();
 		} catch (Exception e) {
 			throw new Exception("INSUFFICIENT_LIQUIDITY");
