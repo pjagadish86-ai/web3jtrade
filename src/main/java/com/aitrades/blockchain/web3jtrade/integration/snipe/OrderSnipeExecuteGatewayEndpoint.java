@@ -105,9 +105,11 @@ public class OrderSnipeExecuteGatewayEndpoint{
 		
 		if(pairAddress != null && !StringUtils.startsWithIgnoreCase((String)pairAddress.getValue(), _0X000000)) {
 			snipeTransactionRequest.setPairAddress((String)pairAddress.getValue());
+			System.out.println("pair found");
 			return snipeTransactionRequest;
 		}
 		else  {
+			System.out.println("no pair");
 			snipeOrderReQueue.send(snipeTransactionRequest);
 		}
 		
@@ -125,9 +127,12 @@ public class OrderSnipeExecuteGatewayEndpoint{
 																									        snipeTransactionRequest.getGasMode());
 		
 		if(preChecksForTrade(snipeTransactionRequest, reserves) ) {
+			System.out.println("Listed");
 			snipeTransactionRequest.setReserves(mapReserves(reserves));
 			return snipeTransactionRequest;
 		}else {
+			System.out.println("N");
+			Thread.sleep(8000l);
 			//return liquidityEventOrReservesFinderChannel(snipeTransactionRequest);
 			snipeOrderReQueue.send(snipeTransactionRequest);
 		}
