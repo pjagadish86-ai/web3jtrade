@@ -108,7 +108,6 @@ public class OrderSnipeExecuteGatewayEndpoint{
 		             .parallelStream()
 		             .findFirst().get();
 		}
-		
 		if(pairAddress != null && !StringUtils.startsWithIgnoreCase((String)pairAddress.getValue(), _0X000000)) {
 			snipeTransactionRequest.setPairAddress((String)pairAddress.getValue());
 			System.out.println("pair found");
@@ -116,6 +115,7 @@ public class OrderSnipeExecuteGatewayEndpoint{
 		}
 		else  {
 			System.out.println("no pair");
+			Thread.sleep(2000l);
 			snipeOrderReQueue.send(snipeTransactionRequest);
 		}
 		
@@ -137,7 +137,8 @@ public class OrderSnipeExecuteGatewayEndpoint{
 			snipeTransactionRequest.setReserves(mapReserves(reserves));
 			return snipeTransactionRequest;
 		}else {
-			System.out.println("N");
+			System.out.println("Not listed");
+			Thread.sleep(1000l);
 			//return liquidityEventOrReservesFinderChannel(snipeTransactionRequest);
 			snipeOrderReQueue.send(snipeTransactionRequest);
 		}
@@ -175,19 +176,12 @@ public class OrderSnipeExecuteGatewayEndpoint{
 				snipeTransactionRequest.setOuputTokenValueAmounttAsBigInteger(snipeTransactionRequest.getExpectedOutPutToken());
 				return snipeTransactionRequest;
 			}
-			
-			ArrayList<Address> addresss = Lists.newArrayList(new Address(snipeTransactionRequest.getToAddress()), 
-					   			  new Address(TradeConstants.WETH_MAP.get(snipeTransactionRequest.getRoute().toUpperCase())));
-			if(snipeTransactionRequest.isBusdPair()) {
-				addresss = Lists.newArrayList(new Address(snipeTransactionRequest.getToAddress()), 
-							       new Address(TradeConstants.BUSD),
-							       new Address(TradeConstants.WETH_MAP.get(snipeTransactionRequest.getRoute().toUpperCase())));
-			}
 			BigInteger outputTokens = ethereumDexTradeService.getAmountsIn(snipeTransactionRequest.getRoute(),
 																		   snipeTransactionRequest.getCredentials(),
 																		   snipeTransactionRequest.getInputTokenValueAmountAsBigInteger(),
 																		   snipeTransactionRequest.getSlipageInDouble(),
-																		   addresss,
+																		   Lists.newArrayList(new Address(snipeTransactionRequest.getToAddress()), 
+																		   			  new Address(TradeConstants.WETH_MAP.get(snipeTransactionRequest.getRoute().toUpperCase()))),
 																		   gasProvider.getGasPrice(GasModeEnum.fromValue(snipeTransactionRequest.getGasMode()), snipeTransactionRequest.getGasPrice()),
 																		   gasProvider.getGasPrice(GasModeEnum.fromValue(snipeTransactionRequest.getGasMode()), snipeTransactionRequest.getGasLimit()),
 																		   snipeTransactionRequest.getGasMode(),
@@ -217,7 +211,6 @@ public class OrderSnipeExecuteGatewayEndpoint{
 	@ServiceActivator(inputChannel = "swapETHForTokensChannel", outputChannel = "updateOrDeleteSnipeOrderChannel")
 	public SnipeTransactionRequest swapETHForTokensChannel(SnipeTransactionRequest snipeTransactionRequest) throws Exception{
 		try {
-			Thread.sleep(500l);
 			ArrayList<Address> addresss = Lists.newArrayList(new Address(TradeConstants.WETH_MAP.get(snipeTransactionRequest.getRoute().toUpperCase())),
 				 	  new Address(snipeTransactionRequest.getToAddress()));
 			if(snipeTransactionRequest.isBusdPair()) {
