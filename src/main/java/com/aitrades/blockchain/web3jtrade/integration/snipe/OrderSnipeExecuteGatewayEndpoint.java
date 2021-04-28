@@ -97,6 +97,10 @@ public class OrderSnipeExecuteGatewayEndpoint{
 		try {
 			pairAddress = ethereumDexTradeService.getPairAddress(snipeTransactionRequest.getRoute(), snipeTransactionRequest.getToAddress(), TradeConstants.WETH_MAP.get(snipeTransactionRequest.getRoute()))
 													   .get(0);
+			if(pairAddress != null && StringUtils.startsWithIgnoreCase((String)pairAddress.getValue(), _0X000000) && StringUtils.equalsIgnoreCase(snipeTransactionRequest.getRoute(), TradeConstants.PANCAKE)) {
+				pairAddress = ethereumDexTradeService.getPairAddress(snipeTransactionRequest.getRoute(), snipeTransactionRequest.getToAddress(), TradeConstants.BUSD)
+						   .get(0);
+			}
 		} catch (Exception e) {
 			pairAddress  = ethereumDexTradeService.getPairAddress(snipeTransactionRequest.getRoute(), snipeTransactionRequest.getToAddress(), TradeConstants.WETH_MAP.get(snipeTransactionRequest.getRoute()))
 		             .parallelStream()
@@ -132,7 +136,6 @@ public class OrderSnipeExecuteGatewayEndpoint{
 			return snipeTransactionRequest;
 		}else {
 			System.out.println("N");
-			Thread.sleep(8000l);
 			//return liquidityEventOrReservesFinderChannel(snipeTransactionRequest);
 			snipeOrderReQueue.send(snipeTransactionRequest);
 		}
@@ -185,6 +188,10 @@ public class OrderSnipeExecuteGatewayEndpoint{
 			if (outputTokens != null && outputTokens.compareTo(BigInteger.ZERO) > 0) {
 				snipeTransactionRequest.setOuputTokenValueAmounttAsBigInteger(outputTokens);
 				return snipeTransactionRequest;
+			}else {
+				System.err.println("output token zero");
+				snipeTransactionRequest.setErrorMessage("output token zero");
+				purgeMessage(snipeTransactionRequest);
 			}
 		} catch (Exception e) {
 			if (StringUtils.containsIgnoreCase(e.getMessage(), TradeConstants.INSUFFICIENT_LIQUIDITY) || StringUtils.containsIgnoreCase(e.getMessage(), TradeConstants.DS_MATH_SUB_UNDERFLOW)) {
@@ -202,6 +209,7 @@ public class OrderSnipeExecuteGatewayEndpoint{
 	@ServiceActivator(inputChannel = "swapETHForTokensChannel", outputChannel = "updateOrDeleteSnipeOrderChannel")
 	public SnipeTransactionRequest swapETHForTokensChannel(SnipeTransactionRequest snipeTransactionRequest) throws Exception{
 		try {
+			Thread.sleep(500l);
 			String hash = ethereumDexTradeService.swapETHForTokens(snipeTransactionRequest.getRoute(),
 																   snipeTransactionRequest.getCredentials(),
 																   snipeTransactionRequest.getInputTokenValueAmountAsBigInteger(),

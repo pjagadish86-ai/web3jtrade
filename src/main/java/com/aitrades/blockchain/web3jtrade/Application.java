@@ -50,7 +50,7 @@ import reactor.netty.http.client.HttpClient;
 public class Application {
 
 	private static final String ENDPOINT_WSS = "wss://cool-sparkling-dawn.quiknode.pro/d5ffadd5dde5cbfe5e2c1d919316cf4ab383858d/";
-	private static final String BSC_ENDPOINT_WSS ="wss://bold-bold-leaf.bsc.quiknode.pro/cf39e2ea6fd28d8e720c5cb0a548fa58cec6debe/";
+	private static final String BSC_ENDPOINT_WSS ="wss://holy-twilight-violet.bsc.quiknode.pro/9ccdc8c6748f92a972bc9c9c1b8b56de961c0fc6/";
 	
 	//wss://apis.ankr.com/wss/ec81f8a5c07c4660943c684b6fa7b102/4cd1cd0bb6b4e7809163a3de758926bc/binance/full/main
 

@@ -23,7 +23,7 @@ public class SnipeOrderReQueue {
 	private SnipeOrderHistoryRepository snipeOrderHistoryRepository;
 	
 	public void send(SnipeTransactionRequest snipeTransactionRequest) throws Exception {
-		Thread.sleep(300l);
+		Thread.sleep(1000l);
 		snipeOrderRabbitTemplate.convertAndSend(snipeTransactionRequest);
 	}
 	
