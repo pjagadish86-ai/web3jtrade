@@ -74,7 +74,7 @@ public final class TradeConstants {
 		DECIMAL_MAP.put("9", "GWEI");
 		DECIMAL_MAP.put("12", "SZABO");
 		DECIMAL_MAP.put("15", "FINNEY");
-		DECIMAL_MAP.put( "18", "ETHER");
+		DECIMAL_MAP.put("18", "ETHER");
 		DECIMAL_MAP.put("21", "KETHER");
 		DECIMAL_MAP.put("24", "METHER");
 		DECIMAL_MAP.put("27", "GETHER");

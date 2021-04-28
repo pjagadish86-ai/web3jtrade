@@ -88,6 +88,8 @@ public class SnipeTransactionRequest {
 	private BigInteger liquidityQuantity;
 	private Reserves reserves;
 	private AuditInformation auditInformation;
+	private boolean isBusdPair;
+	
 	public String getId() {
 		return id;
 	}
@@ -439,5 +441,13 @@ public class SnipeTransactionRequest {
 	public void setToAddressDecimals(String toAddressDecimals) {
 		this.toAddressDecimals = toAddressDecimals;
 	}
-	
+
+	public boolean isBusdPair() {
+		return isBusdPair;
+	}
+
+	public void setBusdPair(boolean isBusdPair) {
+		this.isBusdPair = isBusdPair;
+	}
+
 }

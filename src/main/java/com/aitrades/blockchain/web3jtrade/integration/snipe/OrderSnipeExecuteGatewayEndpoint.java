@@ -4,6 +4,7 @@ package com.aitrades.blockchain.web3jtrade.integration.snipe;
 import java.math.BigInteger;
 import java.time.Instant;
 import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.Optional;
 
 import javax.annotation.Resource;
@@ -100,6 +101,7 @@ public class OrderSnipeExecuteGatewayEndpoint{
 			if(pairAddress != null && StringUtils.startsWithIgnoreCase((String)pairAddress.getValue(), _0X000000) && StringUtils.equalsIgnoreCase(snipeTransactionRequest.getRoute(), TradeConstants.PANCAKE)) {
 				pairAddress = ethereumDexTradeService.getPairAddress(snipeTransactionRequest.getRoute(), snipeTransactionRequest.getToAddress(), TradeConstants.BUSD)
 						   .get(0);
+				snipeTransactionRequest.setBusdPair(true);
 			}
 		} catch (Exception e) {
 			pairAddress  = ethereumDexTradeService.getPairAddress(snipeTransactionRequest.getRoute(), snipeTransactionRequest.getToAddress(), TradeConstants.WETH_MAP.get(snipeTransactionRequest.getRoute()))
@@ -174,12 +176,18 @@ public class OrderSnipeExecuteGatewayEndpoint{
 				return snipeTransactionRequest;
 			}
 			
+			ArrayList<Address> addresss = Lists.newArrayList(new Address(snipeTransactionRequest.getToAddress()), 
+					   			  new Address(TradeConstants.WETH_MAP.get(snipeTransactionRequest.getRoute().toUpperCase())));
+			if(snipeTransactionRequest.isBusdPair()) {
+				addresss = Lists.newArrayList(new Address(snipeTransactionRequest.getToAddress()), 
+							       new Address(TradeConstants.BUSD),
+							       new Address(TradeConstants.WETH_MAP.get(snipeTransactionRequest.getRoute().toUpperCase())));
+			}
 			BigInteger outputTokens = ethereumDexTradeService.getAmountsIn(snipeTransactionRequest.getRoute(),
 																		   snipeTransactionRequest.getCredentials(),
 																		   snipeTransactionRequest.getInputTokenValueAmountAsBigInteger(),
 																		   snipeTransactionRequest.getSlipageInDouble(),
-																		   Lists.newArrayList(new Address(snipeTransactionRequest.getToAddress()),
-																				   			  new Address(TradeConstants.WETH_MAP.get(snipeTransactionRequest.getRoute().toUpperCase()))),
+																		   addresss,
 																		   gasProvider.getGasPrice(GasModeEnum.fromValue(snipeTransactionRequest.getGasMode()), snipeTransactionRequest.getGasPrice()),
 																		   gasProvider.getGasPrice(GasModeEnum.fromValue(snipeTransactionRequest.getGasMode()), snipeTransactionRequest.getGasLimit()),
 																		   snipeTransactionRequest.getGasMode(),
@@ -210,13 +218,19 @@ public class OrderSnipeExecuteGatewayEndpoint{
 	public SnipeTransactionRequest swapETHForTokensChannel(SnipeTransactionRequest snipeTransactionRequest) throws Exception{
 		try {
 			Thread.sleep(500l);
+			ArrayList<Address> addresss = Lists.newArrayList(new Address(TradeConstants.WETH_MAP.get(snipeTransactionRequest.getRoute().toUpperCase())),
+				 	  new Address(snipeTransactionRequest.getToAddress()));
+			if(snipeTransactionRequest.isBusdPair()) {
+				addresss = Lists.newArrayList(new Address(TradeConstants.WETH_MAP.get(snipeTransactionRequest.getRoute().toUpperCase())),
+											  new Address(TradeConstants.BUSD),
+											  new Address(snipeTransactionRequest.getToAddress()));
+			}
 			String hash = ethereumDexTradeService.swapETHForTokens(snipeTransactionRequest.getRoute(),
 																   snipeTransactionRequest.getCredentials(),
 																   snipeTransactionRequest.getInputTokenValueAmountAsBigInteger(),
 																   snipeTransactionRequest.getOuputTokenValueAmounttAsBigInteger(),
 																   snipeTransactionRequest.getDeadLine(),
-																   Lists.newArrayList(new Address(TradeConstants.WETH_MAP.get(snipeTransactionRequest.getRoute().toUpperCase())),
-																				 	  new Address(snipeTransactionRequest.getToAddress())),
+																   addresss,
 																   snipeTransactionRequest.isFeeEligible(),
 																   gasProvider.getGasPrice(GasModeEnum.fromValue(snipeTransactionRequest.getGasMode()), snipeTransactionRequest.getGasPrice()),
 																   gasProvider.getGasPrice(GasModeEnum.fromValue(snipeTransactionRequest.getGasMode()), snipeTransactionRequest.getGasLimit()),
