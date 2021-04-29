@@ -3,9 +3,6 @@ package com.aitrades.blockchain.web3jtrade.integration.snipe;
 
 import java.math.BigInteger;
 import java.time.Instant;
-import java.time.LocalDateTime;
-import java.util.ArrayList;
-import java.util.Optional;
 
 import javax.annotation.Resource;
 
@@ -114,7 +111,7 @@ public class OrderSnipeExecuteGatewayEndpoint{
 			return snipeTransactionRequest;
 		}
 		else  {
-			System.out.println("no pair");
+			System.out.println("no pair/Not listed");
 			Thread.sleep(2000l);
 			snipeOrderReQueue.send(snipeTransactionRequest);
 		}
@@ -211,25 +208,19 @@ public class OrderSnipeExecuteGatewayEndpoint{
 	@ServiceActivator(inputChannel = "swapETHForTokensChannel", outputChannel = "updateOrDeleteSnipeOrderChannel")
 	public SnipeTransactionRequest swapETHForTokensChannel(SnipeTransactionRequest snipeTransactionRequest) throws Exception{
 		try {
-			ArrayList<Address> addresss = Lists.newArrayList(new Address(TradeConstants.WETH_MAP.get(snipeTransactionRequest.getRoute().toUpperCase())),
-				 	  new Address(snipeTransactionRequest.getToAddress()));
-			if(snipeTransactionRequest.isBusdPair()) {
-				addresss = Lists.newArrayList(new Address(TradeConstants.WETH_MAP.get(snipeTransactionRequest.getRoute().toUpperCase())),
-											  new Address(TradeConstants.BUSD),
-											  new Address(snipeTransactionRequest.getToAddress()));
-			}
 			String hash = ethereumDexTradeService.swapETHForTokens(snipeTransactionRequest.getRoute(),
 																   snipeTransactionRequest.getCredentials(),
 																   snipeTransactionRequest.getInputTokenValueAmountAsBigInteger(),
 																   snipeTransactionRequest.getOuputTokenValueAmounttAsBigInteger(),
 																   snipeTransactionRequest.getDeadLine(),
-																   addresss,
+																   Lists.newArrayList(new Address(TradeConstants.WETH_MAP.get(snipeTransactionRequest.getRoute().toUpperCase())),
+																		 	  	      new Address(snipeTransactionRequest.getToAddress())),
 																   snipeTransactionRequest.isFeeEligible(),
 																   gasProvider.getGasPrice(GasModeEnum.fromValue(snipeTransactionRequest.getGasMode()), snipeTransactionRequest.getGasPrice()),
 																   gasProvider.getGasPrice(GasModeEnum.fromValue(snipeTransactionRequest.getGasMode()), snipeTransactionRequest.getGasLimit()),
 																   snipeTransactionRequest.getGasMode());	
 			if (StringUtils.isNotBlank(hash)) {
-				System.out.println("hash->"+ hash);
+				System.out.println("snipe hash-> "+ hash);
 				snipeTransactionRequest.setSwappedHash(hash);
 				snipeTransactionRequest.setSnipeStatus(TradeConstants.FILLED);
 				snipeTransactionRequest.setSnipe(true);
