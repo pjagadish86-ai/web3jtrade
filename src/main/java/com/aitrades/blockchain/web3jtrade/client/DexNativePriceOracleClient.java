@@ -62,9 +62,9 @@ public class DexNativePriceOracleClient implements DexSubGraphPriceClient {
 		});
     }
 
-	private Tuple3<BigInteger, BigInteger, BigInteger> getReserves(String pairAddress, String route,  Credentials credentials) {
+	private Tuple3<BigInteger, BigInteger, BigInteger> getReserves(String pairAddress, String route,  Credentials credentials) throws Exception {
 		EthereumDexContract dexContract = new EthereumDexContract(pairAddress, 
-																  web3jServiceClientFactory.getWeb3jMap().get(route).getWeb3j(), 
+																  web3jServiceClientFactory.getWeb3jMap(route).getWeb3j(), 
 															      credentials);
 		try {
 			return dexContract.getReserves()
@@ -76,7 +76,7 @@ public class DexNativePriceOracleClient implements DexSubGraphPriceClient {
 	
 	@Override
 	public Cryptonator nativeCoinPrice(String route) throws Exception {
-		return web3jServiceClientFactory.getWeb3jMap().get(route).getRestTemplate().getForEntity(BLOCKCHAIN_NATIVE_PRICE_ORACLE.get(route), Cryptonator.class).getBody();
+		return web3jServiceClientFactory.getWeb3jMap(route).getRestTemplate().getForEntity(BLOCKCHAIN_NATIVE_PRICE_ORACLE.get(route), Cryptonator.class).getBody();
 	}
 	
     public String getPrice(String route) throws Exception  {

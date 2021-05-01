@@ -46,7 +46,7 @@ public class DexTradeContractService {
 	};
 	
 	public TransactionReceipt deposit(String route, BigInteger weiValue, Credentials credentials, BigInteger inputEthers, Double slipage,
-			   List<Address> memoryPathAddress, BigInteger gasPrice, BigInteger gasLimit , String gasMode) {
+			   List<Address> memoryPathAddress, BigInteger gasPrice, BigInteger gasLimit , String gasMode) throws Exception {
 		return factory.getInstance(route).deposit(route, weiValue, credentials, inputEthers, slipage, memoryPathAddress, gasPrice, gasLimit, gasMode);
 	};
 	
@@ -56,7 +56,7 @@ public class DexTradeContractService {
 	};
 	
 	public TransactionReceipt transfer(String route, String pairAddress, BigInteger wad, Credentials credentials, BigInteger inputEthers, Double slipage,
-			   List<Address> memoryPathAddress, BigInteger gasPrice, BigInteger gasLimit , String gasMode) {
+			   List<Address> memoryPathAddress, BigInteger gasPrice, BigInteger gasLimit , String gasMode) throws Exception {
 		return factory.getInstance(route).transfer(route, pairAddress, inputEthers, credentials, inputEthers, slipage, memoryPathAddress, gasPrice, gasLimit, gasMode);
 	};
 	

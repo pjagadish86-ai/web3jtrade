@@ -34,13 +34,13 @@ public interface DexContractService {
 	public List<Type> getPair(String route, String tokenA, String tokenB) throws Exception;
 	
 	public TransactionReceipt deposit(String route, BigInteger weiValue, Credentials credentials, BigInteger inputEthers, Double slipage,
-			   List<Address> memoryPathAddress, BigInteger gasPrice, BigInteger gasLimit , String gasMode);
+			   List<Address> memoryPathAddress, BigInteger gasPrice, BigInteger gasLimit , String gasMode) throws Exception;
 	
 	public TransactionReceipt withDraw(String route, BigInteger weiValue, Credentials credentials, BigInteger inputEthers, Double slipage,
 			   List<Address> memoryPathAddress, BigInteger gasPrice, BigInteger gasLimit , String gasMode);
 	
 	public TransactionReceipt transfer(String route, String dst, BigInteger wad, Credentials credentials, BigInteger inputEthers, Double slipage,
-			   List<Address> memoryPathAddress, BigInteger gasPrice, BigInteger gasLimit , String gasMode);
+			   List<Address> memoryPathAddress, BigInteger gasPrice, BigInteger gasLimit , String gasMode) throws Exception;
 	
 	public Tuple3<BigInteger, BigInteger, BigInteger> getReserves(String route, String pairAddress, Credentials credentials, BigInteger gasPrice, BigInteger gasLimit, String gasMode) throws Exception;
 	

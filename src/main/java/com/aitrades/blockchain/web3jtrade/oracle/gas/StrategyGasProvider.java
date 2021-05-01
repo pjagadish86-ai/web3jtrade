@@ -71,8 +71,8 @@ public class StrategyGasProvider {
 		return gasPrice != null ? Convert.toWei(gasPrice.toString(), Convert.Unit.GWEI).toBigInteger() : null;
 	}
 	
-	public BigInteger getGasLimitOfPancake(){
-		return  web3jServiceClientFactory.getWeb3jMap().get(PANCAKE).getWeb3j()
+	public BigInteger getGasLimitOfPancake() throws Exception{
+		return  web3jServiceClientFactory.getWeb3jMap(PANCAKE).getWeb3j()
 				 .ethGetBlockByNumber(DefaultBlockParameterName.EARLIEST, false)
 				 .flowable()
 				 .subscribeOn(io.reactivex.schedulers.Schedulers.newThread())
@@ -82,8 +82,8 @@ public class StrategyGasProvider {
 	}
 
 	
-	public BigInteger getGasLimit(Transaction transaction, String route) {
-		return  web3jServiceClientFactory.getWeb3jMap().get(route).getWeb3j()
+	public BigInteger getGasLimit(Transaction transaction, String route) throws Exception {
+		return  web3jServiceClientFactory.getWeb3jMap(route).getWeb3j()
 										 .ethEstimateGas(transaction)
 										 .flowable()
 										 .subscribeOn(io.reactivex.schedulers.Schedulers.newThread())

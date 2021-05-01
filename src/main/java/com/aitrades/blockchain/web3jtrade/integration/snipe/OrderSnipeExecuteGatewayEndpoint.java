@@ -29,8 +29,6 @@ import com.aitrades.blockchain.web3jtrade.repository.SnipeOrderRepository;
 import com.aitrades.blockchain.web3jtrade.repository.TradeOverviewRepository;
 import com.aitrades.blockchain.web3jtrade.service.DexContractStaticCodeValuesService;
 import com.aitrades.blockchain.web3jtrade.service.Web3jServiceClientFactory;
-import com.aitrades.blockchain.web3jtrade.trade.pendingTransaction.EthereumGethPendingTransactionsRetriever;
-import com.aitrades.blockchain.web3jtrade.trade.pendingTransaction.EthereumParityPendingTransactionsRetriever;
 import com.fasterxml.jackson.databind.ObjectReader;
 import com.google.common.collect.Lists;
 @SuppressWarnings({"unused", "rawtypes"})
@@ -43,12 +41,6 @@ public class OrderSnipeExecuteGatewayEndpoint{
 	@Autowired
 	private Web3jServiceClientFactory web3jServiceClientFactory;
 
-	@Autowired
-	private EthereumGethPendingTransactionsRetriever gethPendingTrxsRetriever;
-	
-	@Autowired
-	private EthereumParityPendingTransactionsRetriever parityPendingTrxsRetriever;
-	
 	@Resource(name="orderSubmitRabbitTemplate")
 	private AmqpTemplate orderSubmitRabbitTemplate;
 	
