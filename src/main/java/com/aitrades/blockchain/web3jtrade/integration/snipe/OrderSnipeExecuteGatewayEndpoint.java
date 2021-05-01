@@ -27,6 +27,7 @@ import com.aitrades.blockchain.web3jtrade.oracle.gas.GasProvider;
 import com.aitrades.blockchain.web3jtrade.repository.SnipeOrderHistoryRepository;
 import com.aitrades.blockchain.web3jtrade.repository.SnipeOrderRepository;
 import com.aitrades.blockchain.web3jtrade.repository.TradeOverviewRepository;
+import com.aitrades.blockchain.web3jtrade.service.DexContractStaticCodeValuesService;
 import com.aitrades.blockchain.web3jtrade.service.Web3jServiceClientFactory;
 import com.aitrades.blockchain.web3jtrade.trade.pendingTransaction.EthereumGethPendingTransactionsRetriever;
 import com.aitrades.blockchain.web3jtrade.trade.pendingTransaction.EthereumParityPendingTransactionsRetriever;
@@ -81,6 +82,9 @@ public class OrderSnipeExecuteGatewayEndpoint{
 	@Autowired
 	private LiquidityEventOrReserversFinder liquidityEventOrReserversFinder;
 	
+	@Autowired
+	private DexContractStaticCodeValuesService dexContractStaticCodeValuesService;
+	
 	@Transformer(inputChannel = "rabbitMqSubmitOrderConsumer", outputChannel = "pairCreatedEventChannel")
 	public SnipeTransactionRequest rabbitMqSubmitOrderConsumer(byte[] message ) throws Exception{
 		return snipeTransactionRequestObjectReader.readValue(message);
@@ -93,7 +97,7 @@ public class OrderSnipeExecuteGatewayEndpoint{
 		}
 		Type pairAddress = null;
 		try {
-			pairAddress = ethereumDexTradeService.getPairAddress(snipeTransactionRequest.getRoute(), snipeTransactionRequest.getToAddress(), TradeConstants.WETH_MAP.get(snipeTransactionRequest.getRoute()))
+			pairAddress = ethereumDexTradeService.getPairAddress(snipeTransactionRequest.getRoute(), snipeTransactionRequest.getToAddress(),  dexContractStaticCodeValuesService.getDexContractAddress(snipeTransactionRequest.getRoute(), TradeConstants.WNATIVE))
 													   .get(0);
 			if(pairAddress != null && StringUtils.startsWithIgnoreCase((String)pairAddress.getValue(), _0X000000) && StringUtils.equalsIgnoreCase(snipeTransactionRequest.getRoute(), TradeConstants.PANCAKE)) {
 				pairAddress = ethereumDexTradeService.getPairAddress(snipeTransactionRequest.getRoute(), snipeTransactionRequest.getToAddress(), TradeConstants.BUSD)
@@ -101,7 +105,7 @@ public class OrderSnipeExecuteGatewayEndpoint{
 				snipeTransactionRequest.setBusdPair(true);
 			}
 		} catch (Exception e) {
-			pairAddress  = ethereumDexTradeService.getPairAddress(snipeTransactionRequest.getRoute(), snipeTransactionRequest.getToAddress(), TradeConstants.WETH_MAP.get(snipeTransactionRequest.getRoute()))
+			pairAddress  = ethereumDexTradeService.getPairAddress(snipeTransactionRequest.getRoute(), snipeTransactionRequest.getToAddress(),  dexContractStaticCodeValuesService.getDexContractAddress(snipeTransactionRequest.getRoute(), TradeConstants.WNATIVE))
 		             .parallelStream()
 		             .findFirst().get();
 		}
@@ -112,7 +116,7 @@ public class OrderSnipeExecuteGatewayEndpoint{
 		}
 		else  {
 			System.out.println("no pair/Not listed");
-			Thread.sleep(2000l);
+			Thread.sleep(1000l);
 			snipeOrderReQueue.send(snipeTransactionRequest);
 		}
 		
@@ -178,7 +182,7 @@ public class OrderSnipeExecuteGatewayEndpoint{
 																		   snipeTransactionRequest.getInputTokenValueAmountAsBigInteger(),
 																		   snipeTransactionRequest.getSlipageInDouble(),
 																		   Lists.newArrayList(new Address(snipeTransactionRequest.getToAddress()), 
-																		   			  new Address(TradeConstants.WETH_MAP.get(snipeTransactionRequest.getRoute().toUpperCase()))),
+																		   			  new Address( dexContractStaticCodeValuesService.getDexContractAddress(snipeTransactionRequest.getRoute(), TradeConstants.WNATIVE))),
 																		   gasProvider.getGasPrice(GasModeEnum.fromValue(snipeTransactionRequest.getGasMode()), snipeTransactionRequest.getGasPrice()),
 																		   gasProvider.getGasPrice(GasModeEnum.fromValue(snipeTransactionRequest.getGasMode()), snipeTransactionRequest.getGasLimit()),
 																		   snipeTransactionRequest.getGasMode(),
@@ -213,7 +217,7 @@ public class OrderSnipeExecuteGatewayEndpoint{
 																   snipeTransactionRequest.getInputTokenValueAmountAsBigInteger(),
 																   snipeTransactionRequest.getOuputTokenValueAmounttAsBigInteger(),
 																   snipeTransactionRequest.getDeadLine(),
-																   Lists.newArrayList(new Address(TradeConstants.WETH_MAP.get(snipeTransactionRequest.getRoute().toUpperCase())),
+																   Lists.newArrayList(new Address( dexContractStaticCodeValuesService.getDexContractAddress(snipeTransactionRequest.getRoute(), TradeConstants.WNATIVE)),
 																		 	  	      new Address(snipeTransactionRequest.getToAddress())),
 																   snipeTransactionRequest.isFeeEligible(),
 																   gasProvider.getGasPrice(GasModeEnum.fromValue(snipeTransactionRequest.getGasMode()), snipeTransactionRequest.getGasPrice()),

@@ -39,6 +39,7 @@ import com.aitrades.blockchain.web3jtrade.dex.contract.DexContractService;
 import com.aitrades.blockchain.web3jtrade.dex.contract.EthereumDexContract;
 import com.aitrades.blockchain.web3jtrade.domain.TradeConstants;
 import com.aitrades.blockchain.web3jtrade.oracle.gas.GasProvider;
+import com.aitrades.blockchain.web3jtrade.service.DexContractStaticCodeValuesService;
 
 import io.reactivex.schedulers.Schedulers;
 
@@ -50,8 +51,6 @@ public class PancakeServiceImpl implements DexContractService {
 
 	private static final Uint256 DEAD_LINE = new Uint256(BigInteger.valueOf(Instant.now().plus(600, ChronoUnit.SECONDS).getEpochSecond()));
 
-	private static final String CUSTOM = "CUSTOM";
-	
 	@Resource(name = "web3jBscServiceClient")
 	private Web3jServiceClient web3jServiceClient;
 	
@@ -64,15 +63,19 @@ public class PancakeServiceImpl implements DexContractService {
 	@Autowired
 	private GasProvider gasProvider;
 	
+ 	@Autowired
+	private DexContractStaticCodeValuesService dexContractStaticCodeValuesService;
+ 
+ 	
 	@Override
-	public List<Type> getPair(String tokenA, String tokenB) throws Exception{
+	public List<Type> getPair(String route, String tokenA, String tokenB) throws Exception{
 		
 		final Function function = new Function(FUNC_GETPAIR, Arrays.asList(new Address(tokenA), new Address(tokenB)),
 											   Arrays.asList(new TypeReference<Address>() {
 											}));
 		EthCall ethCall = web3jServiceClient.getWeb3j()
-										    .ethCall(Transaction.createEthCallTransaction(TradeConstants.PANCAKE_FACTORY_ADDRESS, 
-													 TradeConstants.PANCAKE_FACTORY_ADDRESS, 
+										    .ethCall(Transaction.createEthCallTransaction(dexContractStaticCodeValuesService.getDexContractAddress(route, TradeConstants.FACTORY), 
+										    		 dexContractStaticCodeValuesService.getDexContractAddress(route, TradeConstants.FACTORY),
 													 FunctionEncoder.encode(function)),
 										    		DefaultBlockParameterName.LATEST)
 										    .flowable()
@@ -84,7 +87,7 @@ public class PancakeServiceImpl implements DexContractService {
 	}
 
 	@Override
-	public Tuple3<BigInteger, BigInteger, BigInteger> getReserves(String pairAddress, Credentials credentials, BigInteger gasPrice, BigInteger gasLimit, String gasMode)  throws Exception{
+	public Tuple3<BigInteger, BigInteger, BigInteger> getReserves(String route, String pairAddress, Credentials credentials, BigInteger gasPrice, BigInteger gasLimit, String gasMode)  throws Exception{
 		return new EthereumDexContract(pairAddress,
 									   web3jServiceClient.getWeb3j(), 
 									   credentials,
@@ -97,7 +100,7 @@ public class PancakeServiceImpl implements DexContractService {
 
 
 	@Override
-	public BigInteger getAmountsIn(Credentials credentials, BigInteger inputEthers, Double slipage,
+	public BigInteger getAmountsIn(String route, Credentials credentials, BigInteger inputEthers, Double slipage,
 								   List<Address> memoryPathAddress, BigInteger gasPrice, BigInteger gasLimit , String gasMode, String decimals) throws Exception {
 		final Function function = new Function(FUNC_GETAMOUNTIN, 
 							                   Arrays.<Type>asList(new Uint256(inputEthers), 
@@ -105,7 +108,7 @@ public class PancakeServiceImpl implements DexContractService {
 							                   GET_AMTS_IN_OUT_PARAMS);
 		String data = FunctionEncoder.encode(function);
 		EthCall resp =  web3jServiceClient.getWeb3j().ethCall(Transaction.createEthCallTransaction(memoryPathAddress.get(0).getValue(), 
-																									TradeConstants.PANCAKE_ROUTER_ADDRESS, 
+				dexContractStaticCodeValuesService.getDexContractAddress(route, TradeConstants.ROUTER), 
 																									data), 
 													          DefaultBlockParameterName.LATEST)
 										              .flowable()
@@ -127,7 +130,7 @@ public class PancakeServiceImpl implements DexContractService {
 	}
 
 	@Override
-	public String swapExactTokensForTokens(Credentials credentials, BigInteger amountIn, BigInteger amountOutMin, 
+	public String swapExactTokensForTokens(String route, Credentials credentials, BigInteger amountIn, BigInteger amountOutMin, 
 								   long deadLine, List<Address> memoryPathAddress, boolean hasFee, BigInteger gasPrice, BigInteger gasLimit, String gasMode) throws Exception{
 		final String data = FunctionEncoder.encode(new Function(hasFee ? FUNC_SWAPEXACTTOKENSFORTOKENSSUPPORTINGFEEONTRANSFERTOKENS : FUNC_SWAPEXACTTOKENSFORTOKENS,
 					 										    Arrays.asList(new Uint256(amountIn), new Uint256(amountOutMin),
@@ -140,7 +143,7 @@ public class PancakeServiceImpl implements DexContractService {
 																			   noOpProcessor)
 															.sendTransaction(gasPrice, 
 																			 gasLimit, 
-																			 TradeConstants.PANCAKE_ROUTER_ADDRESS, 
+																			 dexContractStaticCodeValuesService.getDexContractAddress(route, TradeConstants.ROUTER), 
 																			 data, 
 																			 BigInteger.ZERO);
 		if(ethSendTransaction.hasError()) {
@@ -158,10 +161,10 @@ public class PancakeServiceImpl implements DexContractService {
 	}
 	
 	@Override
-	public BigInteger getAmountsOut(Credentials credentials, BigInteger inputTokens, Double slipage, 
+	public BigInteger getAmountsOut(String route, Credentials credentials, BigInteger inputTokens, Double slipage, 
 								    List<String> memoryPathAddress, BigInteger gasPrice, BigInteger gasLimit, String gasMode) throws Throwable {
 
-		EthereumDexContract dexContract = new EthereumDexContract(TradeConstants.ROUTER_MAP.get(TradeConstants.PANCAKE),
+		EthereumDexContract dexContract = new EthereumDexContract(dexContractStaticCodeValuesService.getDexContractAddress(route, TradeConstants.ROUTER),
 																 web3jServiceClient.getWeb3j(), 
 																 credentials, 
 																 gasPrice, 
@@ -177,7 +180,7 @@ public class PancakeServiceImpl implements DexContractService {
 	}
 
 	@Override
-	public String swapTokenForETH(Credentials credentials, BigInteger inputTokens, BigInteger outputEthers,
+	public String swapTokenForETH(String route, Credentials credentials, BigInteger inputTokens, BigInteger outputEthers,
 								  long deadLine, List<String> memoryPathAddress,  boolean hasFee, 
 								  BigInteger gasPrice, BigInteger gasLimit, String gasMode) throws Exception {
 
@@ -194,7 +197,7 @@ public class PancakeServiceImpl implements DexContractService {
 																		      noOpProcessor)
 															.sendTransaction(gasPrice, 
 																			 gasProvider.gasLimitPancake(credentials.getAddress(), data, TradeConstants.PANCAKE), 
-																			 TradeConstants.PANCAKE_ROUTER_ADDRESS, 
+																			 dexContractStaticCodeValuesService.getDexContractAddress(route, TradeConstants.ROUTER), 
 																			 data, 
 																			 BigInteger.ZERO);
 		if(ethSendTransaction.hasError()) {
@@ -204,9 +207,9 @@ public class PancakeServiceImpl implements DexContractService {
 	}
 
 	@Override
-	public TransactionReceipt deposit(BigInteger weiValue, Credentials credentials, BigInteger inputEthers,
+	public TransactionReceipt deposit(String route, BigInteger weiValue, Credentials credentials, BigInteger inputEthers,
 			Double slipage, List<Address> memoryPathAddress, BigInteger gasPrice, BigInteger gasLimit, String gasMode) {
-		EthereumDexContract ethereumDexContract = new EthereumDexContract(TradeConstants.ROUTER_MAP.get(TradeConstants.PANCAKE),
+		EthereumDexContract ethereumDexContract = new EthereumDexContract(dexContractStaticCodeValuesService.getDexContractAddress(route, TradeConstants.ROUTER),
 											   web3jServiceClient.getWeb3j(), 
 											   credentials,
 											   gasPrice,
@@ -223,15 +226,15 @@ public class PancakeServiceImpl implements DexContractService {
 	}
 
 	@Override
-	public TransactionReceipt withDraw(BigInteger weiValue, Credentials credentials, BigInteger inputEthers,
+	public TransactionReceipt withDraw(String route, BigInteger weiValue, Credentials credentials, BigInteger inputEthers,
 			Double slipage, List<Address> memoryPathAddress, BigInteger gasPrice, BigInteger gasLimit, String gasMode) {
 		return null;
 	}
 
 	@Override
-	public TransactionReceipt transfer(String pairAddress, BigInteger wad, Credentials credentials, BigInteger inputEthers,
+	public TransactionReceipt transfer(String route, String pairAddress, BigInteger wad, Credentials credentials, BigInteger inputEthers,
 			Double slipage, List<Address> memoryPathAddress, BigInteger gasPrice, BigInteger gasLimit, String gasMode) {
-		return new EthereumDexContract(TradeConstants.WETH_MAP.get(TradeConstants.PANCAKE),
+		return new EthereumDexContract(dexContractStaticCodeValuesService.getDexContractAddress(route, TradeConstants.WNATIVE),
 				   web3jServiceClient.getWeb3j(), 
 				   credentials,
 				   gasPrice,

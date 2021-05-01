@@ -31,25 +31,25 @@ public interface DexContractService {
     public static final String FUNC_SWAPEXACTTOKENSFORETH = "swapExactTokensForETH";
     public static final String FUNC_SWAPEXACTTOKENSFORETHSUPPORTINGFEEONTRANSFERTOKENS = "swapExactTokensForETHSupportingFeeOnTransferTokens";
     
-	public List<Type> getPair(String tokenA, String tokenB) throws Exception;
+	public List<Type> getPair(String route, String tokenA, String tokenB) throws Exception;
 	
-	public TransactionReceipt deposit(BigInteger weiValue, Credentials credentials, BigInteger inputEthers, Double slipage,
+	public TransactionReceipt deposit(String route, BigInteger weiValue, Credentials credentials, BigInteger inputEthers, Double slipage,
 			   List<Address> memoryPathAddress, BigInteger gasPrice, BigInteger gasLimit , String gasMode);
 	
-	public TransactionReceipt withDraw(BigInteger weiValue, Credentials credentials, BigInteger inputEthers, Double slipage,
+	public TransactionReceipt withDraw(String route, BigInteger weiValue, Credentials credentials, BigInteger inputEthers, Double slipage,
 			   List<Address> memoryPathAddress, BigInteger gasPrice, BigInteger gasLimit , String gasMode);
 	
-	public TransactionReceipt transfer(String dst, BigInteger wad, Credentials credentials, BigInteger inputEthers, Double slipage,
+	public TransactionReceipt transfer(String route, String dst, BigInteger wad, Credentials credentials, BigInteger inputEthers, Double slipage,
 			   List<Address> memoryPathAddress, BigInteger gasPrice, BigInteger gasLimit , String gasMode);
 	
-	public Tuple3<BigInteger, BigInteger, BigInteger> getReserves(String pairAddress, Credentials credentials, BigInteger gasPrice, BigInteger gasLimit, String gasMode) throws Exception;
+	public Tuple3<BigInteger, BigInteger, BigInteger> getReserves(String route, String pairAddress, Credentials credentials, BigInteger gasPrice, BigInteger gasLimit, String gasMode) throws Exception;
 	
-	public BigInteger getAmountsIn(Credentials credentials, BigInteger inputEthers, Double slipage, List<Address> memoryPathAddress, BigInteger gasPrice, BigInteger gasLimit, String gasMode, String decimals) throws Exception;
+	public BigInteger getAmountsIn(String route, Credentials credentials, BigInteger inputEthers, Double slipage, List<Address> memoryPathAddress, BigInteger gasPrice, BigInteger gasLimit, String gasMode, String decimals) throws Exception;
 
-	public String swapExactTokensForTokens(Credentials credentials, BigInteger inputEthers, BigInteger outPutTokens, long deadLine, List<Address> memoryPathAddress, boolean hasFee, BigInteger gasPrice, BigInteger gasLimit, String gasMode) throws Exception;
+	public String swapExactTokensForTokens(String route, Credentials credentials, BigInteger inputEthers, BigInteger outPutTokens, long deadLine, List<Address> memoryPathAddress, boolean hasFee, BigInteger gasPrice, BigInteger gasLimit, String gasMode) throws Exception;
 	
-	public BigInteger getAmountsOut(Credentials credentials,BigInteger inputTokens, Double slipage, List<String> memoryPathAddress, BigInteger gasPrice, BigInteger gasLimit, String gasMode) throws Throwable;
+	public BigInteger getAmountsOut(String route, Credentials credentials,BigInteger inputTokens, Double slipage, List<String> memoryPathAddress, BigInteger gasPrice, BigInteger gasLimit, String gasMode) throws Throwable;
 	
-	public String swapTokenForETH(Credentials credentials, BigInteger inputTokens, BigInteger outputEthers, long deadLine, List<String> memoryPathAddress, boolean hasFee, BigInteger gasPrice, BigInteger gasLimit, String gasMode) throws Exception;
+	public String swapTokenForETH(String route, Credentials credentials, BigInteger inputTokens, BigInteger outputEthers, long deadLine, List<String> memoryPathAddress, boolean hasFee, BigInteger gasPrice, BigInteger gasLimit, String gasMode) throws Exception;
 
 }

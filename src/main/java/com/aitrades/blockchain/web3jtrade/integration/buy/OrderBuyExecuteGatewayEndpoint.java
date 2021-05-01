@@ -19,6 +19,7 @@ import com.aitrades.blockchain.web3jtrade.oracle.gas.GasProvider;
 import com.aitrades.blockchain.web3jtrade.repository.OrderHistoryRepository;
 import com.aitrades.blockchain.web3jtrade.repository.OrderRepository;
 import com.aitrades.blockchain.web3jtrade.repository.TradeOverviewRepository;
+import com.aitrades.blockchain.web3jtrade.service.DexContractStaticCodeValuesService;
 import com.fasterxml.jackson.databind.ObjectReader;
 import com.google.common.collect.Lists;
 
@@ -42,6 +43,9 @@ public class OrderBuyExecuteGatewayEndpoint {
 	@Autowired
 	private GasProvider gasProvider;
 	
+	@Autowired
+	private DexContractStaticCodeValuesService dexContractStaticCodeValuesService;
+ 
 	@Transformer(inputChannel = "transformBuyOrderChannel", outputChannel = "amountsInChannel")
 	public Map<String, Object> transformBuyOrderChannel(byte[] message) throws Exception{
 		Order order  = orderRequestObjectReader.readValue(message);
@@ -60,7 +64,7 @@ public class OrderBuyExecuteGatewayEndpoint {
 																		   order.getFrom().getAmountAsBigInteger(),
 																		   order.getSlippage().getSlipageInBipsInDouble(),
 																           Lists.newArrayList(new Address(order.getTo().getTicker().getAddress()),
-																		   			          new Address(TradeConstants.WETH_MAP.get(order.getRoute().toUpperCase()))),
+																		   			          new Address( dexContractStaticCodeValuesService.getDexContractAddress(order.getRoute(), TradeConstants.WNATIVE))),
 																           gasProvider.getGasPrice(GasModeEnum.fromValue(order.getGasMode()), order.getGasPrice().getValueBigInteger()),
 																	       gasProvider.getGasPrice(GasModeEnum.fromValue(order.getGasMode()), order.getGasLimit().getValueBigInteger()),
 																	       order.getGasMode(),
@@ -89,7 +93,7 @@ public class OrderBuyExecuteGatewayEndpoint {
 																	   order.getFrom().getAmountAsBigInteger(), 
 																	   outputTokens, 
 																	   300l, 
-																	   Lists.newArrayList(new Address(TradeConstants.WETH_MAP.get(order.getRoute().toUpperCase())),
+																	   Lists.newArrayList(new Address( dexContractStaticCodeValuesService.getDexContractAddress(order.getRoute(), TradeConstants.WNATIVE)),
 																			   			  new Address(order.getTo().getTicker().getAddress())),
 																	   order.isFee(), 
 																	   gasProvider.getGasPrice(GasModeEnum.fromValue(order.getGasMode()), order.getGasPrice().getValueBigInteger()),

@@ -18,6 +18,7 @@ import com.aitrades.blockchain.web3jtrade.oracle.gas.GasProvider;
 import com.aitrades.blockchain.web3jtrade.repository.OrderHistoryRepository;
 import com.aitrades.blockchain.web3jtrade.repository.OrderRepository;
 import com.aitrades.blockchain.web3jtrade.repository.TradeOverviewRepository;
+import com.aitrades.blockchain.web3jtrade.service.DexContractStaticCodeValuesService;
 import com.fasterxml.jackson.databind.ObjectReader;
 import com.google.common.collect.Lists;
 
@@ -41,6 +42,9 @@ public class OrderSellExecuteGatewayEndpoint {
 	@Autowired
 	private DexTradeContractService ethereumDexTradeService;
 	
+	@Autowired
+	private DexContractStaticCodeValuesService dexContractStaticCodeValuesService;
+ 
 	@Transformer(inputChannel = "transformSellOrderChannel", outputChannel = "amountsOutChannel")
 	public Map<String, Object> transformSellOrderChannel(byte[] message) throws Exception{
 		Order order  = orderRequestObjectReader.readValue(message);
@@ -58,7 +62,8 @@ public class OrderSellExecuteGatewayEndpoint {
 																			order.getCredentials(), 
 																			order.getFrom().getAmountAsBigInteger(),
 																			order.getSlippage().getSlipageInBipsInDouble(),
-																	        Lists.newArrayList(order.getFrom().getTicker().getAddress(), TradeConstants.WETH_MAP.get(order.getRoute().toUpperCase())),
+																	        Lists.newArrayList(order.getFrom().getTicker().getAddress(), 
+																	        		 dexContractStaticCodeValuesService.getDexContractAddress(order.getRoute(), TradeConstants.WNATIVE)),
 																	        gasProvider.getGasPrice(GasModeEnum.fromValue(order.getGasMode()), order.getGasPrice().getValueBigInteger()),
 																	     	gasProvider.getGasPrice(GasModeEnum.fromValue(order.getGasMode()), order.getGasLimit().getValueBigInteger()),
 																		    order.getGasMode());
@@ -89,7 +94,8 @@ public class OrderSellExecuteGatewayEndpoint {
 																	  order.getFrom().getAmountAsBigInteger(), 
 																	  outputTokens, 
 																	  250l,
-																	  Lists.newArrayList(order.getFrom().getTicker().getAddress(), TradeConstants.WETH_MAP.get(order.getRoute().toUpperCase())),
+																	  Lists.newArrayList(order.getFrom().getTicker().getAddress(), 
+																			  dexContractStaticCodeValuesService.getDexContractAddress(order.getRoute(), TradeConstants.WNATIVE)),
 																	  order.isFee(), 
 																	  gasProvider.getGasPrice(GasModeEnum.fromValue(order.getGasMode()), order.getGasPrice().getValueBigInteger()),
 																      gasProvider.getGasPrice(GasModeEnum.fromValue(order.getGasMode()), order.getGasLimit().getValueBigInteger()),

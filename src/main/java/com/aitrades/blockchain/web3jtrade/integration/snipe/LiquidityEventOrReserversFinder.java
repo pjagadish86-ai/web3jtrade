@@ -14,6 +14,7 @@ import com.aitrades.blockchain.web3jtrade.dex.contract.DexTradeContractService;
 import com.aitrades.blockchain.web3jtrade.dex.contract.EthereumDexContract;
 import com.aitrades.blockchain.web3jtrade.dex.contract.event.EthereumDexEventHandler;
 import com.aitrades.blockchain.web3jtrade.domain.TradeConstants;
+import com.aitrades.blockchain.web3jtrade.service.DexContractStaticCodeValuesService;
 import com.aitrades.blockchain.web3jtrade.service.Web3jServiceClientFactory;
 
 import io.reactivex.Flowable;
@@ -30,6 +31,9 @@ public class LiquidityEventOrReserversFinder {
 	@Autowired
 	private DexTradeContractService ethereumDexTradeService;
 	
+	@Autowired
+	private DexContractStaticCodeValuesService dexContractStaticCodeValuesService;
+	
 	public Tuple3<BigInteger, BigInteger, BigInteger> fetchReserves(final String route, final String  pairAddress, final Credentials credentials,final  BigInteger gasPrice, final  BigInteger gasLimit, BigInteger inputAmount, final String  gasMode) throws Exception {
 		return new EthereumDexContract(pairAddress, web3jServiceClientFactory.getWeb3jMap().get(route).getWeb3j(), credentials).getReserves().flowable().subscribeOn(Schedulers.io()).blockingFirst();
 	}
@@ -42,11 +46,11 @@ public class LiquidityEventOrReserversFinder {
 	@SuppressWarnings({ "rawtypes", "unchecked" })
 	public List<Boolean> hasLiquidityOrReservesV2(final String route, final String  pairAddress, final Credentials credentials,final  BigInteger gasPrice, final  BigInteger gasLimit, BigInteger inputAmount, final String  gasMode) throws Exception {
 		List<Boolean> results = new ArrayList(1);
-		Flowable.zip(new EthereumDexContract(pairAddress, web3jServiceClientFactory.getWeb3jMap().get(route).getWeb3j(), credentials).getReserves().flowable(), 
-												  EthereumDexEventHandler.mintEventFlowables(web3jServiceClientFactory.getWeb3jMap().get(route).getWeb3j(), pairAddress, TradeConstants.ROUTER_MAP.get(pairAddress)),
-												  (reserves, liquidityEvent) -> hasLiquidityOrReservers(reserves, liquidityEvent, inputAmount))
-											 .subscribeOn(Schedulers.io(), false)
-											 .blockingSubscribe(results :: add);
+//		Flowable.zip(new EthereumDexContract(pairAddress, web3jServiceClientFactory.getWeb3jMap().get(route).getWeb3j(), credentials).getReserves().flowable(), 
+//												  EthereumDexEventHandler.mintEventFlowables(web3jServiceClientFactory.getWeb3jMap().get(route).getWeb3j(), pairAddress, TradeConstants.ROUTER_MAP.get(pairAddress)),
+//												  (reserves, liquidityEvent) -> hasLiquidityOrReservers(reserves, liquidityEvent, inputAmount))
+//											 .subscribeOn(Schedulers.io(), false)
+//											 .blockingSubscribe(results :: add);
 		return results;
 	}
 	
@@ -63,15 +67,16 @@ public class LiquidityEventOrReserversFinder {
 
 	private EthLog hasAddedLiquidityEvent(final String  route, final String  pairAddresss) throws Exception{
 		try {
-			return EthereumDexEventHandler.mintEventFlowables(web3jServiceClientFactory.getWeb3jMap().get(route).getWeb3j(), 
-															  pairAddresss, 
-														      TradeConstants.ROUTER_MAP.get(pairAddresss))
-					.subscribeOn(Schedulers.io())
-					.blockingSingle();
+//			return EthereumDexEventHandler.mintEventFlowables(web3jServiceClientFactory.getWeb3jMap().get(route).getWeb3j(), 
+//															  pairAddresss, 
+//														      TradeConstants.ROUTER_MAP.get(pairAddresss))
+//					.subscribeOn(Schedulers.io())
+//					.blockingSingle();
 		} catch (Exception e) {
 			e.printStackTrace();
 			return null;
 		}
+		return null;
 		
 	}
 	

@@ -11,13 +11,7 @@ import org.web3j.crypto.Credentials;
 import org.web3j.protocol.core.methods.response.EthLog;
 import org.web3j.tuples.generated.Tuple3;
 
-import com.aitrades.blockchain.web3jtrade.dex.contract.EthereumDexContract;
-import com.aitrades.blockchain.web3jtrade.dex.contract.event.EthereumDexEventHandler;
-import com.aitrades.blockchain.web3jtrade.domain.TradeConstants;
 import com.aitrades.blockchain.web3jtrade.service.Web3jServiceClientFactory;
-
-import io.reactivex.Flowable;
-import io.reactivex.schedulers.Schedulers;
 
 @Service
 public class LiquidityEventOrReserversFinder2 {
@@ -33,11 +27,11 @@ public class LiquidityEventOrReserversFinder2 {
 	@SuppressWarnings({ "rawtypes", "unchecked" })
 	public List<Boolean> parallelExecution(final String route, final String  pairAddress, final Credentials credentials,final  BigInteger gasPrice, final  BigInteger gasLimit, BigInteger inputAmount, final String  gasMode) throws Exception {
 		List<Boolean> results = new ArrayList(1);
-		Flowable.zip(new EthereumDexContract(pairAddress, web3jServiceClientFactory.getWeb3jMap().get(route).getWeb3j(), credentials).getReserves().flowable(), 
-												  EthereumDexEventHandler.mintEventFlowables(web3jServiceClientFactory.getWeb3jMap().get(route).getWeb3j(), pairAddress, TradeConstants.ROUTER_MAP.get(pairAddress)),
-												  (reserves, liquidityEvent) -> hasLiquidityOrReservers1(reserves, liquidityEvent, inputAmount))
-											 .subscribeOn(Schedulers.io(), false)
-											 .blockingSubscribe(results :: add);
+//		Flowable.zip(new EthereumDexContract(pairAddress, web3jServiceClientFactory.getWeb3jMap().get(route).getWeb3j(), credentials).getReserves().flowable(), 
+//												  EthereumDexEventHandler.mintEventFlowables(web3jServiceClientFactory.getWeb3jMap().get(route).getWeb3j(), pairAddress, TradeConstants.ROUTER_MAP.get(pairAddress)),
+//												  (reserves, liquidityEvent) -> hasLiquidityOrReservers1(reserves, liquidityEvent, inputAmount))
+//											 .subscribeOn(Schedulers.io(), false)
+//											 .blockingSubscribe(results :: add);
 		return results;
 	}
 	

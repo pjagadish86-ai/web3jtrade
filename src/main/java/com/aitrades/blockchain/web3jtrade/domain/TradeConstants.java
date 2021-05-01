@@ -1,28 +1,24 @@
 package com.aitrades.blockchain.web3jtrade.domain;
 
+import java.math.BigInteger;
+import java.time.Instant;
+import java.time.temporal.ChronoUnit;
 import java.util.HashMap;
 import java.util.Map;
 
-import com.google.common.collect.ImmutableMap;
+import org.web3j.abi.datatypes.generated.Uint256;
 
 public final class TradeConstants {
 	
 	public static final String UNISWAP = "UNISWAP";
-	public static final String UNISWAP_FACOTRYADDRESS ="0x5c69bee701ef814a2b6a3edd4b1652cb9cc5aa6f";
-	public static final String UNISWAP_ROUTERADDRESS ="0x7a250d5630B4cF539739dF2C5dAcb4c659F2488D";
-	public static final String UNISWAP_WETH_FACOTRYADDRESS ="0xc02aaa39b223fe8d0a0e5c4f27ead9083c756cc2";
-
+	public static final String WNATIVE = "WNATIVE";
+	public static final String FACTORY = "FACTORY";
+	public static final String ROUTER = "ROUTER";
 	
 	public static final String PANCAKE = "PANCAKE";
-	public static final String PANCAKE_FACTORY_ADDRESS = "0xca143ce32fe78f1f7019d7d551a6402fc5350c73";
-	public static final String PANCAKE_ROUTER_ADDRESS = "0x10ed43c718714eb63d5aa57b78b54704e256024e";
-	public static final String PANCAKE_WBNB_FACOTRYADDRESS ="0xbb4cdb9cbd36b01bd1cbaebf2de08d9173bc095c";
 	public static final String BUSD = "0xe9e7cea3dedca5984780bafc599bd69add087d56";
 	
 	public static final String SUSHI = "SUSHI";
-	public static final String SUSHI_FACTORY_ADDRESS = "0xc0aee478e3658e2610c5f7a4a2e1777ce9e4f2ac";
-	public static final String SUSHI_ROUTER_ADDRESS = "0xd9e1cE17f2641f24aE83637ab66a2cca9C378B9F";
-	public static final String SUSHI_WETH_FACOTRYADDRESS ="0xc02aaa39b223fe8d0a0e5c4f27ead9083c756cc2";
 	
 	public static final String ORDER_DECISION = "ORDER_DECISION";
 
@@ -36,11 +32,6 @@ public final class TradeConstants {
 	public static final String OUTPUT_TOKENS = "OUTPUT_TOKENS";
 	public static final String INPUT_TOKENS = "INPUT_TOKENS";
 	
-	public static final Map<String, String> ROUTER_MAP = ImmutableMap.of(UNISWAP, UNISWAP_ROUTERADDRESS, PANCAKE, PANCAKE_ROUTER_ADDRESS, SUSHI, SUSHI_ROUTER_ADDRESS);
-	
-	public static final Map<String, String> FACTORY_MAP = ImmutableMap.of(UNISWAP, UNISWAP_FACOTRYADDRESS, PANCAKE, PANCAKE_FACTORY_ADDRESS, SUSHI, SUSHI_FACTORY_ADDRESS);
-	
-	public static final Map<String, String> WETH_MAP = ImmutableMap.of(UNISWAP, UNISWAP_WETH_FACOTRYADDRESS, PANCAKE, PANCAKE_WBNB_FACOTRYADDRESS, SUSHI, SUSHI_WETH_FACOTRYADDRESS);
 	
 	public static final String ETH = "0xc02aaa39b223fe8d0a0e5c4f27ead9083c756cc2";
 
@@ -49,6 +40,8 @@ public final class TradeConstants {
 	public static final String FILLED = "FILLED";
 
 	public static final String ORDER = "ORDER";
+	public static final String CUSTOM = "CUSTOM";
+
 
 	public static final String SWAP_TOKEN_FOR_ETH_HASH = "SWAP_TOKEN_FOR_ETH_HASH";
 	
@@ -60,10 +53,10 @@ public final class TradeConstants {
 	public static final String DS_MATH_SUB_UNDERFLOW = "ds-math-sub-underflow";
 	public static final String FAILED = "FAILED";
 	public static final String SNIPE = "SNIPE";
-	public static final String CUSTOM = "CUSTOM";
 	public static final String _0X000000 = "0x000000";
 	
-	
+	public static final Uint256 DEAD_LINE = new Uint256(BigInteger.valueOf(Instant.now().plus(600, ChronoUnit.SECONDS).getEpochSecond()));
+
 	public static Map<String, String> DECIMAL_MAP = null;
 	
 	static {

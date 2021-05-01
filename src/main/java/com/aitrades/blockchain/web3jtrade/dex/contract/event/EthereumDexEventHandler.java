@@ -4,7 +4,6 @@ import java.math.BigInteger;
 import java.util.Arrays;
 
 import org.web3j.abi.EventEncoder;
-import org.web3j.abi.TypeEncoder;
 import org.web3j.abi.TypeReference;
 import org.web3j.abi.datatypes.Address;
 import org.web3j.abi.datatypes.Event;
@@ -18,7 +17,7 @@ import org.web3j.protocol.core.methods.response.EthLog;
 import com.aitrades.blockchain.web3jtrade.domain.TradeConstants;
 
 import io.reactivex.Flowable;
-
+//TODO: unsued class as of now, please come back and FIXME
 public class EthereumDexEventHandler {
 	
 	private EthereumDexEventHandler() {
@@ -27,8 +26,8 @@ public class EthereumDexEventHandler {
 	private static final String ZERO_X = "0x";
 	private static final String MINT = "Mint";
 	
-	private static final String UNISWAP_ROUTER_TYPE_ENCODER = ZERO_X + TypeEncoder.encode(new Address(TradeConstants.UNISWAP_ROUTERADDRESS.substring(2)));
-	private static final String PANCAKE_ROUTER_TYPE_ENCODER = ZERO_X + TypeEncoder.encode(new Address(TradeConstants.PANCAKE_ROUTER_ADDRESS.substring(2)));
+	private static final String UNISWAP_ROUTER_TYPE_ENCODER = null;// ZERO_X + TypeEncoder.encode(new Address(TradeConstants.UNISWAP_ROUTERADDRESS.substring(2)));
+	private static final String PANCAKE_ROUTER_TYPE_ENCODER = null;//ZERO_X + TypeEncoder.encode(new Address(TradeConstants.PANCAKE_ROUTER_ADDRESS.substring(2)));
 
 	private static final Event MINT_EVENT = new Event(MINT, Arrays.<TypeReference<?>>asList(new TypeReference<Address>(true) { }, new TypeReference<Uint256>() { }, new TypeReference<Uint256>() { }));
 	private static final String MINT_EVENT_ENCODER = EventEncoder.encode(MINT_EVENT);

@@ -9,11 +9,15 @@ import org.web3j.protocol.core.methods.request.Transaction;
 
 import com.aitrades.blockchain.web3jtrade.domain.GasModeEnum;
 import com.aitrades.blockchain.web3jtrade.domain.TradeConstants;
+import com.aitrades.blockchain.web3jtrade.service.DexContractStaticCodeValuesService;
 @Component
 public class GasProvider{
 	
 	private static final String CUSTOM ="CUSTOM";
-	
+	@Autowired
+	private DexContractStaticCodeValuesService dexContractStaticCodeValuesService;
+ 
+ 
 	@Autowired
 	private StrategyGasProvider strategyGasProvider;
 	
@@ -36,7 +40,7 @@ public class GasProvider{
 	
 	public BigInteger gasLimitPancake(String address, String data, String route) {
 		try {
-			return strategyGasProvider.getGasLimit(Transaction.createFunctionCallTransaction(address,  null, null, null, TradeConstants.PANCAKE_ROUTER_ADDRESS, data), route);
+			return strategyGasProvider.getGasLimit(Transaction.createFunctionCallTransaction(address,  null, null, null, dexContractStaticCodeValuesService.getDexContractAddress(route, TradeConstants.ROUTER),  data), route);
 		} catch (Exception e) {
 			return BigInteger.valueOf(61000l).add(BigInteger.valueOf(68l)
 					.multiply(BigInteger.valueOf(data.getBytes().length)));
