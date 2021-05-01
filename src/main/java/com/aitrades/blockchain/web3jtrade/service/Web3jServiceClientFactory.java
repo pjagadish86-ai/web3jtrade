@@ -78,6 +78,7 @@ public class Web3jServiceClientFactory {
 		return new Web3jServiceClient(web3j, new RestTemplate(), new ObjectMapper());
 	}
 
+	//FIXME
 	private Web3j buildWeb3jIPC(EndpointConfig endpointConfig) throws Exception {
 		Network network = null;// StringUtils.containsIgnoreCase(SystemUtils.OS_NAME, "WINDOWS") ? new WindowsIpcService(endpointConfig.getEndpointUrl()): new UnixDomainSocket(endpointConfig.getEndpointUrl());
 		return Web3j.build(network );
@@ -108,7 +109,6 @@ public class Web3jServiceClientFactory {
 		try {
 			webSocketService = new WebSocketService(new CustomWebSocketClient(parseURI(endpointConfig.getEndpointUrl())), false);
 			webSocketService.connect();
-		
 		} catch (Exception e) {
 			Thread.sleep(6000l);
 			try {
