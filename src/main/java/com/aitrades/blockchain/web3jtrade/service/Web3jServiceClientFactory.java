@@ -28,7 +28,9 @@ public class Web3jServiceClientFactory {
 	
 	private static final String IPC = "IPC";
 	private static final String HTTP = "HTTP";
+	
 	private static final String ENDPOINT_CONFIG_URLS = "ENDPOINT_CONFIG_URLS";
+	
 	private final Map<String, Web3jServiceClient> WEB3J_MAP = new HashMap<>();
 	
 	private static com.github.benmanes.caffeine.cache.Cache<String, List<EndpointConfig>> blockChainExchangesConnections;

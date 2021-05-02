@@ -7,17 +7,15 @@ import javax.annotation.PostConstruct;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import com.aitrades.blockchain.web3jtrade.dex.generic.GenericSwapService;
 import com.aitrades.blockchain.web3jtrade.dex.pancake.PancakeServiceImpl;
 import com.aitrades.blockchain.web3jtrade.dex.uniswap.UniswapServiceImpl;
 
 @Service
 public class DexContractServiceFactory {
 
-	
 	private static final String PANCAKE = "PANCAKE";
-
 	private static final String SUSHI = "SUSHI";
-
 	private static final String UNISWAP = "UNISWAP";
 
 	@Autowired
@@ -29,7 +27,10 @@ public class DexContractServiceFactory {
 	@Autowired
 	private PancakeServiceImpl pancakeServiceImpl;
 	
-
+	@Autowired
+	private GenericSwapService genericSwapService;
+	
+	
 	@PostConstruct
 	public void init() {
 		typesMap.put(UNISWAP, uniswapServiceImpl);
@@ -38,7 +39,7 @@ public class DexContractServiceFactory {
 	}
 	
 	public DexContractService getInstance(String condition) {
-		return typesMap.get(condition);
+		return typesMap.get(condition) != null ? typesMap.get(condition) : genericSwapService;
 	}
 
 }
