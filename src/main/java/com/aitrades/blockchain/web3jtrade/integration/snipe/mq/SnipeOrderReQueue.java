@@ -16,9 +16,11 @@ public class SnipeOrderReQueue {
 	@Resource(name="snipeOrderRabbitTemplate")
 	private AmqpTemplate snipeOrderRabbitTemplate;
 	
+	@SuppressWarnings("unused")
 	@Autowired
 	private SnipeOrderRepository snipeOrderRepository;
 	
+	@SuppressWarnings("unused")
 	@Autowired
 	private SnipeOrderHistoryRepository snipeOrderHistoryRepository;
 	

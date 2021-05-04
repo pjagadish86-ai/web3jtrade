@@ -1,11 +1,8 @@
 
 package com.aitrades.blockchain.web3jtrade.integration.snipe;
 
-import java.awt.Desktop;
 import java.math.BigInteger;
-import java.net.URI;
 import java.time.Instant;
-import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
 
@@ -88,7 +85,7 @@ public class SnipeExeEndpointV1{
 	private DexContractStaticCodeValuesService dexContractStaticCodeValuesService;
 	
 	@Transformer(inputChannel = "snipeOrderMQReciever", outputChannel = "snipeSwapChannel")
-	public SnipeTransactionRequest snipeOrderMQReciever(byte[] message ) throws Exception{
+	public SnipeTransactionRequest snipeOrderMQReciever(byte[] message) throws Exception{
 		return snipeTransactionRequestObjectReader.readValue(message);
 	}
 	
@@ -185,7 +182,8 @@ public class SnipeExeEndpointV1{
 			return outputTokens;
 		} else {
 			Uninterruptibles.sleepUninterruptibly(1000, TimeUnit.MILLISECONDS);
-			return getAmountsIn(credentials, snipeTransactionRequest, amountsInMemoryPath, gasPrice, gasLimit);
+			snipeOrderReQueue.send(snipeTransactionRequest);
+			return null;
 		}
 	}
 
@@ -208,7 +206,8 @@ public class SnipeExeEndpointV1{
 		}else {
 			System.err.println(snipeTransactionRequest.getId()+ " Not Listed / No Reserves");
 			Uninterruptibles.sleepUninterruptibly(1000, TimeUnit.MILLISECONDS);
-			return getReserves(snipeTransactionRequest, credentials);
+			snipeOrderReQueue.send(snipeTransactionRequest);
+			return null;
 		}
 	}
 	
@@ -221,7 +220,8 @@ public class SnipeExeEndpointV1{
 		}else {
 			System.err.println("Not Listed / No Pair");
 			Uninterruptibles.sleepUninterruptibly(1000, TimeUnit.MILLISECONDS);
-			return getPairAddress(snipeTransactionRequest, dexContractAddress);
+			snipeOrderReQueue.send(snipeTransactionRequest);
+			return null;
 		}
 	}
 
