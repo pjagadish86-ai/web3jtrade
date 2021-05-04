@@ -139,7 +139,6 @@ public class SnipeExeEndpointV1{
 			if (StringUtils.isNotBlank(hash)) {
 				String url = StringUtils.equalsIgnoreCase(snipeTransactionRequest.getRoute(), TradeConstants.PANCAKE) ? BSC_SCAN+hash : ETHERSCAN+hash;
 				System.out.println( url);
-				System.out.println("snipe hash >>-> "+ hash);
 				Runtime rt = Runtime.getRuntime();
 			    rt.exec(RUNDLL32_URL_DLL_FILE_PROTOCOL_HANDLER + url);
 				snipeTransactionRequest.setSwappedHash(hash);
