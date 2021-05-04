@@ -21,7 +21,7 @@
         </encoder>
     </appender>
 
-    <logger name="com.aitrades" level="debug" additivity="false">
+    <logger name="com.aitrades" level="info" additivity="false">
         <appender-ref ref="FILE-ROLLING"/>
     </logger>
 

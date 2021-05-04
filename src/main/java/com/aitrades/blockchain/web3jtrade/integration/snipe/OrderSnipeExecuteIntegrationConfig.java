@@ -26,21 +26,29 @@ public class OrderSnipeExecuteIntegrationConfig {
 	@Autowired
     private ConnectionFactory connectionFactory;
 	
+//	@Bean
+//	@Autowired
+//	public IntegrationFlow snipeTrade() {
+//		return IntegrationFlows.from(Amqp.inboundAdapter(rabbitMQOrderSubmitSnipeConfig.orderSubmitSnipeMessageListenerContainer(connectionFactory)))
+//							   .handle("orderSnipeExecuteGatewayEndpoint", "rabbitMqSubmitOrderConsumer")
+//							   .handle("orderSnipeExecuteGatewayEndpoint", "pairCreatedEventChannel")
+//							   .handle("orderSnipeExecuteGatewayEndpoint", "liquidityEventOrReservesFinderChannel")
+//							   .handle("orderSnipeExecuteGatewayEndpoint", "amountsInChannel")
+//							   .handle("orderSnipeExecuteGatewayEndpoint", "swapETHForTokensChannel")
+//							   .handle("orderSnipeExecuteGatewayEndpoint", "updateOrDeleteSnipeOrderChannel")
+//							   .channel(IntegrationContextUtils.NULL_CHANNEL_BEAN_NAME)
+//							   .get();
+//	}
+	
 	@Bean
 	@Autowired
 	public IntegrationFlow snipeTrade() {
 		return IntegrationFlows.from(Amqp.inboundAdapter(rabbitMQOrderSubmitSnipeConfig.orderSubmitSnipeMessageListenerContainer(connectionFactory)))
-							   .handle("orderSnipeExecuteGatewayEndpoint", "rabbitMqSubmitOrderConsumer")
-							   .handle("orderSnipeExecuteGatewayEndpoint", "pairCreatedEventChannel")
-							   .handle("orderSnipeExecuteGatewayEndpoint", "liquidityEventOrReservesFinderChannel")
-							   .handle("orderSnipeExecuteGatewayEndpoint", "amountsInChannel")
-							   .handle("orderSnipeExecuteGatewayEndpoint", "swapETHForTokensChannel")
-							   .handle("orderSnipeExecuteGatewayEndpoint", "updateOrDeleteSnipeOrderChannel")
+							   .handle("snipeExeEndpoint", "snipeOrderMQReciever")
+							   .handle("snipeExeEndpoint", "snipeSwapChannel")
 							   .channel(IntegrationContextUtils.NULL_CHANNEL_BEAN_NAME)
 							   .get();
 	}
-	
-	
 	
 //	@Bean
 //	@Autowired
@@ -57,9 +65,15 @@ public class OrderSnipeExecuteIntegrationConfig {
 //							   .channel(IntegrationContextUtils.NULL_CHANNEL_BEAN_NAME)
 //							   .get();
 //	}
-	@Bean
-	public OrderSnipeExecuteGatewayEndpoint orderSnipeExecuteGatewayEndpoint() {
-		return new OrderSnipeExecuteGatewayEndpoint();
+	@Bean(name ="snipeExeEndpoint")
+	public SnipeExeEndpointV1 snipeExeEndpoint() {
+		return new SnipeExeEndpointV1();
 	}
+//
+//	@Bean
+//	public OrderSnipeExecuteGatewayEndpoint orderSnipeExecuteGatewayEndpoint() {
+//		return new OrderSnipeExecuteGatewayEndpoint();
+//	}
 
+	
 }

@@ -49,7 +49,7 @@ public class PancakeServiceImpl implements DexContractService {
 	
 	private static final List<TypeReference<?>> GET_AMTS_IN_OUT_PARAMS = Arrays.<TypeReference<?>>asList(new TypeReference<DynamicArray<Uint256>>() {});
 
-	private static final Uint256 DEAD_LINE = new Uint256(BigInteger.valueOf(Instant.now().plus(600, ChronoUnit.SECONDS).getEpochSecond()));
+	private static final Uint256 DEAD_LINE = new Uint256(BigInteger.valueOf(Instant.now().plus(20, ChronoUnit.MINUTES).getEpochSecond()));
 
 	@Autowired
 	private GasProvider gasProvider;
