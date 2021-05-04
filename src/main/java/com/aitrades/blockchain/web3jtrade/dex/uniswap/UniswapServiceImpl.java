@@ -184,7 +184,7 @@ public class UniswapServiceImpl implements DexContractService {
 
 		String encode = FunctionEncoder.encode(function);
 		BigInteger gasLmt = StringUtils.equalsIgnoreCase(gasMode, TradeConstants.CUSTOM) ? gasLimit : BigInteger.valueOf(21000l).add(BigInteger.valueOf(68l)
-																														.multiply(BigInteger.valueOf(encode.getBytes().length)));;
+																														.multiply(BigInteger.valueOf(encode.getBytes().length)));
 		
 		EthGetTransactionCount ethGetTransactionCount = web3jServiceClientFactory.getWeb3jMap(route).getWeb3j()
 																		  .ethGetTransactionCount(credentials.getAddress(), DefaultBlockParameterName.LATEST)

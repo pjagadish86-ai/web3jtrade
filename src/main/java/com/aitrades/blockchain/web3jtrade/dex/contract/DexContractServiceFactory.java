@@ -9,20 +9,14 @@ import org.springframework.stereotype.Service;
 
 import com.aitrades.blockchain.web3jtrade.dex.generic.GenericSwapService;
 import com.aitrades.blockchain.web3jtrade.dex.pancake.PancakeServiceImpl;
-import com.aitrades.blockchain.web3jtrade.dex.uniswap.UniswapServiceImpl;
 
 @Service
 public class DexContractServiceFactory {
 
 	private static final String PANCAKE = "PANCAKE";
-	private static final String SUSHI = "SUSHI";
-	private static final String UNISWAP = "UNISWAP";
 
 	@Autowired
 	private Map<String, DexContractService> typesMap;
-	
-	@Autowired
-	private UniswapServiceImpl uniswapServiceImpl;
 	
 	@Autowired
 	private PancakeServiceImpl pancakeServiceImpl;
@@ -33,8 +27,6 @@ public class DexContractServiceFactory {
 	
 	@PostConstruct
 	public void init() {
-		typesMap.put(UNISWAP, uniswapServiceImpl);
-		typesMap.put(SUSHI, uniswapServiceImpl);
 		typesMap.put(PANCAKE, pancakeServiceImpl);
 	}
 	

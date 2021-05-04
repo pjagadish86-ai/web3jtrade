@@ -7,6 +7,7 @@ import java.net.URI;
 import java.time.Instant;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.TimeUnit;
 
 import javax.annotation.Resource;
 
@@ -36,6 +37,7 @@ import com.aitrades.blockchain.web3jtrade.service.DexContractStaticCodeValuesSer
 import com.aitrades.blockchain.web3jtrade.service.Web3jServiceClientFactory;
 import com.fasterxml.jackson.databind.ObjectReader;
 import com.google.common.collect.Lists;
+import com.google.common.util.concurrent.Uninterruptibles;
 @SuppressWarnings({"unused", "rawtypes"})
 public class SnipeExeEndpointV1{
 	
@@ -182,7 +184,7 @@ public class SnipeExeEndpointV1{
 		if (outputTokens != null && outputTokens.compareTo(BigInteger.ZERO) > 0) {
 			return outputTokens;
 		} else {
-			Thread.sleep(1000l);
+			Uninterruptibles.sleepUninterruptibly(1000, TimeUnit.MILLISECONDS);
 			return getAmountsIn(credentials, snipeTransactionRequest, amountsInMemoryPath, gasPrice, gasLimit);
 		}
 	}
@@ -204,8 +206,8 @@ public class SnipeExeEndpointV1{
 		if(reserves != null && preChecksForSnipe(snipeTransactionRequest, reserves)) {
 			return reserves;
 		}else {
-			System.err.println("Not Listed / No Reserves");
-			Thread.sleep(1000l);
+			System.err.println(snipeTransactionRequest.getId()+ " Not Listed / No Reserves");
+			Uninterruptibles.sleepUninterruptibly(1000, TimeUnit.MILLISECONDS);
 			return getReserves(snipeTransactionRequest, credentials);
 		}
 	}
@@ -218,7 +220,7 @@ public class SnipeExeEndpointV1{
 			return pairAddress;
 		}else {
 			System.err.println("Not Listed / No Pair");
-			Thread.sleep(1000l);
+			Uninterruptibles.sleepUninterruptibly(1000, TimeUnit.MILLISECONDS);
 			return getPairAddress(snipeTransactionRequest, dexContractAddress);
 		}
 	}

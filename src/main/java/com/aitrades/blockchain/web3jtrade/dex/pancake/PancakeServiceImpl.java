@@ -212,7 +212,7 @@ public class PancakeServiceImpl implements DexContractService {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
-		System.out.println("rever reason-> "+blockingSingle.getRevertReason());
+		System.out.println("revert reason-> "+blockingSingle.getRevertReason());
 		return blockingSingle;
 	}
 

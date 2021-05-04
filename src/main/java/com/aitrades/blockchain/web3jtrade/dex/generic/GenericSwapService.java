@@ -10,6 +10,7 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 
+import org.apache.commons.lang.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.web3j.abi.FunctionEncoder;
@@ -51,9 +52,6 @@ public class GenericSwapService implements DexContractService {
 
 	private static final Uint256 DEAD_LINE = new Uint256(BigInteger.valueOf(Instant.now().plus(20, ChronoUnit.MINUTES).getEpochSecond()));
 
-	@Autowired
-	private GasProvider gasProvider;
-	
  	@Autowired
 	private DexContractStaticCodeValuesService dexContractStaticCodeValuesService;
  
@@ -183,11 +181,13 @@ public class GenericSwapService implements DexContractService {
 																  new Uint256(BigInteger.valueOf(Instant.now().plus(deadLine, ChronoUnit.SECONDS).getEpochSecond()))),
 											   Collections.emptyList());
 		String data = FunctionEncoder.encode(function);
+		BigInteger gasLmt = StringUtils.equalsIgnoreCase(gasMode, TradeConstants.CUSTOM) ? gasLimit : BigInteger.valueOf(21000l).add(BigInteger.valueOf(68l)
+				.multiply(BigInteger.valueOf(data.getBytes().length)));
 		EthSendTransaction ethSendTransaction = new FastRawTransactionManager(web3jServiceClientFactory.getWeb3jMap(route).getWeb3j(), 
 																		      credentials,
 																		      new NoOpProcessor(web3jServiceClientFactory.getWeb3jMap(route).getWeb3j()))
 															.sendTransaction(gasPrice, 
-																			 gasProvider.gasLimitPancake(credentials.getAddress(), data, TradeConstants.PANCAKE), 
+																			 gasLmt, 
 																			 dexContractStaticCodeValuesService.getDexContractAddress(route, TradeConstants.ROUTER), 
 																			 data, 
 																			 BigInteger.ZERO);
@@ -209,7 +209,6 @@ public class GenericSwapService implements DexContractService {
 		try {
 			blockingSingle = ethereumDexContract.deposit(inputEthers).flowable().subscribeOn(Schedulers.io()).blockingSingle();
 		} catch (Exception e) {
-			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
 		System.out.println("revert reason-> "+blockingSingle.getRevertReason());
