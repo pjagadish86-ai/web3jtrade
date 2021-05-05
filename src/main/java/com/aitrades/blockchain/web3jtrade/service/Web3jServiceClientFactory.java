@@ -112,7 +112,7 @@ public class Web3jServiceClientFactory {
 			webSocketService = new WebSocketService(new CustomWebSocketClient(parseURI(endpointConfig.getEndpointUrl())), false);
 			webSocketService.connect();
 		} catch (Exception e) {
-			Thread.sleep(6000l);
+			Thread.sleep(2000l);
 			try {
 				webSocketService.connect();
 				System.out.println("reconnecting to -> "+ endpointConfig.getBlockchain());

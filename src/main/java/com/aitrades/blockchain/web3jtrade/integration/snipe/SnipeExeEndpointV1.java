@@ -3,19 +3,28 @@ package com.aitrades.blockchain.web3jtrade.integration.snipe;
 
 import java.math.BigInteger;
 import java.time.Instant;
+import java.util.Collections;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
 
 import javax.annotation.Resource;
 
+import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang.StringUtils;
 import org.springframework.amqp.core.AmqpTemplate;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.integration.annotation.ServiceActivator;
 import org.springframework.integration.annotation.Transformer;
+import org.web3j.abi.TypeEncoder;
 import org.web3j.abi.datatypes.Address;
 import org.web3j.abi.datatypes.Type;
 import org.web3j.crypto.Credentials;
+import org.web3j.protocol.core.DefaultBlockParameter;
+import org.web3j.protocol.core.DefaultBlockParameterName;
+import org.web3j.protocol.core.DefaultBlockParameterNumber;
+import org.web3j.protocol.core.methods.response.EthLog;
+import org.web3j.protocol.core.methods.response.Log;
+import org.web3j.protocol.core.methods.response.EthLog.LogResult;
 import org.web3j.tuples.generated.Tuple3;
 
 import com.aitrades.blockchain.web3jtrade.client.DexNativePriceOracleClient;
@@ -35,6 +44,8 @@ import com.aitrades.blockchain.web3jtrade.service.Web3jServiceClientFactory;
 import com.fasterxml.jackson.databind.ObjectReader;
 import com.google.common.collect.Lists;
 import com.google.common.util.concurrent.Uninterruptibles;
+
+import io.reactivex.schedulers.Schedulers;
 @SuppressWarnings({"unused", "rawtypes"})
 public class SnipeExeEndpointV1{
 	
@@ -84,6 +95,12 @@ public class SnipeExeEndpointV1{
 	@Autowired
 	private DexContractStaticCodeValuesService dexContractStaticCodeValuesService;
 	
+	@Autowired
+	private LiquidityEventFinder liquidityEventFinder;
+	
+	private static final String ZERO_X = "0x";
+	private static final String MINT = "Mint";
+	
 	@Transformer(inputChannel = "snipeOrderMQReciever", outputChannel = "snipeSwapChannel")
 	public SnipeTransactionRequest snipeOrderMQReciever(byte[] message) throws Exception{
 		return snipeTransactionRequestObjectReader.readValue(message);
@@ -93,31 +110,60 @@ public class SnipeExeEndpointV1{
 	public SnipeTransactionRequest snipeSwapChannel(SnipeTransactionRequest snipeTransactionRequest) throws Exception{
 		
 		Credentials credentials = snipeTransactionRequest.getCredentials();
-		String dexContractAddress = dexContractStaticCodeValuesService.getDexContractAddress(snipeTransactionRequest.getRoute(), TradeConstants.WNATIVE);
-		Address wnativeAddress = new Address(dexContractAddress);
+		
+		String dexWrapContractAddress = dexContractStaticCodeValuesService.getDexContractAddress(snipeTransactionRequest.getRoute(), TradeConstants.WNATIVE);
+		String dexRouterContractAddress = dexContractStaticCodeValuesService.getDexContractAddress(snipeTransactionRequest.getRoute(), TradeConstants.ROUTER);
+
+		Address wnativeAddress = new Address(dexWrapContractAddress);
 		Address toAddress = new Address(snipeTransactionRequest.getToAddress());
-		BigInteger gasPrice = gasProvider.getGasPrice(GasModeEnum.fromValue(snipeTransactionRequest.getGasMode()), snipeTransactionRequest.getGasPrice());
-		BigInteger gasLimit = gasProvider.getGasPrice(GasModeEnum.fromValue(snipeTransactionRequest.getGasMode()), snipeTransactionRequest.getGasLimit());
 		List<Address> swapMemoryPath = Lists.newArrayList(wnativeAddress, toAddress);
 		
-		// Get Pair;
-		String pairAddress = getPairAddress(snipeTransactionRequest, dexContractAddress); 
-		if(StringUtils.isNotBlank(pairAddress)) {
-			snipeTransactionRequest.setPairAddress(pairAddress);
-			System.err.println("Pair found");
-		}else {
-			return null;
-		}
-
+		BigInteger gasPrice = gasProvider.getGasPrice(GasModeEnum.fromValue(snipeTransactionRequest.getGasMode()), snipeTransactionRequest.getGasPrice());
+		BigInteger gasLimit = gasProvider.getGasPrice(GasModeEnum.fromValue(snipeTransactionRequest.getGasMode()), snipeTransactionRequest.getGasLimit());
 		
-		// check for reserves
-		Tuple3<BigInteger, BigInteger, BigInteger> reserves = getReserves(snipeTransactionRequest, credentials);
-		if(reserves == null) {
+		final String hexRouterAddress = ZERO_X + TypeEncoder.encode(new Address(dexRouterContractAddress.substring(2)));
+		
+		// Get Pair;
+		if(StringUtils.isBlank(snipeTransactionRequest.getPairAddress())) {
+			String pairAddress = getPairAddress(snipeTransactionRequest, dexWrapContractAddress); 
+			if(StringUtils.isNotBlank(pairAddress)) {
+				snipeTransactionRequest.setPairAddress(pairAddress);
+				System.err.println("Pair found");
+			}else {
+				return null;
+			}
+		}
+		//This is dangerous as we need to verify before hand a block number;
+		BigInteger blockNumber = web3jServiceClientFactory.getWeb3jMap(snipeTransactionRequest.getRoute()).getWeb3j()
+														.ethBlockNumber()
+														.flowable()
+														.subscribeOn(Schedulers.io())
+														.blockingLast()
+														.getBlockNumber();
+		//BigInteger blockNumber = BigInteger.valueOf(7130656);
+		BigInteger frmBlockNbr = blockNumber.subtract(BigInteger.valueOf(120l));
+		BigInteger toBlockNbr = blockNumber.add(BigInteger.valueOf(60l));
+				
+		EthLog ethLog = liquidityEventFinder.hasLiquidityEvent(snipeTransactionRequest.getRoute(), 
+															   new DefaultBlockParameterNumber(frmBlockNbr), 
+															   new DefaultBlockParameterNumber(toBlockNbr),
+															   hexRouterAddress, 
+															   snipeTransactionRequest.getPairAddress());
+		
+		
+		boolean hasLiquidity = ethLog != null && ethLog.getError() == null && CollectionUtils.isNotEmpty(ethLog.getLogs());
+		
+		if(!hasLiquidity) {
+			System.err.println("No Liquidity found");
+			Uninterruptibles.sleepUninterruptibly(500, TimeUnit.MILLISECONDS);
+			snipeOrderReQueue.send(snipeTransactionRequest);
 			return null;
 		}
-		System.err.println("have reserves found");
-		// get amounts out based on input
-		BigInteger outputTokens = snipeTransactionRequest.getExpectedOutPutToken() == null ?  getAmountsIn(credentials, snipeTransactionRequest, Lists.newArrayList(toAddress, wnativeAddress), gasPrice, gasLimit) : snipeTransactionRequest.getExpectedOutPutToken();
+		System.err.println(" ***Liquidity found ** ");
+		
+		BigInteger outputTokens = snipeTransactionRequest.getExpectedOutPutToken() == null 
+													?  getAmountsIn(credentials, snipeTransactionRequest, Lists.newArrayList(toAddress, wnativeAddress), gasPrice, gasLimit) 
+															: snipeTransactionRequest.getExpectedOutPutToken();
 		if(outputTokens == null) {
 			return null;
 		}
@@ -181,7 +227,7 @@ public class SnipeExeEndpointV1{
 		if (outputTokens != null && outputTokens.compareTo(BigInteger.ZERO) > 0) {
 			return outputTokens;
 		} else {
-			Uninterruptibles.sleepUninterruptibly(1000, TimeUnit.MILLISECONDS);
+			Uninterruptibles.sleepUninterruptibly(500, TimeUnit.MILLISECONDS);
 			snipeOrderReQueue.send(snipeTransactionRequest);
 			return null;
 		}
@@ -205,7 +251,7 @@ public class SnipeExeEndpointV1{
 			return reserves;
 		}else {
 			System.err.println(snipeTransactionRequest.getId()+ " Not Listed / No Reserves");
-			Uninterruptibles.sleepUninterruptibly(1000, TimeUnit.MILLISECONDS);
+			Uninterruptibles.sleepUninterruptibly(500, TimeUnit.MILLISECONDS);
 			snipeOrderReQueue.send(snipeTransactionRequest);
 			return null;
 		}
@@ -216,10 +262,11 @@ public class SnipeExeEndpointV1{
 	private String getPairAddress(SnipeTransactionRequest snipeTransactionRequest, String dexContractAddress) throws Exception {
 		String pairAddress = getPairAddressFrmExchange(snipeTransactionRequest, dexContractAddress);
 		if(StringUtils.isNotBlank(pairAddress)) {
+			snipeTransactionRequest.setPairAddress(pairAddress);
 			return pairAddress;
 		}else {
 			System.err.println("Not Listed / No Pair");
-			Uninterruptibles.sleepUninterruptibly(1000, TimeUnit.MILLISECONDS);
+			Uninterruptibles.sleepUninterruptibly(500, TimeUnit.MILLISECONDS);
 			snipeOrderReQueue.send(snipeTransactionRequest);
 			return null;
 		}

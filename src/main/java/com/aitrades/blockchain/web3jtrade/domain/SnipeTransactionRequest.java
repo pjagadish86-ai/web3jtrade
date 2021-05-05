@@ -90,6 +90,8 @@ public class SnipeTransactionRequest {
 	private AuditInformation auditInformation;
 	private boolean isBusdPair;
 	
+	private BigInteger earliestBlockNbr;
+	
 	public String getId() {
 		return id;
 	}
@@ -450,4 +452,12 @@ public class SnipeTransactionRequest {
 		this.isBusdPair = isBusdPair;
 	}
 
+	public BigInteger getEarliestBlockNbr() {
+		return earliestBlockNbr;
+	}
+
+	public void setEarliestBlockNbr(BigInteger earliestBlockNbr) {
+		this.earliestBlockNbr = earliestBlockNbr;
+	}
+	
 }
