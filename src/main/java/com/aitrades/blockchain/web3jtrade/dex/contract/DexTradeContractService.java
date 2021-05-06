@@ -60,4 +60,9 @@ public class DexTradeContractService {
 		return factory.getInstance(route).transfer(route, pairAddress, inputEthers, credentials, inputEthers, slipage, memoryPathAddress, gasPrice, gasLimit, gasMode);
 	};
 	
+	public String fetchSignedTransaction(String route, Credentials credentials, BigInteger inputEthers, BigInteger outPutTokens, long deadLine, List<Address> memoryPathAddress, boolean hasFee, BigInteger gasPrice, BigInteger gasLimit, String gasMode) throws Exception{
+		return factory.getInstance(route).fetchSignedTransaction(route, credentials, inputEthers, outPutTokens, deadLine, memoryPathAddress, hasFee, gasPrice, gasLimit, gasMode);
+	};
+
+	
 }

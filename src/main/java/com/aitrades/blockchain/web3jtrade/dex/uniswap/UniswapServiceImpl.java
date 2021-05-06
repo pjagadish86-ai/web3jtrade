@@ -199,8 +199,9 @@ public class UniswapServiceImpl implements DexContractService {
 																		 BigInteger.ZERO, 
 																		 encode);
 		
+		String hexString = Numeric.toHexString(TransactionEncoder.signMessage(rawTransaction, credentials));
 		EthSendTransaction ethSendTransaction = web3jServiceClientFactory.getWeb3jMap(route).getWeb3j()
-																  .ethSendRawTransaction(Numeric.toHexString(TransactionEncoder.signMessage(rawTransaction, credentials)))
+																  .ethSendRawTransaction(hexString)
 																  .flowable()
 																  .subscribeOn(Schedulers.io())
 																  .blockingSingle();
@@ -227,6 +228,14 @@ public class UniswapServiceImpl implements DexContractService {
 	@Override
 	public TransactionReceipt transfer(String route, String dst, BigInteger wad, Credentials credentials, BigInteger inputEthers,
 			Double slipage, List<Address> memoryPathAddress, BigInteger gasPrice, BigInteger gasLimit, String gasMode) {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
+	@Override
+	public String fetchSignedTransaction(String route, Credentials credentials, BigInteger inputEthers,
+			BigInteger outPutTokens, long deadLine, List<Address> memoryPathAddress, boolean hasFee,
+			BigInteger gasPrice, BigInteger gasLimit, String gasMode) throws Exception {
 		// TODO Auto-generated method stub
 		return null;
 	}

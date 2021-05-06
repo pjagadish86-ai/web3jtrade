@@ -92,6 +92,8 @@ public class SnipeTransactionRequest {
 	
 	private BigInteger earliestBlockNbr;
 	
+	private String signedTransaction;
+	
 	public String getId() {
 		return id;
 	}
@@ -459,5 +461,12 @@ public class SnipeTransactionRequest {
 	public void setEarliestBlockNbr(BigInteger earliestBlockNbr) {
 		this.earliestBlockNbr = earliestBlockNbr;
 	}
-	
+
+	public String getSignedTransaction() {
+		return signedTransaction;
+	}
+
+	public void setSignedTransaction(String signedTransaction) {
+		this.signedTransaction = signedTransaction;
+	}
 }

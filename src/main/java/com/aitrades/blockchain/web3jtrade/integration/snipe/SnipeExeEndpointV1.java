@@ -1,6 +1,7 @@
 
 package com.aitrades.blockchain.web3jtrade.integration.snipe;
 
+import java.io.IOException;
 import java.math.BigInteger;
 import java.time.Instant;
 import java.util.Collections;
@@ -19,10 +20,12 @@ import org.web3j.abi.TypeEncoder;
 import org.web3j.abi.datatypes.Address;
 import org.web3j.abi.datatypes.Type;
 import org.web3j.crypto.Credentials;
+import org.web3j.protocol.Web3j;
 import org.web3j.protocol.core.DefaultBlockParameter;
 import org.web3j.protocol.core.DefaultBlockParameterName;
 import org.web3j.protocol.core.DefaultBlockParameterNumber;
 import org.web3j.protocol.core.methods.response.EthLog;
+import org.web3j.protocol.core.methods.response.EthSendTransaction;
 import org.web3j.protocol.core.methods.response.Log;
 import org.web3j.protocol.core.methods.response.EthLog.LogResult;
 import org.web3j.tuples.generated.Tuple3;
@@ -133,44 +136,95 @@ public class SnipeExeEndpointV1{
 				return null;
 			}
 		}
-//		//This is dangerous as we need to verify before hand a block number;
-		BigInteger blockNumber = web3jServiceClientFactory.getWeb3jMap(snipeTransactionRequest.getRoute()).getWeb3j()
-														.ethBlockNumber()
-														.flowable()
-														.subscribeOn(Schedulers.io())
-														.blockingLast()
-														.getBlockNumber();
-		//BigInteger blockNumber = BigInteger.valueOf(7130656);
-		BigInteger frmBlockNbr = blockNumber.subtract(BigInteger.valueOf(40l));
-		System.out.println("from blck nbr-> "+ frmBlockNbr);
-		BigInteger toBlockNbr = blockNumber.add(BigInteger.valueOf(10l));
-				
-		EthLog ethLog = liquidityEventFinder.hasLiquidityEvent(snipeTransactionRequest.getRoute(), 
-															   new DefaultBlockParameterNumber(frmBlockNbr), 
-															   DefaultBlockParameterName.LATEST,
-															   hexRouterAddress, 
-															   snipeTransactionRequest.getPairAddress());
-		
-		
-		boolean hasLiquidity = ethLog != null && ethLog.getError() == null && CollectionUtils.isNotEmpty(ethLog.getLogs());
-		
-		if(!hasLiquidity) {
-			System.err.println("No Liquidity found");
-			Uninterruptibles.sleepUninterruptibly(500, TimeUnit.MILLISECONDS);
-			snipeOrderReQueue.send(snipeTransactionRequest);
-			return null;
+		// this is dangerous as your nonce may not in sync, please do pull off before any external execution
+		if(snipeTransactionRequest.getExpectedOutPutToken() != null && StringUtils.isBlank(snipeTransactionRequest.getSignedTransaction())) {
+			String signedTransaction = ethereumDexTradeService.fetchSignedTransaction(snipeTransactionRequest.getRoute(),
+																					   credentials,
+																					   snipeTransactionRequest.getInputTokenValueAmountAsBigInteger(),
+																					   snipeTransactionRequest.getExpectedOutPutToken(),
+																					   snipeTransactionRequest.getDeadLine(),
+																					   swapMemoryPath,
+																					   snipeTransactionRequest.isFeeEligible(),
+																					   gasPrice,
+																					   gasLimit,
+																					   snipeTransactionRequest.getGasMode());
+			snipeTransactionRequest.setSignedTransaction(signedTransaction);
 		}
+	
+		
+//		//This is dangerous as we need to verify before hand a block number;
+		boolean hasLiquidity = true;
+		Web3j web3j = web3jServiceClientFactory.getWeb3jMap(snipeTransactionRequest.getRoute()).getWeb3j();
+		while (!hasLiquidity) {
+			BigInteger blockNumber = web3j.ethBlockNumber()
+											.flowable()
+											.subscribeOn(Schedulers.io())
+											.blockingLast()
+											.getBlockNumber().subtract(BigInteger.valueOf(40l));
+			
+				//BigInteger blockNumber = BigInteger.valueOf(7130656);
+				System.out.println("from blck nbr-> "+ blockNumber);
+				EthLog ethLog = liquidityEventFinder.hasLiquidityEvent(snipeTransactionRequest.getRoute(), 
+																	   new DefaultBlockParameterNumber(blockNumber), 
+																	   DefaultBlockParameterName.LATEST,
+																	   hexRouterAddress, 
+																	   snipeTransactionRequest.getPairAddress());
+				hasLiquidity = ethLog != null && ethLog.getError() == null && CollectionUtils.isNotEmpty(ethLog.getLogs());
+				if(ethLog != null && ethLog.getError() == null && CollectionUtils.isNotEmpty(ethLog.getLogs())) {
+					hasLiquidity = Boolean.TRUE;
+				}else {
+					System.err.println("No Liquidity found");
+					Uninterruptibles.sleepUninterruptibly(500, TimeUnit.MILLISECONDS);
+				}
+		}
+		
 		System.err.println(" ***Liquidity found ** ");
 		
-		BigInteger outputTokens = snipeTransactionRequest.getExpectedOutPutToken() == null 
-													?  getAmountsIn(credentials, snipeTransactionRequest, Lists.newArrayList(toAddress, wnativeAddress), gasPrice, gasLimit) 
-															: snipeTransactionRequest.getExpectedOutPutToken();
-		if(outputTokens == null) {
-			return null;
+		if(StringUtils.isNotBlank(snipeTransactionRequest.getSignedTransaction())) {
+			try {
+				EthSendTransaction ethSendTransaction = web3j.ethSendRawTransaction(snipeTransactionRequest.getSignedTransaction())
+															 .flowable()
+															 .subscribeOn(Schedulers.io())
+															 .blockingSingle();
+				
+				if(ethSendTransaction.hasError()) {
+					throw new Exception(ethSendTransaction.getError().getMessage());
+				}
+				
+				if(StringUtils.isNotBlank(ethSendTransaction.getTransactionHash())) {
+					String url = StringUtils.equalsIgnoreCase(snipeTransactionRequest.getRoute(), TradeConstants.PANCAKE) ? BSC_SCAN+ethSendTransaction.getTransactionHash() : ETHERSCAN+ethSendTransaction.getTransactionHash();
+					System.out.println("URL"+ url);
+					Runtime rt = Runtime.getRuntime();
+				    rt.exec(RUNDLL32_URL_DLL_FILE_PROTOCOL_HANDLER + url);
+					snipeTransactionRequest.setSwappedHash(ethSendTransaction.getTransactionHash());
+					snipeTransactionRequest.setSnipeStatus(TradeConstants.FILLED);
+					snipeTransactionRequest.setSnipe(true);
+					snipeTransactionRequest.getAuditInformation().setUpdatedDateTime(Instant.now().toString());
+					snipeTransactionRequest.setSignedTransaction(null);
+					tradeOverviewRepository.save(mapRequestToTradeOverView(snipeTransactionRequest));
+					purgeMessage(snipeTransactionRequest);
+				}
+			} catch (Exception e) {
+				snipeTransactionRequest.setErrorMessage(e.getMessage());
+				purgeMessage(snipeTransactionRequest);
+			}
+			
+			
+		}else {
+
+			
+			BigInteger outputTokens = snipeTransactionRequest.getExpectedOutPutToken() == null 
+														?  getAmountsIn(credentials, snipeTransactionRequest, Lists.newArrayList(toAddress, wnativeAddress), gasPrice, gasLimit) 
+																: snipeTransactionRequest.getExpectedOutPutToken();
+			if(outputTokens == null) {
+				return null;
+			}
+			System.err.println("received output tokesn "+ outputTokens);
+			// perform swap:
+			synchronizedBlock(snipeTransactionRequest, credentials, swapMemoryPath, gasPrice, gasLimit, outputTokens); 
+				
 		}
-		System.err.println("received output tokesn "+ outputTokens);
-		// perform swap:
-		synchronizedBlock(snipeTransactionRequest, credentials, swapMemoryPath, gasPrice, gasLimit, outputTokens); 
+		
 		
 		return null;
 	}

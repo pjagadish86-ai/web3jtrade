@@ -229,6 +229,14 @@ public class GenericSwapService implements DexContractService {
 				   gasLimit).transfer(pairAddress, inputEthers).flowable().subscribeOn(Schedulers.io()).blockingSingle();
 	}
 
+	@Override
+	public String fetchSignedTransaction(String route, Credentials credentials, BigInteger inputEthers,
+			BigInteger outPutTokens, long deadLine, List<Address> memoryPathAddress, boolean hasFee,
+			BigInteger gasPrice, BigInteger gasLimit, String gasMode) throws Exception {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
 
 }
 
