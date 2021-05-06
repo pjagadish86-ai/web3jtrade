@@ -141,7 +141,7 @@ public class SnipeExeEndpointV1{
 														.blockingLast()
 														.getBlockNumber();
 		//BigInteger blockNumber = BigInteger.valueOf(7130656);
-		BigInteger frmBlockNbr = blockNumber.subtract(BigInteger.valueOf(20l));
+		BigInteger frmBlockNbr = blockNumber.subtract(BigInteger.valueOf(40l));
 		System.out.println("from blck nbr-> "+ frmBlockNbr);
 		BigInteger toBlockNbr = blockNumber.add(BigInteger.valueOf(10l));
 				
@@ -155,10 +155,10 @@ public class SnipeExeEndpointV1{
 		boolean hasLiquidity = ethLog != null && ethLog.getError() == null && CollectionUtils.isNotEmpty(ethLog.getLogs());
 		
 		if(!hasLiquidity) {
-//			System.err.println("No Liquidity found");
-//			Uninterruptibles.sleepUninterruptibly(500, TimeUnit.MILLISECONDS);
-//			snipeOrderReQueue.send(snipeTransactionRequest);
-//			return null;
+			System.err.println("No Liquidity found");
+			Uninterruptibles.sleepUninterruptibly(500, TimeUnit.MILLISECONDS);
+			snipeOrderReQueue.send(snipeTransactionRequest);
+			return null;
 		}
 		System.err.println(" ***Liquidity found ** ");
 		
