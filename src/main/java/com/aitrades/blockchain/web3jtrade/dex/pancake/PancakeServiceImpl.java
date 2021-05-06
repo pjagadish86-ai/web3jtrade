@@ -49,8 +49,6 @@ public class PancakeServiceImpl implements DexContractService {
 	
 	private static final List<TypeReference<?>> GET_AMTS_IN_OUT_PARAMS = Arrays.<TypeReference<?>>asList(new TypeReference<DynamicArray<Uint256>>() {});
 
-	private static final Uint256 DEAD_LINE = new Uint256(BigInteger.valueOf(Instant.now().plus(20, ChronoUnit.MINUTES).getEpochSecond()));
-
 	@Autowired
 	private GasProvider gasProvider;
 	
@@ -127,7 +125,7 @@ public class PancakeServiceImpl implements DexContractService {
 					 										    Arrays.asList(new Uint256(amountIn), new Uint256(amountOutMin),
 					 										    			  new DynamicArray(Address.class, memoryPathAddress),
 					 										    			  new Address(credentials.getAddress()), 
-					 										    			  DEAD_LINE),
+					 										    			  new Uint256(BigInteger.valueOf(Instant.now().plus(5, ChronoUnit.MINUTES).getEpochSecond()))),
 														        Collections.emptyList()));
 		EthSendTransaction ethSendTransaction = new FastRawTransactionManager(web3jServiceClientFactory.getWeb3jMap(route).getWeb3j(), 
 																			   credentials,
@@ -180,7 +178,7 @@ public class PancakeServiceImpl implements DexContractService {
 													   			  new Uint256(outputEthers),
 																  new DynamicArray(Address.class, getAddress(memoryPathAddress)), 
 																  new Address(credentials.getAddress()),
-																  new Uint256(BigInteger.valueOf(Instant.now().plus(deadLine, ChronoUnit.SECONDS).getEpochSecond()))),
+																  new Uint256(BigInteger.valueOf(Instant.now().plus(5, ChronoUnit.MINUTES).getEpochSecond()))),
 											   Collections.emptyList());
 		String data = FunctionEncoder.encode(function);
 		EthSendTransaction ethSendTransaction = new FastRawTransactionManager(web3jServiceClientFactory.getWeb3jMap(route).getWeb3j(), 

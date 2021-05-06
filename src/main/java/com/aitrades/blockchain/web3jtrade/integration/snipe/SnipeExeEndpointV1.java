@@ -133,7 +133,7 @@ public class SnipeExeEndpointV1{
 				return null;
 			}
 		}
-		//This is dangerous as we need to verify before hand a block number;
+//		//This is dangerous as we need to verify before hand a block number;
 		BigInteger blockNumber = web3jServiceClientFactory.getWeb3jMap(snipeTransactionRequest.getRoute()).getWeb3j()
 														.ethBlockNumber()
 														.flowable()
@@ -141,12 +141,13 @@ public class SnipeExeEndpointV1{
 														.blockingLast()
 														.getBlockNumber();
 		//BigInteger blockNumber = BigInteger.valueOf(7130656);
-		BigInteger frmBlockNbr = blockNumber.subtract(BigInteger.valueOf(120l));
-		BigInteger toBlockNbr = blockNumber.add(BigInteger.valueOf(60l));
+		BigInteger frmBlockNbr = blockNumber.subtract(BigInteger.valueOf(20l));
+		System.out.println("from blck nbr-> "+ frmBlockNbr);
+		BigInteger toBlockNbr = blockNumber.add(BigInteger.valueOf(10l));
 				
 		EthLog ethLog = liquidityEventFinder.hasLiquidityEvent(snipeTransactionRequest.getRoute(), 
 															   new DefaultBlockParameterNumber(frmBlockNbr), 
-															   new DefaultBlockParameterNumber(toBlockNbr),
+															   DefaultBlockParameterName.LATEST,
 															   hexRouterAddress, 
 															   snipeTransactionRequest.getPairAddress());
 		
@@ -154,10 +155,10 @@ public class SnipeExeEndpointV1{
 		boolean hasLiquidity = ethLog != null && ethLog.getError() == null && CollectionUtils.isNotEmpty(ethLog.getLogs());
 		
 		if(!hasLiquidity) {
-			System.err.println("No Liquidity found");
-			Uninterruptibles.sleepUninterruptibly(500, TimeUnit.MILLISECONDS);
-			snipeOrderReQueue.send(snipeTransactionRequest);
-			return null;
+//			System.err.println("No Liquidity found");
+//			Uninterruptibles.sleepUninterruptibly(500, TimeUnit.MILLISECONDS);
+//			snipeOrderReQueue.send(snipeTransactionRequest);
+//			return null;
 		}
 		System.err.println(" ***Liquidity found ** ");
 		
@@ -169,6 +170,14 @@ public class SnipeExeEndpointV1{
 		}
 		System.err.println("received output tokesn "+ outputTokens);
 		// perform swap:
+		synchronizedBlock(snipeTransactionRequest, credentials, swapMemoryPath, gasPrice, gasLimit, outputTokens); 
+		
+		return null;
+	}
+
+	private void  synchronizedBlock(SnipeTransactionRequest snipeTransactionRequest, Credentials credentials,
+			List<Address> swapMemoryPath, BigInteger gasPrice, BigInteger gasLimit, BigInteger outputTokens)
+			throws Exception {
 		String hash = null;
 		try {
 				   hash = ethereumDexTradeService.swapETHForTokens(snipeTransactionRequest.getRoute(),
@@ -196,8 +205,7 @@ public class SnipeExeEndpointV1{
 		} catch (Exception e) {
 			snipeTransactionRequest.setErrorMessage(e.getMessage());
 			purgeMessage(snipeTransactionRequest);
-		} 
-		return null;
+		}
 	}
 
 	private BigInteger getAmountsIn(Credentials credentials, SnipeTransactionRequest snipeTransactionRequest, List<Address> amountsInMemoryPath, BigInteger gasPrice, BigInteger gasLimit) throws Exception {

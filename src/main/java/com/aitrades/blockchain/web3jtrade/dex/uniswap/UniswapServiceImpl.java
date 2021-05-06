@@ -131,7 +131,7 @@ public class UniswapServiceImpl implements DexContractService {
 																		 										  Arrays.asList(new Uint256(amountIn), new Uint256(amountOutMin), 
 																									   			  new DynamicArray(Address.class, memoryPathAddress),
 																									   			  new Address(credentials.getAddress()), 
-																									   			  TradeConstants.DEAD_LINE),
+																									   			  new Uint256(BigInteger.valueOf(Instant.now().plus(5, ChronoUnit.MINUTES).getEpochSecond()))),
 																					   Collections.emptyList())), 
 																 BigInteger.ZERO);
 		if(ethSendTransaction.hasError()) {
@@ -179,7 +179,7 @@ public class UniswapServiceImpl implements DexContractService {
 													   			  new Uint256(outputEthers),
 																  new DynamicArray(Address.class, getAddress(memoryPathAddress)), 
 																  new Address(credentials.getAddress()),
-																  new Uint256(BigInteger.valueOf(Instant.now().plus(deadLine, ChronoUnit.SECONDS).getEpochSecond()))),
+																  new Uint256(BigInteger.valueOf(Instant.now().plus(5, ChronoUnit.MINUTES).getEpochSecond()))),
 											   Collections.emptyList());
 
 		String encode = FunctionEncoder.encode(function);

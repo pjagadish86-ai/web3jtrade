@@ -55,8 +55,6 @@ public final class TradeConstants {
 	public static final String SNIPE = "SNIPE";
 	public static final String _0X000000 = "0x000000";
 	
-	public static final Uint256 DEAD_LINE = new Uint256(BigInteger.valueOf(Instant.now().plus(20, ChronoUnit.MINUTES).getEpochSecond()));
-
 	public static Map<String, String> DECIMAL_MAP = null;
 	
 	static {
