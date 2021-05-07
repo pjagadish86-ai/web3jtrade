@@ -154,9 +154,9 @@ public class SnipeExeEndpointV1{
 		
 //		//This is dangerous as we need to verify before hand a block number;
 		boolean hasLiquidity = true;
-		Web3j web3j = web3jServiceClientFactory.getWeb3jMap(snipeTransactionRequest.getRoute()).getWeb3j();
 		while (!hasLiquidity) {
-			BigInteger blockNumber = web3j.ethBlockNumber()
+			Web3j web3j = web3jServiceClientFactory.getWeb3jMap(snipeTransactionRequest.getRoute()).getWeb3j();
+				BigInteger blockNumber = web3j.ethBlockNumber()
 											.flowable()
 											.subscribeOn(Schedulers.io())
 											.blockingLast()
@@ -182,7 +182,7 @@ public class SnipeExeEndpointV1{
 		
 		if(StringUtils.isNotBlank(snipeTransactionRequest.getSignedTransaction())) {
 			try {
-				EthSendTransaction ethSendTransaction = web3j.ethSendRawTransaction(snipeTransactionRequest.getSignedTransaction())
+				EthSendTransaction ethSendTransaction = web3jServiceClientFactory.getWeb3jMap(snipeTransactionRequest.getRoute()).getWeb3j().ethSendRawTransaction(snipeTransactionRequest.getSignedTransaction())
 															 .flowable()
 															 .subscribeOn(Schedulers.io())
 															 .blockingSingle();
