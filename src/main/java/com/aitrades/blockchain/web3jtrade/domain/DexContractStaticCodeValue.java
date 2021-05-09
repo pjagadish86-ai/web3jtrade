@@ -20,6 +20,7 @@ public class DexContractStaticCodeValue {
 	private String routerAddress; // router address
 	private String factoryAddress; // factory address
 	private String wrappedNativeAddress;
+	private String usdNativeAddress;
 	
 	private List<AdditionalProperty> additionalProperties;
 
@@ -77,6 +78,14 @@ public class DexContractStaticCodeValue {
 
 	public void setAdditionalProperties(List<AdditionalProperty> additionalProperties) {
 		this.additionalProperties = additionalProperties;
+	}
+
+	public String getUsdNativeAddress() {
+		return usdNativeAddress;
+	}
+
+	public void setUsdNativeAddress(String usdNativeAddress) {
+		this.usdNativeAddress = usdNativeAddress;
 	}
 
 	@Override

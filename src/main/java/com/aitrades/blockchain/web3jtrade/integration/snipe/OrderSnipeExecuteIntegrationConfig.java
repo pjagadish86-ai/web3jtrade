@@ -6,6 +6,7 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.ComponentScan;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.integration.amqp.dsl.Amqp;
+import org.springframework.integration.amqp.dsl.AmqpInboundChannelAdapterSMLCSpec;
 import org.springframework.integration.annotation.IntegrationComponentScan;
 import org.springframework.integration.config.EnableIntegration;
 import org.springframework.integration.context.IntegrationContextUtils;
@@ -26,6 +27,9 @@ public class OrderSnipeExecuteIntegrationConfig {
 	@Autowired
     private ConnectionFactory connectionFactory;
 	
+	@Autowired
+	private SnipeOrderEndpointV3 snipeOrderEndpointV3;
+	
 //	@Bean
 //	@Autowired
 //	public IntegrationFlow snipeTrade() {
@@ -40,6 +44,17 @@ public class OrderSnipeExecuteIntegrationConfig {
 //							   .get();
 //	}
 	
+//	@Bean
+//	@Autowired
+//	public IntegrationFlow snipeV3Trade() {
+//		AmqpInboundChannelAdapterSMLCSpec inboundAdapter = Amqp.inboundAdapter(rabbitMQOrderSubmitSnipeConfig.orderSubmitSnipeMessageListenerContainer(connectionFactory));
+//		return IntegrationFlows.from(inboundAdapter)
+//							   .handle("snipeOrderEndpointV3", "snipeV3Transform")// male sure if created a new config have methodnames unique and channel uniques
+//							   .handle("snipeOrderEndpointV3", "snipeV3SwapChannel")
+//							   .channel(IntegrationContextUtils.NULL_CHANNEL_BEAN_NAME)
+//							   .get();
+//	}
+	
 	@Bean
 	@Autowired
 	public IntegrationFlow snipeTrade() {
@@ -49,6 +64,8 @@ public class OrderSnipeExecuteIntegrationConfig {
 							   .channel(IntegrationContextUtils.NULL_CHANNEL_BEAN_NAME)
 							   .get();
 	}
+	
+	
 	
 //	@Bean
 //	@Autowired
@@ -65,10 +82,18 @@ public class OrderSnipeExecuteIntegrationConfig {
 //							   .channel(IntegrationContextUtils.NULL_CHANNEL_BEAN_NAME)
 //							   .get();
 //	}
+//	@Bean(name ="snipeExeEndpoint")
+//	public SnipeExeEndpointV1 snipeExeEndpoint() {
+//		return new SnipeExeEndpointV1();
+//	}
+	
 	@Bean(name ="snipeExeEndpoint")
 	public SnipeExeEndpointV1 snipeExeEndpoint() {
 		return new SnipeExeEndpointV1();
 	}
+	
+	
+	
 //
 //	@Bean
 //	public OrderSnipeExecuteGatewayEndpoint orderSnipeExecuteGatewayEndpoint() {

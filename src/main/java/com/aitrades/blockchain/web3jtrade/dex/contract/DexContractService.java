@@ -31,6 +31,11 @@ public interface DexContractService {
     public static final String FUNC_SWAPEXACTTOKENSFORETH = "swapExactTokensForETH";
     public static final String FUNC_SWAPEXACTTOKENSFORETHSUPPORTINGFEEONTRANSFERTOKENS = "swapExactTokensForETHSupportingFeeOnTransferTokens";
     
+    
+    // V3
+    public static final String FUNC_EXACTINPUTSINGLE = "exactInputSingle";
+    
+    
 	public List<Type> getPair(String route, String tokenA, String tokenB) throws Exception;
 	
 	public TransactionReceipt deposit(String route, BigInteger weiValue, Credentials credentials, BigInteger inputEthers, Double slipage,

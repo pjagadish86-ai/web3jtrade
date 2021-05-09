@@ -13,6 +13,7 @@ public final class TradeConstants {
 	public static final String UNISWAP = "UNISWAP";
 	public static final String WNATIVE = "WNATIVE";
 	public static final String FACTORY = "FACTORY";
+	public static final String USD = "USD";
 	public static final String ROUTER = "ROUTER";
 	
 	public static final String PANCAKE = "PANCAKE";
@@ -54,6 +55,17 @@ public final class TradeConstants {
 	public static final String FAILED = "FAILED";
 	public static final String SNIPE = "SNIPE";
 	public static final String _0X000000 = "0x000000";
+	public static final String TOADDRESS = "TOADDRESS";
+	public static final String PUBLICKEY = "PUBLICKEY";
+	public static final String AMOUNTS_IN = "AMOUNTS_IN";
+	public static final String AMOUNTS_OUT = "AMOUNTS_OUT";
+	
+	public static final String ROUTE = "ROUTE";
+
+	public static final String GAS_LIMIT = "GAS_LIMIT";
+
+	public static final String GAS_PRICE = "GAS_PRICE";
+	public static final String SIGNED_TRANSACTION = "SIGNED_TRANSACTION";
 	
 	public static Map<String, String> DECIMAL_MAP = null;
 	

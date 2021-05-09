@@ -133,11 +133,16 @@ public class SnipeExeEndpointV1{
 				snipeTransactionRequest.setPairAddress(pairAddress);
 				System.err.println("Pair found");
 			}else {
+				Uninterruptibles.sleepUninterruptibly(500, TimeUnit.MILLISECONDS);
 				return null;
 			}
 		}
+		if(snipeTransactionRequest.isBusdPair()) {
+			swapMemoryPath = Lists.newArrayList(wnativeAddress, new Address(TradeConstants.BUSD), toAddress);
+		}
 		// this is dangerous as your nonce may not in sync, please do pull off before any external execution
 		if(snipeTransactionRequest.getExpectedOutPutToken() != null && StringUtils.isBlank(snipeTransactionRequest.getSignedTransaction())) {
+			
 			String signedTransaction = ethereumDexTradeService.fetchSignedTransaction(snipeTransactionRequest.getRoute(),
 																					   credentials,
 																					   snipeTransactionRequest.getInputTokenValueAmountAsBigInteger(),
@@ -153,23 +158,24 @@ public class SnipeExeEndpointV1{
 	
 		
 //		//This is dangerous as we need to verify before hand a block number;
-		boolean hasLiquidity = false;
+		boolean hasLiquidity = true;
 		while (!hasLiquidity) {
 				Web3j web3j = web3jServiceClientFactory.getWeb3jMap(snipeTransactionRequest.getRoute()).getWeb3j();
 				BigInteger blockNumber = web3j.ethBlockNumber()
 											.flowable()
 											.subscribeOn(Schedulers.io())
 											.blockingLast()
-											.getBlockNumber().subtract(BigInteger.valueOf(40l));
+											.getBlockNumber().subtract(BigInteger.valueOf(400l));
 			
 				//BigInteger blockNumber = BigInteger.valueOf(7130656);
 				System.out.println("from blck nbr-> "+ blockNumber);
-				EthLog ethLog = liquidityEventFinder.hasLiquidityEvent(snipeTransactionRequest.getRoute(), 
+				EthLog ethLog = liquidityEventFinder.hasLiquidityEventV2(snipeTransactionRequest.getRoute(), 
 																	   new DefaultBlockParameterNumber(blockNumber), 
 																	   DefaultBlockParameterName.LATEST,
 																	   hexRouterAddress, 
 																	   snipeTransactionRequest.getPairAddress());
 				hasLiquidity = ethLog != null && ethLog.getError() == null && CollectionUtils.isNotEmpty(ethLog.getLogs());
+				hasLiquidity = true;
 				if(ethLog != null && ethLog.getError() == null && CollectionUtils.isNotEmpty(ethLog.getLogs())) {
 					hasLiquidity = Boolean.TRUE;
 				}else {
