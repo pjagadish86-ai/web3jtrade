@@ -1,10 +1,8 @@
 
 package com.aitrades.blockchain.web3jtrade.integration.snipe;
 
-import java.io.IOException;
 import java.math.BigInteger;
 import java.time.Instant;
-import java.util.Collections;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
 
@@ -21,15 +19,14 @@ import org.web3j.abi.datatypes.Address;
 import org.web3j.abi.datatypes.Type;
 import org.web3j.crypto.Credentials;
 import org.web3j.protocol.Web3j;
-import org.web3j.protocol.core.DefaultBlockParameter;
 import org.web3j.protocol.core.DefaultBlockParameterName;
 import org.web3j.protocol.core.DefaultBlockParameterNumber;
 import org.web3j.protocol.core.methods.response.EthLog;
 import org.web3j.protocol.core.methods.response.EthSendTransaction;
-import org.web3j.protocol.core.methods.response.Log;
-import org.web3j.protocol.core.methods.response.EthLog.LogResult;
+import org.web3j.protocol.http.HttpService;
 import org.web3j.tuples.generated.Tuple3;
 
+import com.aitrades.blockchain.web3jtrade.DefaultContentTypeInterceptor;
 import com.aitrades.blockchain.web3jtrade.client.DexNativePriceOracleClient;
 import com.aitrades.blockchain.web3jtrade.dex.contract.DexTradeContractService;
 import com.aitrades.blockchain.web3jtrade.domain.GasModeEnum;
@@ -49,6 +46,7 @@ import com.google.common.collect.Lists;
 import com.google.common.util.concurrent.Uninterruptibles;
 
 import io.reactivex.schedulers.Schedulers;
+import okhttp3.OkHttpClient;
 @SuppressWarnings({"unused", "rawtypes"})
 public class SnipeExeEndpointV1{
 	
@@ -144,7 +142,6 @@ public class SnipeExeEndpointV1{
 		if(StringUtils.containsIgnoreCase(snipeTransactionRequest.getRoute(), "FTM")) {
 			swapMemoryPath = Lists.newArrayList(wnativeAddress, new Address("04068da6c83afcfa0e13ba15a6696662335d5b75"), toAddress);
 		}
-		snipeTransactionRequest.setSignedTransaction(null);
 		// this is dangerous as your nonce may not in sync, please do pull off before any external execution
 		if(snipeTransactionRequest.getExpectedOutPutToken() != null && StringUtils.isBlank(snipeTransactionRequest.getSignedTransaction())) {
 			
@@ -165,8 +162,7 @@ public class SnipeExeEndpointV1{
 //		//This is dangerous as we need to verify before hand a block number;
 		boolean hasLiquidity = true;
 		while (!hasLiquidity) {
-				Web3j web3j = web3jServiceClientFactory.getWeb3jMap(snipeTransactionRequest.getRoute()).getWeb3j();
-				BigInteger blockNumber = web3j.ethBlockNumber()
+				BigInteger blockNumber = web3jServiceClientFactory.getWeb3jMap(snipeTransactionRequest.getRoute()).getWeb3j().ethBlockNumber()
 											.flowable()
 											.subscribeOn(Schedulers.io())
 											.blockingLast()
@@ -193,13 +189,20 @@ public class SnipeExeEndpointV1{
 		
 		if(StringUtils.isNotBlank(snipeTransactionRequest.getSignedTransaction())) {
 			try {
-				EthSendTransaction ethSendTransaction = web3jServiceClientFactory.getWeb3jMap(snipeTransactionRequest.getRoute()).getWeb3j().ethSendRawTransaction(snipeTransactionRequest.getSignedTransaction())
-															 .flowable()
-															 .subscribeOn(Schedulers.io())
-															 .blockingSingle();
-				
-				if(ethSendTransaction.hasError()) {
-					throw new Exception(ethSendTransaction.getError().getMessage());
+				EthSendTransaction ethSendTransaction = null;
+				try {
+					ethSendTransaction = web3jServiceClientFactory.getWeb3jMap(snipeTransactionRequest.getRoute()).getWeb3j()
+							.ethSendRawTransaction(snipeTransactionRequest.getSignedTransaction())
+																 .flowable()
+																 .subscribeOn(Schedulers.io())
+																 .blockingSingle();
+					
+					if(ethSendTransaction.hasError()) {
+						throw new Exception(ethSendTransaction.getError().getMessage());
+					}
+				} catch (Exception e) {
+					// TODO Auto-generated catch block
+					e.printStackTrace();
 				}
 				
 				if(StringUtils.isNotBlank(ethSendTransaction.getTransactionHash())) {

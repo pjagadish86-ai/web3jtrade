@@ -16,8 +16,6 @@ import com.aitrades.blockchain.web3jtrade.dex.uniswap.UniswapV3ServiceImpl;
 @Service
 public class DexContractServiceFactory {
 
-	private static final String PANCAKE = "PANCAKE";
-	
 	private static final String UNISWAPV3 = "UNISWAPV3";
 
 	@Autowired
@@ -38,7 +36,7 @@ public class DexContractServiceFactory {
 	
 	@PostConstruct
 	public void init() {
-		typesMap.put(PANCAKE, pancakeServiceImpl);
+		typesMap.put("3", pancakeServiceImpl);
 		typesMap.put(UNISWAPV3, uniswapV3ServiceImpl);
 	}
 	

@@ -35,6 +35,8 @@ public class Web3jServiceClientFactory {
 	
 	private static com.github.benmanes.caffeine.cache.Cache<String, List<EndpointConfig>> blockChainExchangesConnections;
 
+	@Autowired
+	private DexContractStaticCodeValuesService dexContractStaticCodeValuesService;
 	
 	@Autowired
     private Web3jServiceClientFactory() {
@@ -50,10 +52,13 @@ public class Web3jServiceClientFactory {
 		Web3jServiceClient web3jServiceClient = WEB3J_MAP.get(route);
 		if(web3jServiceClient == null) {
 			List<EndpointConfig> endpointConfigs = blockChainExchangesConnections.get(ENDPOINT_CONFIG_URLS, this :: fetchBlockChainExchanges);
+			String blckExchge = dexContractStaticCodeValuesService.fetchBlockChainExchanges().stream()
+					.filter(ex ->ex.getCode().toString().equalsIgnoreCase(route)).findFirst().get().getBlockchainName();
 			for(EndpointConfig endpointConfig : endpointConfigs ) {
-				if(endpointConfig.isEnabled() && StringUtils.equalsIgnoreCase(route, endpointConfig.getExchange())) {
-					WEB3J_MAP.put(endpointConfig.getExchange(), buildWeb3jServiceClient(endpointConfig));
+				if(endpointConfig.isEnabled() && StringUtils.equalsIgnoreCase(blckExchge, endpointConfig.getBlockchain())) {
+					WEB3J_MAP.put(route, buildWeb3jServiceClient(endpointConfig));
 					web3jServiceClient = WEB3J_MAP.get(route);
+					break;
 				}
 			}
 		}

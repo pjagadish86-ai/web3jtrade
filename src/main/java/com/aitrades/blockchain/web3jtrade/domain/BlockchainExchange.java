@@ -11,8 +11,10 @@ public class BlockchainExchange {
 
 	private String id;
 	private String blockchainName;
+	private String version;
 	private String exchangeName;
 	private String nativeCoinTicker;
+	private Integer code;
 
 	@JsonIgnore
 	private boolean enabled;
@@ -41,6 +43,19 @@ public class BlockchainExchange {
 	}
 	public void setNativeCoinTicker(String nativeCoinTicker) {
 		this.nativeCoinTicker = nativeCoinTicker;
+	}
+	
+	public String getVersion() {
+		return version;
+	}
+	public void setVersion(String version) {
+		this.version = version;
+	}
+	public Integer getCode() {
+		return code;
+	}
+	public void setCode(Integer code) {
+		this.code = code;
 	}
 	@JsonIgnore
 	public boolean isEnabled() {

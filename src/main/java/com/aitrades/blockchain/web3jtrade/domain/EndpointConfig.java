@@ -10,6 +10,9 @@ public class EndpointConfig {
 	protected String providerName;
 	protected boolean enabled;
 	protected String rpcProtocol;
+	private Integer code;
+	private String explorerUri;
+	private String subCode;
 	
 	public String getId() {
 		return id;
@@ -58,6 +61,24 @@ public class EndpointConfig {
 	}
 	public void setRpcProtocol(String rpcProtocol) {
 		this.rpcProtocol = rpcProtocol;
+	}
+	public Integer getCode() {
+		return code;
+	}
+	public void setCode(Integer code) {
+		this.code = code;
+	}
+	public String getExplorerUri() {
+		return explorerUri;
+	}
+	public void setExplorerUri(String explorerUri) {
+		this.explorerUri = explorerUri;
+	}
+	public String getSubCode() {
+		return subCode;
+	}
+	public void setSubCode(String subCode) {
+		this.subCode = subCode;
 	}
 	
 }

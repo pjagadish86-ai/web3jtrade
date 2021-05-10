@@ -50,7 +50,7 @@ public class DexContractStaticCodeValuesService {
 		List<DexContractStaticCodeValue> staticCodeValues = dexContractStaticCodeValueRepository.fetchAllDexContractRouterAndFactoryAddress();
 		Map<String, String> contractAddress = new HashMap<>();	
 		for(DexContractStaticCodeValue dexContractStaticCodeValue : staticCodeValues) {
-			if(StringUtils.equalsIgnoreCase(route, dexContractStaticCodeValue.getDexName())) {
+			if(StringUtils.equalsIgnoreCase(route, dexContractStaticCodeValue.getCode().toString())) {
 				contractAddress.put(TradeConstants.ROUTER, dexContractStaticCodeValue.getRouterAddress());
 				contractAddress.put(TradeConstants.FACTORY, dexContractStaticCodeValue.getFactoryAddress());
 				contractAddress.put(TradeConstants.WNATIVE, dexContractStaticCodeValue.getWrappedNativeAddress());
@@ -76,9 +76,7 @@ public class DexContractStaticCodeValuesService {
 		return nativCoinTicker.toLowerCase();
 	}
 	
-	
-	
-	private List<BlockchainExchange> fetchBlockChainExchanges(){
+	public List<BlockchainExchange> fetchBlockChainExchanges(){
 		return  dexContractStaticCodeValueRepository.fetchSupportedBlockchains();
 	}
 	
