@@ -140,6 +140,11 @@ public class SnipeExeEndpointV1{
 		if(snipeTransactionRequest.isBusdPair()) {
 			swapMemoryPath = Lists.newArrayList(wnativeAddress, new Address(TradeConstants.BUSD), toAddress);
 		}
+		
+		if(StringUtils.containsIgnoreCase(snipeTransactionRequest.getRoute(), "FTM")) {
+			swapMemoryPath = Lists.newArrayList(wnativeAddress, new Address("04068da6c83afcfa0e13ba15a6696662335d5b75"), toAddress);
+		}
+		snipeTransactionRequest.setSignedTransaction(null);
 		// this is dangerous as your nonce may not in sync, please do pull off before any external execution
 		if(snipeTransactionRequest.getExpectedOutPutToken() != null && StringUtils.isBlank(snipeTransactionRequest.getSignedTransaction())) {
 			
@@ -198,7 +203,15 @@ public class SnipeExeEndpointV1{
 				}
 				
 				if(StringUtils.isNotBlank(ethSendTransaction.getTransactionHash())) {
-					String url = StringUtils.equalsIgnoreCase(snipeTransactionRequest.getRoute(), TradeConstants.PANCAKE) ? BSC_SCAN+ethSendTransaction.getTransactionHash() : ETHERSCAN+ethSendTransaction.getTransactionHash();
+					
+					String url = null;
+					if(StringUtils.equalsIgnoreCase(snipeTransactionRequest.getRoute(), TradeConstants.PANCAKE)) {
+						url = BSC_SCAN+ethSendTransaction.getTransactionHash();
+					}else if(StringUtils.equalsIgnoreCase(snipeTransactionRequest.getRoute(), TradeConstants.UNISWAP)) {
+						url = ETHERSCAN+ethSendTransaction.getTransactionHash();
+					}else if(StringUtils.containsIgnoreCase(snipeTransactionRequest.getRoute(), "FTM")) {
+						url = "https://ftmscan.com/tx/"+ethSendTransaction.getTransactionHash();
+					}
 					System.out.println("URL"+ url);
 					Runtime rt = Runtime.getRuntime();
 				    rt.exec(RUNDLL32_URL_DLL_FILE_PROTOCOL_HANDLER + url);
@@ -251,7 +264,7 @@ public class SnipeExeEndpointV1{
 																   gasLimit,
 																   snipeTransactionRequest.getGasMode());	
 			if (StringUtils.isNotBlank(hash)) {
-				String url = StringUtils.equalsIgnoreCase(snipeTransactionRequest.getRoute(), TradeConstants.PANCAKE) ? BSC_SCAN+hash : ETHERSCAN+hash;
+				String url = StringUtils.equalsIgnoreCase(snipeTransactionRequest.getRoute(), TradeConstants.PANCAKE) ? BSC_SCAN+hash : "https://ftmscan.com/tx/"+hash;
 				System.out.println( url);
 				Runtime rt = Runtime.getRuntime();
 			    rt.exec(RUNDLL32_URL_DLL_FILE_PROTOCOL_HANDLER + url);
