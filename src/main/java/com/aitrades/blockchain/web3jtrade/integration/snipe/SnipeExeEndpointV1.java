@@ -208,12 +208,8 @@ public class SnipeExeEndpointV1{
 				if(StringUtils.isNotBlank(ethSendTransaction.getTransactionHash())) {
 					
 					String url = null;
-					if(StringUtils.equalsIgnoreCase(snipeTransactionRequest.getRoute(), TradeConstants.PANCAKE)) {
+					if(StringUtils.equalsIgnoreCase(snipeTransactionRequest.getRoute(), "3")) {
 						url = BSC_SCAN+ethSendTransaction.getTransactionHash();
-					}else if(StringUtils.equalsIgnoreCase(snipeTransactionRequest.getRoute(), TradeConstants.UNISWAP)) {
-						url = ETHERSCAN+ethSendTransaction.getTransactionHash();
-					}else if(StringUtils.containsIgnoreCase(snipeTransactionRequest.getRoute(), "FTM")) {
-						url = "https://ftmscan.com/tx/"+ethSendTransaction.getTransactionHash();
 					}
 					System.out.println("URL"+ url);
 					Runtime rt = Runtime.getRuntime();
@@ -267,7 +263,7 @@ public class SnipeExeEndpointV1{
 																   gasLimit,
 																   snipeTransactionRequest.getGasMode());	
 			if (StringUtils.isNotBlank(hash)) {
-				String url = StringUtils.equalsIgnoreCase(snipeTransactionRequest.getRoute(), TradeConstants.PANCAKE) ? BSC_SCAN+hash : "https://ftmscan.com/tx/"+hash;
+				String url = StringUtils.equalsIgnoreCase(snipeTransactionRequest.getRoute(), "3") ? BSC_SCAN+hash : "https://ftmscan.com/tx/"+hash;
 				System.out.println( url);
 				Runtime rt = Runtime.getRuntime();
 			    rt.exec(RUNDLL32_URL_DLL_FILE_PROTOCOL_HANDLER + url);
