@@ -135,7 +135,7 @@ public class SnipeExeEndpointV1{
 		List<Address> swapMemoryPath = Lists.newArrayList(wnativeAddress, toAddress);
 		if(snipeTransactionRequest.isUSDPair()) { //new Address(TradeConstants.BUSD)
 			swapMemoryPath = Lists.newArrayList(wnativeAddress, 
-					new Address(dexWrappedUsdContractAddress), 
+					new Address(TradeConstants.BUSD), 
 					toAddress);
 		}
 		
@@ -157,7 +157,7 @@ public class SnipeExeEndpointV1{
 	
 		
 //		//This is dangerous as we need to verify before hand a block number;
-		boolean hasLiquidity = true;
+		boolean hasLiquidity = false;
 		while (!hasLiquidity) {
 				BigInteger blockNumber = web3jServiceClientFactory.getWeb3jMap(snipeTransactionRequest.getRoute()).getWeb3j().ethBlockNumber()
 											.flowable()
@@ -166,14 +166,13 @@ public class SnipeExeEndpointV1{
 											.getBlockNumber().subtract(BigInteger.valueOf(400l));
 			
 				//BigInteger blockNumber = BigInteger.valueOf(7130656);
-				System.out.println("from blck nbr-> "+ blockNumber);
+				System.out.println("from blck nbr-> "+ blockNumber + snipeTransactionRequest.getId());
 				EthLog ethLog = liquidityEventFinder.hasLiquidityEventV2(snipeTransactionRequest.getRoute(), 
 																	   new DefaultBlockParameterNumber(blockNumber), 
 																	   DefaultBlockParameterName.LATEST,
 																	   hexRouterAddress, 
 																	   snipeTransactionRequest.getPairAddress());
 				hasLiquidity = ethLog != null && ethLog.getError() == null && CollectionUtils.isNotEmpty(ethLog.getLogs());
-				hasLiquidity = true;
 				if(ethLog != null && ethLog.getError() == null && CollectionUtils.isNotEmpty(ethLog.getLogs())) {
 					hasLiquidity = Boolean.TRUE;
 				}else {

@@ -3,6 +3,7 @@ package com.aitrades.blockchain.web3jtrade.dex.pancake;
 import java.math.BigDecimal;
 import java.math.BigInteger;
 import java.math.RoundingMode;
+import java.text.DecimalFormat;
 import java.time.Instant;
 import java.time.temporal.ChronoUnit;
 import java.util.ArrayList;
@@ -114,10 +115,11 @@ public class PancakeServiceImpl implements DexContractService {
 			final BigInteger amountsOut = (BigInteger)(((DynamicArray<Type>)response.get(0)).getValue().get(0).getValue());
 			final double slipageWithCal  = amountsOut.doubleValue() * slipage;
 			//return new BigDecimal(amountsOut.doubleValue() - slipageWithCal).setScale(0, RoundingMode.DOWN).toBigInteger();
-			BigDecimal setScale2 = new BigDecimal(amountsOut.doubleValue() - slipageWithCal).setScale(0, RoundingMode.DOWN);
-			BigDecimal setScale = Convert.fromWei(setScale2, Convert.Unit.fromString(TradeConstants.DECIMAL_MAP.get(decimals)));
-			System.out.println(setScale2);
-			return Convert.toWei(setScale, Convert.Unit.fromString(TradeConstants.DECIMAL_MAP.get(decimals))).setScale(0, RoundingMode.DOWN)
+			BigDecimal setScale = Convert.fromWei(BigDecimal.valueOf(amountsOut.doubleValue() - slipageWithCal).setScale(0, RoundingMode.DOWN), Convert.Unit.fromString(TradeConstants.DECIMAL_MAP.get(decimals)));
+			DecimalFormat df = new DecimalFormat("#");
+			df.setMaximumFractionDigits(0);
+			String val  = df.format(setScale.doubleValue());
+			return Convert.toWei(val, Convert.Unit.fromString(TradeConstants.DECIMAL_MAP.get(decimals))).setScale(0, RoundingMode.DOWN)
 					      .toBigInteger();
 		} catch (Exception e) {
 			throw new Exception("INSUFFICIENT_LIQUIDITY");
