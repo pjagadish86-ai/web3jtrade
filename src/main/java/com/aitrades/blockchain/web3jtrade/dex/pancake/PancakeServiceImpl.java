@@ -114,9 +114,10 @@ public class PancakeServiceImpl implements DexContractService {
 			final BigInteger amountsOut = (BigInteger)(((DynamicArray<Type>)response.get(0)).getValue().get(0).getValue());
 			final double slipageWithCal  = amountsOut.doubleValue() * slipage;
 			//return new BigDecimal(amountsOut.doubleValue() - slipageWithCal).setScale(0, RoundingMode.DOWN).toBigInteger();
-			return Convert.toWei(Convert.fromWei(new BigDecimal(amountsOut.doubleValue() - slipageWithCal).setScale(0, RoundingMode.DOWN), 
-											     Convert.Unit.fromString(TradeConstants.DECIMAL_MAP.get(decimals))).setScale(0, RoundingMode.DOWN), 
-								 Convert.Unit.fromString(TradeConstants.DECIMAL_MAP.get(decimals))).setScale(0, RoundingMode.DOWN)
+			BigDecimal setScale2 = new BigDecimal(amountsOut.doubleValue() - slipageWithCal).setScale(0, RoundingMode.DOWN);
+			BigDecimal setScale = Convert.fromWei(setScale2, Convert.Unit.fromString(TradeConstants.DECIMAL_MAP.get(decimals)));
+			System.out.println(setScale2);
+			return Convert.toWei(setScale, Convert.Unit.fromString(TradeConstants.DECIMAL_MAP.get(decimals))).setScale(0, RoundingMode.DOWN)
 					      .toBigInteger();
 		} catch (Exception e) {
 			throw new Exception("INSUFFICIENT_LIQUIDITY");

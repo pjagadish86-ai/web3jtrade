@@ -54,7 +54,8 @@ public class DexContractStaticCodeValuesService {
 				contractAddress.put(TradeConstants.ROUTER, dexContractStaticCodeValue.getRouterAddress());
 				contractAddress.put(TradeConstants.FACTORY, dexContractStaticCodeValue.getFactoryAddress());
 				contractAddress.put(TradeConstants.WNATIVE, dexContractStaticCodeValue.getWrappedNativeAddress());
-				contractAddress.put(TradeConstants.USD, dexContractStaticCodeValue.getWrappedNativeAddress());
+				contractAddress.put(TradeConstants.USD, dexContractStaticCodeValue.getUsdNativeAddress());// this usdc 
+				contractAddress.put(TradeConstants.WUSD, dexContractStaticCodeValue.getWrappedUsdNativeAddress()); // this is busd, fusd
 				return contractAddress;
 			}
 		}

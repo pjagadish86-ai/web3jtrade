@@ -21,6 +21,7 @@ public class DexContractStaticCodeValue {
 	private String factoryAddress; // factory address
 	private String wrappedNativeAddress;
 	private String usdNativeAddress;
+	private String wrappedUsdNativeAddress;
 	private Integer code;
 	
 	private List<AdditionalProperty> additionalProperties;
@@ -95,6 +96,14 @@ public class DexContractStaticCodeValue {
 
 	public void setCode(Integer code) {
 		this.code = code;
+	}
+
+	public String getWrappedUsdNativeAddress() {
+		return wrappedUsdNativeAddress;
+	}
+
+	public void setWrappedUsdNativeAddress(String wrappedUsdNativeAddress) {
+		this.wrappedUsdNativeAddress = wrappedUsdNativeAddress;
 	}
 
 	@Override

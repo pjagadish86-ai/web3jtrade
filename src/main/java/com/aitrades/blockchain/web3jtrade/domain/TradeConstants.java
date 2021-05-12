@@ -1,12 +1,7 @@
 package com.aitrades.blockchain.web3jtrade.domain;
 
-import java.math.BigInteger;
-import java.time.Instant;
-import java.time.temporal.ChronoUnit;
 import java.util.HashMap;
 import java.util.Map;
-
-import org.web3j.abi.datatypes.generated.Uint256;
 
 public final class TradeConstants {
 	
@@ -14,6 +9,7 @@ public final class TradeConstants {
 	public static final String WNATIVE = "WNATIVE";
 	public static final String FACTORY = "FACTORY";
 	public static final String USD = "USD";
+	public static final String WUSD = "WUSD";
 	public static final String ROUTER = "ROUTER";
 	
 	public static final String PANCAKE = "PANCAKE";
@@ -82,6 +78,24 @@ public final class TradeConstants {
 		DECIMAL_MAP.put("24", "METHER");
 		DECIMAL_MAP.put("27", "GETHER");
 		
+	}
+	
+	private static final String ETHERSCAN = "https://etherscan.io/tx/";
+	private static final String BSC_SCAN = "https://bscscan.com/tx/";
+	private static final String FTM_SCAN = "https://ftmscan.com/tx/";
+	private static final String WMATIC_SCAN = "https://ftmscan.com/tx/"; //FIXME
+	
+	public static Map<String, String> SCAN_API_URL = new HashMap<>();
+	
+	static {
+		SCAN_API_URL.put("1", ETHERSCAN);
+		SCAN_API_URL.put("2", ETHERSCAN);
+		SCAN_API_URL.put("3", BSC_SCAN);
+		SCAN_API_URL.put("4", FTM_SCAN);
+		SCAN_API_URL.put("5", FTM_SCAN);
+		SCAN_API_URL.put("6", FTM_SCAN);
+		SCAN_API_URL.put("7", FTM_SCAN);
+		SCAN_API_URL.put("8", WMATIC_SCAN);
 	}
 	
 }

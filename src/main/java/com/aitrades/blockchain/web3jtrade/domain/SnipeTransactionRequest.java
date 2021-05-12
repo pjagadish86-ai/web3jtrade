@@ -90,6 +90,8 @@ public class SnipeTransactionRequest {
 	private AuditInformation auditInformation;
 	private boolean isBusdPair;
 	
+	public boolean isUSDPair;
+	
 	private BigInteger earliestBlockNbr;
 	
 	private String signedTransaction;
@@ -469,4 +471,13 @@ public class SnipeTransactionRequest {
 	public void setSignedTransaction(String signedTransaction) {
 		this.signedTransaction = signedTransaction;
 	}
+
+	public boolean isUSDPair() {
+		return isUSDPair;
+	}
+
+	public void setUSDPair(boolean isUSDPair) {
+		this.isUSDPair = isUSDPair;
+	}
+	
 }

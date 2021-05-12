@@ -51,8 +51,6 @@ import okhttp3.OkHttpClient;
 public class SnipeExeEndpointV1{
 	
 	private static final String RUNDLL32_URL_DLL_FILE_PROTOCOL_HANDLER = "rundll32 url.dll,FileProtocolHandler ";
-	private static final String ETHERSCAN = "https://etherscan.io/tx/";
-	private static final String BSC_SCAN = "https://bscscan.com/tx/";
 	private static final String FAILED = "FAILED";
 	private static final String SNIPE = "SNIPE";
 	private static final String _0X000000 = "0x000000";
@@ -114,11 +112,10 @@ public class SnipeExeEndpointV1{
 		
 		String dexWrapContractAddress = dexContractStaticCodeValuesService.getDexContractAddress(snipeTransactionRequest.getRoute(), TradeConstants.WNATIVE);
 		String dexRouterContractAddress = dexContractStaticCodeValuesService.getDexContractAddress(snipeTransactionRequest.getRoute(), TradeConstants.ROUTER);
-
+		String dexWrappedUsdContractAddress = dexContractStaticCodeValuesService.getDexContractAddress(snipeTransactionRequest.getRoute(), TradeConstants.WUSD);
+		
 		Address wnativeAddress = new Address(dexWrapContractAddress);
 		Address toAddress = new Address(snipeTransactionRequest.getToAddress());
-		List<Address> swapMemoryPath = Lists.newArrayList(wnativeAddress, toAddress);
-		
 		BigInteger gasPrice = gasProvider.getGasPrice(GasModeEnum.fromValue(snipeTransactionRequest.getGasMode()), snipeTransactionRequest.getGasPrice());
 		BigInteger gasLimit = gasProvider.getGasPrice(GasModeEnum.fromValue(snipeTransactionRequest.getGasMode()), snipeTransactionRequest.getGasLimit());
 		
@@ -135,13 +132,13 @@ public class SnipeExeEndpointV1{
 				return null;
 			}
 		}
-		if(snipeTransactionRequest.isBusdPair()) {
-			swapMemoryPath = Lists.newArrayList(wnativeAddress, new Address(TradeConstants.BUSD), toAddress);
+		List<Address> swapMemoryPath = Lists.newArrayList(wnativeAddress, toAddress);
+		if(snipeTransactionRequest.isUSDPair()) { //new Address(TradeConstants.BUSD)
+			swapMemoryPath = Lists.newArrayList(wnativeAddress, 
+					new Address(dexWrappedUsdContractAddress), 
+					toAddress);
 		}
 		
-		if(StringUtils.containsIgnoreCase(snipeTransactionRequest.getRoute(), "FTM")) {
-			swapMemoryPath = Lists.newArrayList(wnativeAddress, new Address("04068da6c83afcfa0e13ba15a6696662335d5b75"), toAddress);
-		}
 		// this is dangerous as your nonce may not in sync, please do pull off before any external execution
 		if(snipeTransactionRequest.getExpectedOutPutToken() != null && StringUtils.isBlank(snipeTransactionRequest.getSignedTransaction())) {
 			
@@ -207,10 +204,7 @@ public class SnipeExeEndpointV1{
 				
 				if(StringUtils.isNotBlank(ethSendTransaction.getTransactionHash())) {
 					
-					String url = null;
-					if(StringUtils.equalsIgnoreCase(snipeTransactionRequest.getRoute(), "3")) {
-						url = BSC_SCAN+ethSendTransaction.getTransactionHash();
-					}
+					String url = TradeConstants.SCAN_API_URL.get(snipeTransactionRequest.getRoute())+ethSendTransaction.getTransactionHash();
 					System.out.println("URL"+ url);
 					Runtime rt = Runtime.getRuntime();
 				    rt.exec(RUNDLL32_URL_DLL_FILE_PROTOCOL_HANDLER + url);
@@ -263,7 +257,7 @@ public class SnipeExeEndpointV1{
 																   gasLimit,
 																   snipeTransactionRequest.getGasMode());	
 			if (StringUtils.isNotBlank(hash)) {
-				String url = StringUtils.equalsIgnoreCase(snipeTransactionRequest.getRoute(), "3") ? BSC_SCAN+hash : "https://ftmscan.com/tx/"+hash;
+				String url = TradeConstants.SCAN_API_URL.get(snipeTransactionRequest.getRoute())+hash;
 				System.out.println( url);
 				Runtime rt = Runtime.getRuntime();
 			    rt.exec(RUNDLL32_URL_DLL_FILE_PROTOCOL_HANDLER + url);
@@ -364,7 +358,7 @@ public class SnipeExeEndpointV1{
 																	 snipeTransactionRequest.getToAddress(), 
 																	 TradeConstants.BUSD)
 													 .get(0);
-				snipeTransactionRequest.setBusdPair(true);
+				snipeTransactionRequest.setUSDPair(true);
 			}
 		} catch (Exception e) {
 			System.err.println(" getPairAddressFrmExchange error "+ e.getMessage());
