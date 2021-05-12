@@ -8,6 +8,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.concurrent.TimeUnit;
 
+import javax.annotation.Resource;
+
 import org.apache.commons.lang.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -23,6 +25,8 @@ import com.aitrades.blockchain.web3jtrade.domain.EndpointConfig;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.github.benmanes.caffeine.cache.Caffeine;
 
+import okhttp3.OkHttpClient;
+
 @Service
 public class Web3jServiceClientFactory {
 	
@@ -37,6 +41,9 @@ public class Web3jServiceClientFactory {
 
 	@Autowired
 	private DexContractStaticCodeValuesService dexContractStaticCodeValuesService;
+	
+	@Resource(name="web3JHttpService")
+	private OkHttpClient web3JHttpService;
 	
 	@Autowired
     private Web3jServiceClientFactory() {
@@ -92,7 +99,7 @@ public class Web3jServiceClientFactory {
 	}
 
 	private Web3j buildWeb3jHttp(EndpointConfig endpointConfig) {
-		return Web3j.build(new HttpService(endpointConfig.getEndpointUrl()));
+		return Web3j.build(new HttpService(endpointConfig.getEndpointUrl(), web3JHttpService, false));
 	}
 
 	private Web3j buildWeb3jWebSocket(EndpointConfig endpointConfig) throws Exception {
@@ -117,12 +124,13 @@ public class Web3jServiceClientFactory {
 			webSocketService = new WebSocketService(new CustomWebSocketClient(parseURI(endpointConfig.getEndpointUrl())), false);
 			webSocketService.connect();
 		} catch (Exception e) {
+			System.err.println(this.getClass() + " closed "+endpointConfig.getBlockchain() +" node WSS failed, restart app");
 			Thread.sleep(2000l);
 			try {
 				webSocketService.connect();
 				System.out.println("reconnecting to -> "+ endpointConfig.getBlockchain());
 			} catch (ConnectException e1) {
-				System.err.println(endpointConfig.getBlockchain() +" node WSS failed, restart app");
+				System.err.println(this.getClass() + " closed "+endpointConfig.getBlockchain() +" node WSS failed, restart app");
 			}
 		}
 		return webSocketService;

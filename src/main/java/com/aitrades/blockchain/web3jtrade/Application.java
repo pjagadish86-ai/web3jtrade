@@ -29,6 +29,8 @@ import org.springframework.web.reactive.function.client.WebClient;
 import io.netty.channel.ChannelOption;
 import io.netty.handler.timeout.ReadTimeoutHandler;
 import io.netty.handler.timeout.WriteTimeoutHandler;
+import okhttp3.ConnectionPool;
+import okhttp3.OkHttpClient;
 import reactor.netty.http.client.HttpClient;
  
 @SpringBootApplication(scanBasePackages = { "com.aitrades.blockchain.web3jtrade" })
@@ -85,6 +87,19 @@ public class Application {
 	    		  							.addHandlerLast(new WriteTimeoutHandler(WEBCLIENT_TIMEOUT, TimeUnit.SECONDS)));
 	}
 	
+	
+	@Bean(name = "web3JHttpService")
+	public OkHttpClient web3JHttpService() {
+		OkHttpClient.Builder builder = new OkHttpClient.Builder();
+	    ConnectionPool okHttpConnectionPool = new ConnectionPool(50, 30, TimeUnit.SECONDS);
+	    builder.connectionPool(okHttpConnectionPool);
+	    builder.connectTimeout(5, TimeUnit.MINUTES);
+	    builder.readTimeout(4, TimeUnit.MINUTES);
+	    builder.writeTimeout(5, TimeUnit.MINUTES);
+	    builder.retryOnConnectionFailure(false);
+	    builder.addInterceptor(new DefaultContentTypeInterceptor());
+		return builder.build();
+	} 
 	
 	@Bean
 	public MessageConverter jsonMessageConverter() {
