@@ -96,6 +96,8 @@ public class SnipeTransactionRequest {
 	
 	private String signedTransaction;
 	
+	private boolean hasDataBeenAdded;
+	
 	public String getId() {
 		return id;
 	}
@@ -478,6 +480,14 @@ public class SnipeTransactionRequest {
 
 	public void setUSDPair(boolean isUSDPair) {
 		this.isUSDPair = isUSDPair;
+	}
+
+	public boolean isHasDataBeenAdded() {
+		return hasDataBeenAdded;
+	}
+
+	public void setHasDataBeenAdded(boolean hasDataBeenAdded) {
+		this.hasDataBeenAdded = hasDataBeenAdded;
 	}
 	
 }

@@ -108,6 +108,7 @@ public class SnipeExeEndpointV1{
 	@ServiceActivator(inputChannel = "snipeSwapChannel")
 	public SnipeTransactionRequest snipeSwapChannel(SnipeTransactionRequest snipeTransactionRequest) throws Exception{
 		
+		boolean hasDataBeenTouched = false;
 		Credentials credentials = snipeTransactionRequest.getCredentials();
 		
 		String dexWrapContractAddress = dexContractStaticCodeValuesService.getDexContractAddress(snipeTransactionRequest.getRoute(), TradeConstants.WNATIVE);
@@ -135,8 +136,8 @@ public class SnipeExeEndpointV1{
 		List<Address> swapMemoryPath = Lists.newArrayList(wnativeAddress, toAddress);
 		if(snipeTransactionRequest.isUSDPair()) { //new Address(TradeConstants.BUSD)
 			swapMemoryPath = Lists.newArrayList(wnativeAddress, 
-					new Address(TradeConstants.BUSD), 
-					toAddress);
+												new Address(dexWrappedUsdContractAddress), 
+												toAddress);
 		}
 		
 		// this is dangerous as your nonce may not in sync, please do pull off before any external execution
