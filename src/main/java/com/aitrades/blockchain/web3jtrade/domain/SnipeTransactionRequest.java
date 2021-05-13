@@ -98,6 +98,8 @@ public class SnipeTransactionRequest {
 	
 	private boolean hasDataBeenAdded;
 	
+	private boolean liquidityCheck;
+	
 	public String getId() {
 		return id;
 	}
@@ -488,6 +490,14 @@ public class SnipeTransactionRequest {
 
 	public void setHasDataBeenAdded(boolean hasDataBeenAdded) {
 		this.hasDataBeenAdded = hasDataBeenAdded;
+	}
+
+	public boolean isLiquidityCheck() {
+		return liquidityCheck;
+	}
+
+	public void setLiquidityCheck(boolean liquidityCheck) {
+		this.liquidityCheck = liquidityCheck;
 	}
 	
 }

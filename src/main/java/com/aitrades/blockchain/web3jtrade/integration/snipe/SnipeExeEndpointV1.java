@@ -158,8 +158,8 @@ public class SnipeExeEndpointV1{
 	
 		
 //		//This is dangerous as we need to verify before hand a block number;
-		boolean hasLiquidity = false;
-		while (!hasLiquidity) {
+		boolean liquidityCheckEnabled = snipeTransactionRequest.isLiquidityCheck();
+		while (liquidityCheckEnabled) {
 				BigInteger blockNumber = web3jServiceClientFactory.getWeb3jMap(snipeTransactionRequest.getRoute()).getWeb3j().ethBlockNumber()
 											.flowable()
 											.subscribeOn(Schedulers.io())
@@ -172,9 +172,9 @@ public class SnipeExeEndpointV1{
 																	   DefaultBlockParameterName.LATEST,
 																	   hexRouterAddress, 
 																	   snipeTransactionRequest.getPairAddress());
-				hasLiquidity = ethLog != null && ethLog.getError() == null && CollectionUtils.isNotEmpty(ethLog.getLogs());
+				liquidityCheckEnabled = ethLog != null && ethLog.getError() == null && CollectionUtils.isNotEmpty(ethLog.getLogs());
 				if(ethLog != null && ethLog.getError() == null && CollectionUtils.isNotEmpty(ethLog.getLogs())) {
-					hasLiquidity = Boolean.TRUE;
+					liquidityCheckEnabled = Boolean.TRUE;
 				}else {
 					System.err.println("No Liquidity found");
 					Uninterruptibles.sleepUninterruptibly(500, TimeUnit.MILLISECONDS);
