@@ -164,7 +164,6 @@ public class SnipeExeEndpointV1{
 											.subscribeOn(Schedulers.io())
 											.blockingLast()
 											.getBlockNumber().subtract(BigInteger.valueOf(400l));
-			
 				//BigInteger blockNumber = BigInteger.valueOf(7130656);
 				System.out.println("from blck nbr-> "+ blockNumber + snipeTransactionRequest.getId());
 				EthLog ethLog = liquidityEventFinder.hasLiquidityEventV2(snipeTransactionRequest.getRoute(), 
