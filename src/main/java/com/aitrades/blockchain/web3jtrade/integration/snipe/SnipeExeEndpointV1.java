@@ -122,7 +122,29 @@ public class SnipeExeEndpointV1{
 		
 		final String hexRouterAddress = ZERO_X + TypeEncoder.encode(new Address(dexRouterContractAddress.substring(2)));
 		
-		// Get Pair;
+		List<Address> swapMemoryPath = Lists.newArrayList(wnativeAddress, toAddress);
+		if(snipeTransactionRequest.isUSDPair()) { //new Address(TradeConstants.BUSD)
+			swapMemoryPath = Lists.newArrayList(wnativeAddress, 
+												new Address(dexWrappedUsdContractAddress), 
+												toAddress);
+		}
+		// this is dangerous as your nonce may not in sync, please do pull off before any external execution
+		String signedTransactionFinal = snipeTransactionRequest.getSignedTransaction();
+		if(snipeTransactionRequest.getExpectedOutPutToken() != null 
+				&& StringUtils.isBlank(signedTransactionFinal)) {
+			 signedTransactionFinal = ethereumDexTradeService.fetchSignedTransaction(snipeTransactionRequest.getRoute(),
+																					   credentials,
+																					   snipeTransactionRequest.getInputTokenValueAmountAsBigInteger(),
+																					   snipeTransactionRequest.getExpectedOutPutToken(),
+																					   snipeTransactionRequest.getDeadLine(),
+																					   swapMemoryPath,
+																					   snipeTransactionRequest.isFeeEligible(),
+																					   gasPrice,
+																					   gasLimit,
+																					   snipeTransactionRequest.getGasMode());
+		}
+		
+	//	snipeTransactionRequest.setPairAddress("0x01Ac73c0B91289C21E12Ff44841A3C6b8aCDEA03");
 		if(StringUtils.isBlank(snipeTransactionRequest.getPairAddress())) {
 			String pairAddress = getPairAddress(snipeTransactionRequest, dexWrapContractAddress); 
 			if(StringUtils.isNotBlank(pairAddress)) {
@@ -133,40 +155,19 @@ public class SnipeExeEndpointV1{
 				return null;
 			}
 		}
-		List<Address> swapMemoryPath = Lists.newArrayList(wnativeAddress, toAddress);
-		if(snipeTransactionRequest.isUSDPair()) { //new Address(TradeConstants.BUSD)
-			swapMemoryPath = Lists.newArrayList(wnativeAddress, 
-												new Address(dexWrappedUsdContractAddress), 
-												toAddress);
-		}
-		
-		// this is dangerous as your nonce may not in sync, please do pull off before any external execution
-		if(snipeTransactionRequest.getExpectedOutPutToken() != null && StringUtils.isBlank(snipeTransactionRequest.getSignedTransaction())) {
-			
-			String signedTransaction = ethereumDexTradeService.fetchSignedTransaction(snipeTransactionRequest.getRoute(),
-																					   credentials,
-																					   snipeTransactionRequest.getInputTokenValueAmountAsBigInteger(),
-																					   snipeTransactionRequest.getExpectedOutPutToken(),
-																					   snipeTransactionRequest.getDeadLine(),
-																					   swapMemoryPath,
-																					   snipeTransactionRequest.isFeeEligible(),
-																					   gasPrice,
-																					   gasLimit,
-																					   snipeTransactionRequest.getGasMode());
-			snipeTransactionRequest.setSignedTransaction(signedTransaction);
-		}
-	
+
 		
 //		//This is dangerous as we need to verify before hand a block number;
-		boolean liquidityCheckEnabled = snipeTransactionRequest.isLiquidityCheck();
-		while (liquidityCheckEnabled) {
-				BigInteger blockNumber = web3jServiceClientFactory.getWeb3jMap(snipeTransactionRequest.getRoute()).getWeb3j().ethBlockNumber()
+		boolean liquidityCheckEnabled = false;
+		Web3j web3j = web3jServiceClientFactory.getWeb3jMap(snipeTransactionRequest.getRoute()).getWeb3j();
+		while (!liquidityCheckEnabled) {
+				BigInteger blockNumber = web3j.ethBlockNumber()
 											.flowable()
 											.subscribeOn(Schedulers.io())
-											.blockingLast()
-											.getBlockNumber().subtract(BigInteger.valueOf(400l));
+											.blockingFirst()
+											.getBlockNumber();
 				//BigInteger blockNumber = BigInteger.valueOf(7130656);
-				System.out.println("from blck nbr-> "+ blockNumber + snipeTransactionRequest.getId());
+				System.out.println("from blck nbr-> "+ blockNumber + " id "+snipeTransactionRequest.getId());
 				EthLog ethLog = liquidityEventFinder.hasLiquidityEventV2(snipeTransactionRequest.getRoute(), 
 																	   new DefaultBlockParameterNumber(blockNumber), 
 																	   DefaultBlockParameterName.LATEST,
@@ -176,19 +177,19 @@ public class SnipeExeEndpointV1{
 				if(ethLog != null && ethLog.getError() == null && CollectionUtils.isNotEmpty(ethLog.getLogs())) {
 					liquidityCheckEnabled = Boolean.TRUE;
 				}else {
-					System.err.println("No Liquidity found");
 					Uninterruptibles.sleepUninterruptibly(500, TimeUnit.MILLISECONDS);
+					System.err.println("No Liquidity found");
 				}
 		}
 		
 		System.err.println(" ***Liquidity found ** ");
 		
-		if(StringUtils.isNotBlank(snipeTransactionRequest.getSignedTransaction())) {
+		if(StringUtils.isNotBlank(signedTransactionFinal)) {
 			try {
 				EthSendTransaction ethSendTransaction = null;
 				try {
-					ethSendTransaction = web3jServiceClientFactory.getWeb3jMap(snipeTransactionRequest.getRoute()).getWeb3j()
-							.ethSendRawTransaction(snipeTransactionRequest.getSignedTransaction())
+					ethSendTransaction = web3j
+							.ethSendRawTransaction(signedTransactionFinal)
 																 .flowable()
 																 .subscribeOn(Schedulers.io())
 																 .blockingSingle();
@@ -338,7 +339,7 @@ public class SnipeExeEndpointV1{
 			snipeTransactionRequest.setPairAddress(pairAddress);
 			return pairAddress;
 		}else {
-			System.err.println("Not Listed / No Pair");
+			System.err.println(snipeTransactionRequest.getId() + " Not Listed / No Pair");
 			Uninterruptibles.sleepUninterruptibly(500, TimeUnit.MILLISECONDS);
 			snipeOrderReQueue.send(snipeTransactionRequest);
 			return null;

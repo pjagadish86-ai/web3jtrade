@@ -9,7 +9,6 @@ import org.web3j.abi.EventEncoder;
 import org.web3j.abi.TypeReference;
 import org.web3j.abi.datatypes.Address;
 import org.web3j.abi.datatypes.Event;
-import org.web3j.abi.datatypes.generated.Int24;
 import org.web3j.abi.datatypes.generated.Uint256;
 import org.web3j.protocol.core.DefaultBlockParameter;
 import org.web3j.protocol.core.methods.request.EthFilter;
@@ -17,6 +16,7 @@ import org.web3j.protocol.core.methods.response.EthLog;
 
 import com.aitrades.blockchain.web3jtrade.service.Web3jServiceClientFactory;
 
+import io.reactivex.disposables.Disposable;
 import io.reactivex.schedulers.Schedulers;
 @Service
 public class LiquidityEventFinder {
@@ -50,6 +50,27 @@ public class LiquidityEventFinder {
 		return null;
 	}
 	
+	
+	public Disposable hasLiquidityEventSubscribe(final String route, final DefaultBlockParameter fromBlockNbr, final DefaultBlockParameter toBlockNbr, final String routerAddress, final String pairAddress) throws Exception {
+		try {
+			return web3jServiceClientFactory.getWeb3jMap(route)
+											.getWeb3j()
+											.ethGetLogs(new EthFilter(fromBlockNbr, toBlockNbr, pairAddress)
+															.addSingleTopic(MINT_EVENT_ENCODER)
+															.addOptionalTopics(routerAddress))
+				   .flowable()
+				   .subscribeOn(Schedulers.io())
+				   .subscribe();
+		} catch (IOException e) {
+			e.printStackTrace();
+		} catch (Exception e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		return null;
+	}
+	
+	
 	public EthLog hasLiquidityEventV3(final String route, 
 									  final DefaultBlockParameter fromBlockNbr, 
 									  final DefaultBlockParameter toBlockNbr, 
@@ -69,6 +90,38 @@ public class LiquidityEventFinder {
 			e.printStackTrace();
 		} catch (Exception e) {
 			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		return null;
+	}
+	
+//    event SwapAndLiquify(
+//            uint256 tokensSwapped,
+//            uint256 ethReceived,
+//            uint256 tokensIntoLiqudity
+//        );
+	
+	//SwapAndLiquify
+	
+	private static final String SWAP_AND_LIQUIFY = "SwapAndLiquify";
+	
+	private static final Event SWAP_AND_LIQUIFY_EVENT = new Event(SWAP_AND_LIQUIFY, Arrays.<TypeReference<?>>asList(new TypeReference<Uint256>(true) { }, new TypeReference<Uint256>() { }, new TypeReference<Uint256>() { }));
+	private static final String SWAP_AND_LIQUIFY_EVENT_ENCODER = EventEncoder.encode(SWAP_AND_LIQUIFY_EVENT);
+	
+	
+	public EthLog hasSwapAndLiquifyEvent(final String route, final DefaultBlockParameter fromBlockNbr, final DefaultBlockParameter toBlockNbr, final String routerAddress, final String pairAddress) throws Exception {
+		try {
+			return web3jServiceClientFactory.getWeb3jMap(route)
+											.getWeb3j()
+											.ethGetLogs(new EthFilter(fromBlockNbr, toBlockNbr, pairAddress)
+															.addSingleTopic(SWAP_AND_LIQUIFY_EVENT_ENCODER)
+															.addOptionalTopics(routerAddress))
+				   .flowable()
+				   .subscribeOn(Schedulers.io())
+				   .blockingSingle();
+		} catch (IOException e) {
+			e.printStackTrace();
+		} catch (Exception e) {
 			e.printStackTrace();
 		}
 		return null;

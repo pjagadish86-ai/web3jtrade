@@ -48,7 +48,7 @@ public class Web3jServiceClientFactory {
 	@Autowired
     private Web3jServiceClientFactory() {
 		blockChainExchangesConnections = Caffeine.newBuilder()
-	                               .expireAfterWrite(2, TimeUnit.MINUTES)
+	                               .expireAfterWrite(3, TimeUnit.MINUTES)
 	                               .build();
     }
 	

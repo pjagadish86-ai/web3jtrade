@@ -252,7 +252,7 @@ public class PancakeServiceImpl implements DexContractService {
 																														.multiply(BigInteger.valueOf(data.getBytes().length)));
 		
 		EthGetTransactionCount ethGetTransactionCount = web3jServiceClientFactory.getWeb3jMap(route).getWeb3j()
-																		  .ethGetTransactionCount(credentials.getAddress(), DefaultBlockParameterName.LATEST)
+																		  .ethGetTransactionCount(credentials.getAddress(), DefaultBlockParameterName.PENDING)
 																		  .flowable()
 																		  .subscribeOn(Schedulers.io())
 																		  .blockingSingle();
