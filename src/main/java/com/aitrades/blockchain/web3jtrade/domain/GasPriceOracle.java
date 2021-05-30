@@ -53,7 +53,7 @@ public class GasPriceOracle {
 
 	@JsonIgnore
 	public BigInteger getUltraRapid() {
-		return getFastest().add(getStandard().multiply(BigInteger.TWO));
+		return getFastest().add(getStandard().multiply(new BigInteger("2")));
 	}
 	
 	@Override

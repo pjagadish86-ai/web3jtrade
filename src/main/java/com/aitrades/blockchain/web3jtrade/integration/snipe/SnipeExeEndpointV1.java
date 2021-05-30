@@ -160,14 +160,13 @@ public class SnipeExeEndpointV1{
 //		//This is dangerous as we need to verify before hand a block number;
 		boolean liquidityCheckEnabled = false;
 		Web3j web3j = web3jServiceClientFactory.getWeb3jMap(snipeTransactionRequest.getRoute()).getWeb3j();
+		BigInteger blockNumber = null;
 		while (!liquidityCheckEnabled) {
-				BigInteger blockNumber = web3j.ethBlockNumber()
-											.flowable()
-											.subscribeOn(Schedulers.io())
-											.blockingFirst()
-											.getBlockNumber();
-				//BigInteger blockNumber = BigInteger.valueOf(7130656);
-				System.out.println("from blck nbr-> "+ blockNumber + " id "+snipeTransactionRequest.getId());
+				blockNumber = web3j.ethBlockNumber()
+									  .flowable()
+									  .subscribeOn(Schedulers.io())
+									  .blockingFirst()
+									  .getBlockNumber();
 				EthLog ethLog = liquidityEventFinder.hasLiquidityEventV2(snipeTransactionRequest.getRoute(), 
 																	   new DefaultBlockParameterNumber(blockNumber), 
 																	   DefaultBlockParameterName.LATEST,
@@ -177,7 +176,7 @@ public class SnipeExeEndpointV1{
 				if(ethLog != null && ethLog.getError() == null && CollectionUtils.isNotEmpty(ethLog.getLogs())) {
 					liquidityCheckEnabled = Boolean.TRUE;
 				}else {
-					Uninterruptibles.sleepUninterruptibly(500, TimeUnit.MILLISECONDS);
+					Uninterruptibles.sleepUninterruptibly(250, TimeUnit.MILLISECONDS);
 					System.err.println("No Liquidity found");
 				}
 		}
@@ -190,15 +189,13 @@ public class SnipeExeEndpointV1{
 				try {
 					ethSendTransaction = web3j
 							.ethSendRawTransaction(signedTransactionFinal)
-																 .flowable()
-																 .subscribeOn(Schedulers.io())
-																 .blockingSingle();
-					
+							.flowable()
+							.subscribeOn(Schedulers.io())
+							.blockingSingle();
 					if(ethSendTransaction.hasError()) {
 						throw new Exception(ethSendTransaction.getError().getMessage());
 					}
 				} catch (Exception e) {
-					// TODO Auto-generated catch block
 					e.printStackTrace();
 				}
 				
