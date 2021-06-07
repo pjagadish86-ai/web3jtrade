@@ -23,15 +23,19 @@ import org.web3j.abi.datatypes.Function;
 import org.web3j.abi.datatypes.Type;
 import org.web3j.abi.datatypes.generated.Uint256;
 import org.web3j.crypto.Credentials;
+import org.web3j.crypto.RawTransaction;
+import org.web3j.crypto.TransactionEncoder;
 import org.web3j.protocol.core.DefaultBlockParameterName;
 import org.web3j.protocol.core.methods.request.Transaction;
 import org.web3j.protocol.core.methods.response.EthCall;
+import org.web3j.protocol.core.methods.response.EthGetTransactionCount;
 import org.web3j.protocol.core.methods.response.EthSendTransaction;
 import org.web3j.protocol.core.methods.response.TransactionReceipt;
 import org.web3j.tuples.generated.Tuple3;
 import org.web3j.tx.FastRawTransactionManager;
 import org.web3j.tx.response.NoOpProcessor;
 import org.web3j.utils.Convert;
+import org.web3j.utils.Numeric;
 
 import com.aitrades.blockchain.web3jtrade.dex.contract.DexContractService;
 import com.aitrades.blockchain.web3jtrade.dex.contract.EthereumDexContract;
@@ -232,11 +236,33 @@ public class GenericSwapService implements DexContractService {
 	}
 
 	@Override
-	public String fetchSignedTransaction(String route, Credentials credentials, BigInteger inputEthers,
-			BigInteger outPutTokens, long deadLine, List<Address> memoryPathAddress, boolean hasFee,
-			BigInteger gasPrice, BigInteger gasLimit, String gasMode) throws Exception {
-		// TODO Auto-generated method stub
-		return null;
+	public String fetchSignedTransaction(String route, Credentials credentials, BigInteger amountIn, BigInteger amountOutMin, 
+			   long deadLine, List<Address> memoryPathAddress, boolean hasFee, BigInteger gasPrice, BigInteger gasLimit, String gasMode) throws Exception {
+		final String data = FunctionEncoder.encode(new Function(hasFee ? FUNC_SWAPEXACTTOKENSFORTOKENSSUPPORTINGFEEONTRANSFERTOKENS : FUNC_SWAPEXACTTOKENSFORTOKENS,
+			    Arrays.asList(new Uint256(amountIn), new Uint256(amountOutMin),
+			    			  new DynamicArray(Address.class, memoryPathAddress),
+			    			  new Address(credentials.getAddress()), 
+			    			  new Uint256(BigInteger.valueOf(Instant.now().plus(2, ChronoUnit.HOURS).getEpochSecond()))),
+	        Collections.emptyList()));
+	
+		BigInteger gasLmt = StringUtils.equalsIgnoreCase(gasMode, TradeConstants.CUSTOM) ? gasLimit : BigInteger.valueOf(21000l).add(BigInteger.valueOf(68l)
+																													.multiply(BigInteger.valueOf(data.getBytes().length)));
+	
+		EthGetTransactionCount ethGetTransactionCount = web3jServiceClientFactory.getWeb3jMap(route).getWeb3j()
+																	  .ethGetTransactionCount(credentials.getAddress(), DefaultBlockParameterName.PENDING)
+																	  .flowable()
+																	  .subscribeOn(Schedulers.io())
+																	  .blockingSingle();
+
+		RawTransaction rawTransaction = RawTransaction.createTransaction(ethGetTransactionCount.getTransactionCount(),
+																	 gasPrice, 
+																	 gasLmt, 
+																	 dexContractStaticCodeValuesService.getDexContractAddress(route, TradeConstants.ROUTER),
+																	 BigInteger.ZERO, 
+																	 data);
+
+		long chainId = StringUtils.equalsIgnoreCase(route, "MATIC") ? 137l: web3jServiceClientFactory.getWeb3jMap(route).getWeb3j().ethChainId().getId();
+		return Numeric.toHexString(TransactionEncoder.signMessage(rawTransaction, chainId, credentials));
 	}
 
 

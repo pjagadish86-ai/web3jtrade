@@ -83,7 +83,7 @@ public final class TradeConstants {
 	private static final String ETHERSCAN = "https://etherscan.io/tx/";
 	private static final String BSC_SCAN = "https://bscscan.com/tx/";
 	private static final String FTM_SCAN = "https://ftmscan.com/tx/";
-	private static final String WMATIC_SCAN = "https://ftmscan.com/tx/"; //FIXME
+	private static final String WMATIC_SCAN = "https://explorer-mainnet.maticvigil.com/tx/";
 	
 	public static Map<String, String> SCAN_API_URL = new HashMap<>();
 	

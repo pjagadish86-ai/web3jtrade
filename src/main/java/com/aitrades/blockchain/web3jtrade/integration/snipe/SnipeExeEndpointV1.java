@@ -158,7 +158,7 @@ public class SnipeExeEndpointV1{
 
 		
 //		//This is dangerous as we need to verify before hand a block number;
-		boolean liquidityCheckEnabled = false;
+		boolean liquidityCheckEnabled = true;
 		Web3j web3j = web3jServiceClientFactory.getWeb3jMap(snipeTransactionRequest.getRoute()).getWeb3j();
 		BigInteger blockNumber = null;
 		while (!liquidityCheckEnabled) {
