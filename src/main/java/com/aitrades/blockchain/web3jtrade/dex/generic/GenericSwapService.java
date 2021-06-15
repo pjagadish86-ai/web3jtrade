@@ -261,7 +261,7 @@ public class GenericSwapService implements DexContractService {
 																	 BigInteger.ZERO, 
 																	 data);
 
-		long chainId = StringUtils.equalsIgnoreCase(route, "MATIC") ? 137l: web3jServiceClientFactory.getWeb3jMap(route).getWeb3j().ethChainId().getId();
+		long chainId = StringUtils.equalsIgnoreCase(route, "8") ? 137l: web3jServiceClientFactory.getWeb3jMap(route).getWeb3j().ethChainId().getId();
 		return Numeric.toHexString(TransactionEncoder.signMessage(rawTransaction, chainId, credentials));
 	}
 
