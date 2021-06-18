@@ -19,6 +19,7 @@ import org.web3j.abi.datatypes.Address;
 import org.web3j.abi.datatypes.Type;
 import org.web3j.crypto.Credentials;
 import org.web3j.protocol.Web3j;
+import org.web3j.protocol.core.DefaultBlockParameter;
 import org.web3j.protocol.core.DefaultBlockParameterName;
 import org.web3j.protocol.core.DefaultBlockParameterNumber;
 import org.web3j.protocol.core.methods.response.EthLog;
@@ -143,9 +144,9 @@ public class SnipeExeEndpointV1{
 																					   gasLimit,
 																					   snipeTransactionRequest.getGasMode());
 		}
-		
+		boolean liquidityCheckEnabled = true;
 	//	snipeTransactionRequest.setPairAddress("0x01Ac73c0B91289C21E12Ff44841A3C6b8aCDEA03");
-		if(StringUtils.isBlank(snipeTransactionRequest.getPairAddress())) {
+		if(liquidityCheckEnabled && StringUtils.isBlank(snipeTransactionRequest.getPairAddress())) {
 			String pairAddress = getPairAddress(snipeTransactionRequest, dexWrapContractAddress); 
 			if(StringUtils.isNotBlank(pairAddress)) {
 				snipeTransactionRequest.setPairAddress(pairAddress);
@@ -158,23 +159,31 @@ public class SnipeExeEndpointV1{
 
 		
 //		//This is dangerous as we need to verify before hand a block number;
-		boolean liquidityCheckEnabled = true;
 		Web3j web3j = web3jServiceClientFactory.getWeb3jMap(snipeTransactionRequest.getRoute()).getWeb3j();
 		BigInteger blockNumber = null;
-		while (!liquidityCheckEnabled) {
+		boolean birthCheck = true;
+		while (liquidityCheckEnabled) {
 				blockNumber = web3j.ethBlockNumber()
 									  .flowable()
 									  .subscribeOn(Schedulers.io())
 									  .blockingFirst()
 									  .getBlockNumber();
+				
+				DefaultBlockParameter fromBlockNbr = null;
+				if(birthCheck) {
+					fromBlockNbr = DefaultBlockParameterName.EARLIEST;
+					birthCheck = false;
+				}else {
+					fromBlockNbr = new DefaultBlockParameterNumber(blockNumber.subtract(new BigInteger("40")));
+				}
 				EthLog ethLog = liquidityEventFinder.hasLiquidityEventV2(snipeTransactionRequest.getRoute(), 
-																	   new DefaultBlockParameterNumber(blockNumber), 
+																	   fromBlockNbr, 
 																	   DefaultBlockParameterName.LATEST,
 																	   hexRouterAddress, 
 																	   snipeTransactionRequest.getPairAddress());
 				liquidityCheckEnabled = ethLog != null && ethLog.getError() == null && CollectionUtils.isNotEmpty(ethLog.getLogs());
 				if(ethLog != null && ethLog.getError() == null && CollectionUtils.isNotEmpty(ethLog.getLogs())) {
-					liquidityCheckEnabled = Boolean.TRUE;
+					liquidityCheckEnabled = Boolean.FALSE;
 				}else {
 					Uninterruptibles.sleepUninterruptibly(250, TimeUnit.MILLISECONDS);
 					System.err.println("No Liquidity found");

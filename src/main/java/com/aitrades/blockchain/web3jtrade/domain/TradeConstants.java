@@ -96,6 +96,8 @@ public final class TradeConstants {
 		SCAN_API_URL.put("6", FTM_SCAN);
 		SCAN_API_URL.put("7", FTM_SCAN);
 		SCAN_API_URL.put("8", WMATIC_SCAN);
+		SCAN_API_URL.put("10", ETHERSCAN);
+		SCAN_API_URL.put("10", WMATIC_SCAN);
 	}
 	
 }
