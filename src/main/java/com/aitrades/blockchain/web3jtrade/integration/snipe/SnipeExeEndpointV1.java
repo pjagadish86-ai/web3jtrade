@@ -26,6 +26,7 @@ import org.web3j.protocol.core.methods.response.EthLog;
 import org.web3j.protocol.core.methods.response.EthSendTransaction;
 import org.web3j.protocol.http.HttpService;
 import org.web3j.tuples.generated.Tuple3;
+import org.web3j.utils.Numeric;
 
 import com.aitrades.blockchain.web3jtrade.DefaultContentTypeInterceptor;
 import com.aitrades.blockchain.web3jtrade.client.DexNativePriceOracleClient;
@@ -161,7 +162,7 @@ public class SnipeExeEndpointV1{
 //		//This is dangerous as we need to verify before hand a block number;
 		Web3j web3j = web3jServiceClientFactory.getWeb3jMap(snipeTransactionRequest.getRoute()).getWeb3j();
 		BigInteger blockNumber = null;
-		boolean birthCheck = true;
+		boolean birthCheck = false;
 		while (liquidityCheckEnabled) {
 				blockNumber = web3j.ethBlockNumber()
 									  .flowable()
@@ -173,9 +174,11 @@ public class SnipeExeEndpointV1{
 				if(birthCheck) {
 					fromBlockNbr = DefaultBlockParameterName.EARLIEST;
 					birthCheck = false;
+					System.out.println("BirthCheck passed!!!");
 				}else {
 					fromBlockNbr = new DefaultBlockParameterNumber(blockNumber.subtract(new BigInteger("40")));
 				}
+				System.out.println("BlockNbr -> "+ Numeric.toBigInt(fromBlockNbr.getValue()));
 				EthLog ethLog = liquidityEventFinder.hasLiquidityEventV2(snipeTransactionRequest.getRoute(), 
 																	   fromBlockNbr, 
 																	   DefaultBlockParameterName.LATEST,
@@ -185,8 +188,9 @@ public class SnipeExeEndpointV1{
 				if(ethLog != null && ethLog.getError() == null && CollectionUtils.isNotEmpty(ethLog.getLogs())) {
 					liquidityCheckEnabled = Boolean.FALSE;
 				}else {
-					Uninterruptibles.sleepUninterruptibly(250, TimeUnit.MILLISECONDS);
+					Uninterruptibles.sleepUninterruptibly(1, TimeUnit.SECONDS);
 					System.err.println("No Liquidity found");
+					liquidityCheckEnabled = Boolean.TRUE;
 				}
 		}
 		
