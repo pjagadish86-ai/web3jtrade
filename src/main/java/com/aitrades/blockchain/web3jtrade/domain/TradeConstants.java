@@ -84,6 +84,7 @@ public final class TradeConstants {
 	private static final String BSC_SCAN = "https://bscscan.com/tx/";
 	private static final String FTM_SCAN = "https://ftmscan.com/tx/";
 	private static final String WMATIC_SCAN = "https://polygonscan.com/tx/";
+	private static final String KCC_SCAN = "https://explorer.kcc.io/en/tx/";
 	
 	public static Map<String, String> SCAN_API_URL = new HashMap<>();
 	
@@ -98,6 +99,9 @@ public final class TradeConstants {
 		SCAN_API_URL.put("8", WMATIC_SCAN);
 		SCAN_API_URL.put("10", ETHERSCAN);
 		SCAN_API_URL.put("10", WMATIC_SCAN);
+		SCAN_API_URL.put("11", KCC_SCAN);
 	}
+	
+	
 	
 }

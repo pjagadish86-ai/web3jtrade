@@ -10,6 +10,7 @@ public class EndpointConfig {
 	protected String providerName;
 	protected boolean enabled;
 	protected String rpcProtocol;
+	protected String chainId;
 	private Integer code;
 	private String explorerUri;
 	private String subCode;
@@ -79,6 +80,12 @@ public class EndpointConfig {
 	}
 	public void setSubCode(String subCode) {
 		this.subCode = subCode;
+	}
+	public String getChainId() {
+		return chainId;
+	}
+	public void setChainId(String chainId) {
+		this.chainId = chainId;
 	}
 	
 }

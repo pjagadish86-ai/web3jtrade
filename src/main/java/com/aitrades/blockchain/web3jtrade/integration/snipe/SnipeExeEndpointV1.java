@@ -145,7 +145,7 @@ public class SnipeExeEndpointV1{
 																					   gasLimit,
 																					   snipeTransactionRequest.getGasMode());
 		}
-		boolean liquidityCheckEnabled = true;
+		boolean liquidityCheckEnabled = false;
 	//	snipeTransactionRequest.setPairAddress("0x01Ac73c0B91289C21E12Ff44841A3C6b8aCDEA03");
 		if(liquidityCheckEnabled && StringUtils.isBlank(snipeTransactionRequest.getPairAddress())) {
 			String pairAddress = getPairAddress(snipeTransactionRequest, dexWrapContractAddress); 
@@ -176,7 +176,7 @@ public class SnipeExeEndpointV1{
 					birthCheck = false;
 					System.out.println("BirthCheck passed!!!");
 				}else {
-					fromBlockNbr = new DefaultBlockParameterNumber(blockNumber.subtract(new BigInteger("40")));
+					fromBlockNbr = new DefaultBlockParameterNumber(blockNumber.subtract(new BigInteger("5")));
 				}
 				System.out.println("BlockNbr -> "+ Numeric.toBigInt(fromBlockNbr.getValue()));
 				EthLog ethLog = liquidityEventFinder.hasLiquidityEventV2(snipeTransactionRequest.getRoute(), 
@@ -188,7 +188,7 @@ public class SnipeExeEndpointV1{
 				if(ethLog != null && ethLog.getError() == null && CollectionUtils.isNotEmpty(ethLog.getLogs())) {
 					liquidityCheckEnabled = Boolean.FALSE;
 				}else {
-					Uninterruptibles.sleepUninterruptibly(1, TimeUnit.SECONDS);
+					Uninterruptibles.sleepUninterruptibly(500, TimeUnit.MILLISECONDS);
 					System.err.println("No Liquidity found");
 					liquidityCheckEnabled = Boolean.TRUE;
 				}

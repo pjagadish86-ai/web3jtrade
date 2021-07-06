@@ -2,6 +2,7 @@ package com.aitrades.blockchain.web3jtrade.domain;
 
 import java.math.BigDecimal;
 import java.math.BigInteger;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicInteger;
 
@@ -99,6 +100,8 @@ public class SnipeTransactionRequest {
 	private boolean hasDataBeenAdded;
 	
 	private boolean liquidityCheck;
+	
+	private LinkedList<String> singedTransactions;
 	
 	public String getId() {
 		return id;
@@ -499,5 +502,14 @@ public class SnipeTransactionRequest {
 	public void setLiquidityCheck(boolean liquidityCheck) {
 		this.liquidityCheck = liquidityCheck;
 	}
+
+	public LinkedList<String> getSingedTransactions() {
+		return singedTransactions;
+	}
+
+	public void setSingedTransactions(LinkedList<String> singedTransactions) {
+		this.singedTransactions = singedTransactions;
+	}
+	
 	
 }

@@ -262,6 +262,11 @@ public class GenericSwapService implements DexContractService {
 																	 data);
 
 		long chainId = StringUtils.equalsIgnoreCase(route, "8") || StringUtils.equalsIgnoreCase(route, "10") ? 137l: web3jServiceClientFactory.getWeb3jMap(route).getWeb3j().ethChainId().getId();
+		
+		if(StringUtils.equalsIgnoreCase(route, "11")) {
+			chainId= 321l;
+		}
+		
 		return Numeric.toHexString(TransactionEncoder.signMessage(rawTransaction, chainId, credentials));
 	}
 
