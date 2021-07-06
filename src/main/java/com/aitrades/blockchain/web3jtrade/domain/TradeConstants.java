@@ -100,6 +100,7 @@ public final class TradeConstants {
 		SCAN_API_URL.put("10", ETHERSCAN);
 		SCAN_API_URL.put("10", WMATIC_SCAN);
 		SCAN_API_URL.put("11", KCC_SCAN);
+		SCAN_API_URL.put("12", KCC_SCAN);
 	}
 	
 	

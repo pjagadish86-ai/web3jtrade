@@ -260,10 +260,10 @@ public class GenericSwapService implements DexContractService {
 																	 dexContractStaticCodeValuesService.getDexContractAddress(route, TradeConstants.ROUTER),
 																	 BigInteger.ZERO, 
 																	 data);
-
+		//TODO: move out from this hard coding.
 		long chainId = StringUtils.equalsIgnoreCase(route, "8") || StringUtils.equalsIgnoreCase(route, "10") ? 137l: web3jServiceClientFactory.getWeb3jMap(route).getWeb3j().ethChainId().getId();
 		
-		if(StringUtils.equalsIgnoreCase(route, "11")) {
+		if(StringUtils.equalsIgnoreCase(route, "11") || StringUtils.equalsIgnoreCase(route, "12")) {
 			chainId= 321l;
 		}
 		
