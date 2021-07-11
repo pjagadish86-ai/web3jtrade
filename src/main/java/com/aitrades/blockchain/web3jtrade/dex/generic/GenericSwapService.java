@@ -187,8 +187,15 @@ public class GenericSwapService implements DexContractService {
 		String data = FunctionEncoder.encode(function);
 		BigInteger gasLmt = StringUtils.equalsIgnoreCase(gasMode, TradeConstants.CUSTOM) ? gasLimit : BigInteger.valueOf(21000l).add(BigInteger.valueOf(68l)
 				.multiply(BigInteger.valueOf(data.getBytes().length)));
+		//TODO: move out from this hard coding.
+				long chainId = StringUtils.equalsIgnoreCase(route, "8") || StringUtils.equalsIgnoreCase(route, "10") ? 137l: web3jServiceClientFactory.getWeb3jMap(route).getWeb3j().ethChainId().getId();
+				
+				if(StringUtils.equalsIgnoreCase(route, "11") || StringUtils.equalsIgnoreCase(route, "12") || StringUtils.equalsIgnoreCase(route, "13")) {
+					chainId= 321l;
+				}
+				
 		EthSendTransaction ethSendTransaction = new FastRawTransactionManager(web3jServiceClientFactory.getWeb3jMap(route).getWeb3j(), 
-																		      credentials,
+																		      credentials,chainId,
 																		      new NoOpProcessor(web3jServiceClientFactory.getWeb3jMap(route).getWeb3j()))
 															.sendTransaction(gasPrice, 
 																			 gasLmt, 
@@ -263,7 +270,7 @@ public class GenericSwapService implements DexContractService {
 		//TODO: move out from this hard coding.
 		long chainId = StringUtils.equalsIgnoreCase(route, "8") || StringUtils.equalsIgnoreCase(route, "10") ? 137l: web3jServiceClientFactory.getWeb3jMap(route).getWeb3j().ethChainId().getId();
 		
-		if(StringUtils.equalsIgnoreCase(route, "11") || StringUtils.equalsIgnoreCase(route, "12")) {
+		if(StringUtils.equalsIgnoreCase(route, "11") || StringUtils.equalsIgnoreCase(route, "12") || StringUtils.equalsIgnoreCase(route, "13")) {
 			chainId= 321l;
 		}
 		

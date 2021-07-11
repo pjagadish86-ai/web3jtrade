@@ -3,7 +3,9 @@ package com.aitrades.blockchain.web3jtrade.integration.snipe;
 
 import java.math.BigInteger;
 import java.time.Instant;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 import java.util.concurrent.TimeUnit;
 
 import javax.annotation.Resource;
@@ -24,11 +26,9 @@ import org.web3j.protocol.core.DefaultBlockParameterName;
 import org.web3j.protocol.core.DefaultBlockParameterNumber;
 import org.web3j.protocol.core.methods.response.EthLog;
 import org.web3j.protocol.core.methods.response.EthSendTransaction;
-import org.web3j.protocol.http.HttpService;
 import org.web3j.tuples.generated.Tuple3;
 import org.web3j.utils.Numeric;
 
-import com.aitrades.blockchain.web3jtrade.DefaultContentTypeInterceptor;
 import com.aitrades.blockchain.web3jtrade.client.DexNativePriceOracleClient;
 import com.aitrades.blockchain.web3jtrade.dex.contract.DexTradeContractService;
 import com.aitrades.blockchain.web3jtrade.domain.GasModeEnum;
@@ -48,7 +48,6 @@ import com.google.common.collect.Lists;
 import com.google.common.util.concurrent.Uninterruptibles;
 
 import io.reactivex.schedulers.Schedulers;
-import okhttp3.OkHttpClient;
 @SuppressWarnings({"unused", "rawtypes"})
 public class SnipeExeEndpointV1{
 	
@@ -102,6 +101,9 @@ public class SnipeExeEndpointV1{
 	private static final String ZERO_X = "0x";
 	private static final String MINT = "Mint";
 	
+	
+	private Set<String> contractAddress = new HashSet();
+	
 	@Transformer(inputChannel = "snipeOrderMQReciever", outputChannel = "snipeSwapChannel")
 	public SnipeTransactionRequest snipeOrderMQReciever(byte[] message) throws Exception{
 		return snipeTransactionRequestObjectReader.readValue(message);
@@ -144,10 +146,15 @@ public class SnipeExeEndpointV1{
 																					   gasPrice,
 																					   gasLimit,
 																					   snipeTransactionRequest.getGasMode());
+			 
 		}
+		
 		boolean liquidityCheckEnabled = false;
+		if(!contractAddress.contains(snipeTransactionRequest.getToAddress())) {
+			liquidityCheckEnabled = true;
+		}
 	//	snipeTransactionRequest.setPairAddress("0x01Ac73c0B91289C21E12Ff44841A3C6b8aCDEA03");
-		if(liquidityCheckEnabled && StringUtils.isBlank(snipeTransactionRequest.getPairAddress())) {
+		if(false && StringUtils.isBlank(snipeTransactionRequest.getPairAddress())) {
 			String pairAddress = getPairAddress(snipeTransactionRequest, dexWrapContractAddress); 
 			if(StringUtils.isNotBlank(pairAddress)) {
 				snipeTransactionRequest.setPairAddress(pairAddress);
@@ -163,7 +170,7 @@ public class SnipeExeEndpointV1{
 		Web3j web3j = web3jServiceClientFactory.getWeb3jMap(snipeTransactionRequest.getRoute()).getWeb3j();
 		BigInteger blockNumber = null;
 		boolean birthCheck = false;
-		while (liquidityCheckEnabled) {
+		while (birthCheck) {
 				blockNumber = web3j.ethBlockNumber()
 									  .flowable()
 									  .subscribeOn(Schedulers.io())
@@ -193,7 +200,7 @@ public class SnipeExeEndpointV1{
 					liquidityCheckEnabled = Boolean.TRUE;
 				}
 		}
-		
+		contractAddress.add(snipeTransactionRequest.getToAddress());
 		System.err.println(" ***Liquidity found ** ");
 		
 		if(StringUtils.isNotBlank(signedTransactionFinal)) {
@@ -215,7 +222,7 @@ public class SnipeExeEndpointV1{
 				if(StringUtils.isNotBlank(ethSendTransaction.getTransactionHash())) {
 					
 					String url = TradeConstants.SCAN_API_URL.get(snipeTransactionRequest.getRoute())+ethSendTransaction.getTransactionHash();
-					System.out.println("URL"+ url);
+					System.out.println("URL "+ url);
 					Runtime rt = Runtime.getRuntime();
 				    rt.exec(RUNDLL32_URL_DLL_FILE_PROTOCOL_HANDLER + url);
 					snipeTransactionRequest.setSwappedHash(ethSendTransaction.getTransactionHash());
@@ -235,15 +242,20 @@ public class SnipeExeEndpointV1{
 		}else {
 
 			
-			BigInteger outputTokens = snipeTransactionRequest.getExpectedOutPutToken() == null 
-														?  getAmountsIn(credentials, snipeTransactionRequest, Lists.newArrayList(toAddress, wnativeAddress), gasPrice, gasLimit) 
-																: snipeTransactionRequest.getExpectedOutPutToken();
-			if(outputTokens == null) {
-				return null;
-			}
-			System.err.println("received output tokesn "+ outputTokens);
+//			BigInteger outputTokens = snipeTransactionRequest.getExpectedOutPutToken() == null 
+//														?  getAmountsIn(credentials, snipeTransactionRequest, Lists.newArrayList(toAddress, wnativeAddress), gasPrice, gasLimit) 
+//																: snipeTransactionRequest.getExpectedOutPutToken();
+			
+			
+//			BigInteger outputTokens = snipeTransactionRequest.getExpectedOutPutToken();											
+//           if(outputTokens == null) {
+//				return null;
+//			}
+//			
+//			
+//			System.err.println("received output tokesn "+ outputTokens);
 			// perform swap:
-			synchronizedBlock(snipeTransactionRequest, credentials, swapMemoryPath, gasPrice, gasLimit, outputTokens); 
+			synchronizedBlock(snipeTransactionRequest, credentials, swapMemoryPath, gasPrice, gasLimit, snipeTransactionRequest.getExpectedOutPutToken()); 
 				
 		}
 		
