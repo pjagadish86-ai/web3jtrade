@@ -36,6 +36,7 @@ import com.aitrades.blockchain.web3jtrade.domain.Reserves;
 import com.aitrades.blockchain.web3jtrade.domain.SnipeTransactionRequest;
 import com.aitrades.blockchain.web3jtrade.domain.TradeConstants;
 import com.aitrades.blockchain.web3jtrade.domain.TradeOverview;
+import com.aitrades.blockchain.web3jtrade.integration.snipe.TradingEnabledEventChecker.TradingEnabledEventResponse;
 import com.aitrades.blockchain.web3jtrade.integration.snipe.mq.SnipeOrderReQueue;
 import com.aitrades.blockchain.web3jtrade.oracle.gas.GasProvider;
 import com.aitrades.blockchain.web3jtrade.repository.SnipeOrderHistoryRepository;
@@ -46,7 +47,9 @@ import com.aitrades.blockchain.web3jtrade.service.Web3jServiceClientFactory;
 import com.fasterxml.jackson.databind.ObjectReader;
 import com.google.common.collect.Lists;
 import com.google.common.util.concurrent.Uninterruptibles;
+import com.jsoniter.spi.OmitValue.False;
 
+import io.reactivex.disposables.Disposable;
 import io.reactivex.schedulers.Schedulers;
 @SuppressWarnings({"unused", "rawtypes"})
 public class SnipeExeEndpointV1{
@@ -109,6 +112,7 @@ public class SnipeExeEndpointV1{
 		return snipeTransactionRequestObjectReader.readValue(message);
 	}
 	
+	@SuppressWarnings("deprecation")
 	@ServiceActivator(inputChannel = "snipeSwapChannel")
 	public SnipeTransactionRequest snipeSwapChannel(SnipeTransactionRequest snipeTransactionRequest) throws Exception{
 		
@@ -134,7 +138,7 @@ public class SnipeExeEndpointV1{
 		}
 		// this is dangerous as your nonce may not in sync, please do pull off before any external execution
 		String signedTransactionFinal = snipeTransactionRequest.getSignedTransaction();
-		if(snipeTransactionRequest.getExpectedOutPutToken() != null 
+		if(false && snipeTransactionRequest.getExpectedOutPutToken() != null 
 				&& StringUtils.isBlank(signedTransactionFinal)) {
 			 signedTransactionFinal = ethereumDexTradeService.fetchSignedTransaction(snipeTransactionRequest.getRoute(),
 																					   credentials,
@@ -149,12 +153,12 @@ public class SnipeExeEndpointV1{
 			 
 		}
 		
-		boolean liquidityCheckEnabled = false;
+		boolean liquidityCheckEnabled = true;
 		if(!contractAddress.contains(snipeTransactionRequest.getToAddress())) {
 			liquidityCheckEnabled = true;
 		}
 	//	snipeTransactionRequest.setPairAddress("0x01Ac73c0B91289C21E12Ff44841A3C6b8aCDEA03");
-		if(false && StringUtils.isBlank(snipeTransactionRequest.getPairAddress())) {
+		if(StringUtils.isBlank(snipeTransactionRequest.getPairAddress())) {
 			String pairAddress = getPairAddress(snipeTransactionRequest, dexWrapContractAddress); 
 			if(StringUtils.isNotBlank(pairAddress)) {
 				snipeTransactionRequest.setPairAddress(pairAddress);
@@ -170,7 +174,39 @@ public class SnipeExeEndpointV1{
 		Web3j web3j = web3jServiceClientFactory.getWeb3jMap(snipeTransactionRequest.getRoute()).getWeb3j();
 		BigInteger blockNumber = null;
 		boolean birthCheck = false;
-		while (birthCheck) {
+		boolean isTradingEnabledEventCheck = false;
+		TradingEnabledEventChecker tradingEnabledEventChecker = null;
+		while(isTradingEnabledEventCheck) {
+			if(tradingEnabledEventChecker == null) {
+				tradingEnabledEventChecker = TradingEnabledEventChecker.load(snipeTransactionRequest.getToAddress(), web3j, credentials, gasPrice, gasLimit);
+			}
+			blockNumber = web3j.ethBlockNumber()
+							  .flowable()
+							  .subscribeOn(Schedulers.io())
+							  .blockingFirst()
+							  .getBlockNumber();
+			DefaultBlockParameter fromBlockNbr = null;
+			if(birthCheck) {
+				fromBlockNbr = DefaultBlockParameterName.EARLIEST;
+				birthCheck = false;
+				System.out.println("BirthCheck passed!!!");
+			}else {
+				fromBlockNbr = new DefaultBlockParameterNumber(blockNumber.subtract(new BigInteger("5")));
+			}
+			System.out.println("BlockNbr -> "+ Numeric.toBigInt(fromBlockNbr.getValue()));
+			TradingEnabledEventResponse response = tradingEnabledEventChecker.tradingEnabledEventFlowable(fromBlockNbr, DefaultBlockParameterName.LATEST)
+														    				 .blockingSingle();
+			if(response.eanbled) {
+				liquidityCheckEnabled = Boolean.FALSE;
+				isTradingEnabledEventCheck  = Boolean.FALSE;
+			}else {
+				Uninterruptibles.sleepUninterruptibly(500, TimeUnit.MILLISECONDS);
+				System.err.println("No Liquidity found");
+				isTradingEnabledEventCheck = Boolean.TRUE;
+			}
+		}
+		
+		while (liquidityCheckEnabled) {
 				blockNumber = web3j.ethBlockNumber()
 									  .flowable()
 									  .subscribeOn(Schedulers.io())
@@ -195,7 +231,7 @@ public class SnipeExeEndpointV1{
 				if(ethLog != null && ethLog.getError() == null && CollectionUtils.isNotEmpty(ethLog.getLogs())) {
 					liquidityCheckEnabled = Boolean.FALSE;
 				}else {
-					Uninterruptibles.sleepUninterruptibly(500, TimeUnit.MILLISECONDS);
+					Uninterruptibles.sleepUninterruptibly(2000, TimeUnit.MILLISECONDS);
 					System.err.println("No Liquidity found");
 					liquidityCheckEnabled = Boolean.TRUE;
 				}

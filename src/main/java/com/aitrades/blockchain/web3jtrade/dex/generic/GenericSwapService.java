@@ -131,8 +131,14 @@ public class GenericSwapService implements DexContractService {
 					 										    			  new Address(credentials.getAddress()), 
 					 										    			 new Uint256(BigInteger.valueOf(Instant.now().plus(5, ChronoUnit.MINUTES).getEpochSecond()))),
 														        Collections.emptyList()));
+		long chainId = StringUtils.equalsIgnoreCase(route, "8") || StringUtils.equalsIgnoreCase(route, "10") ? 137l: web3jServiceClientFactory.getWeb3jMap(route).getWeb3j().ethChainId().getId();
+		
+		if(StringUtils.equalsIgnoreCase(route, "11") || StringUtils.equalsIgnoreCase(route, "12") || StringUtils.equalsIgnoreCase(route, "13")) {
+			chainId= 321l;
+		}
 		EthSendTransaction ethSendTransaction = new FastRawTransactionManager(web3jServiceClientFactory.getWeb3jMap(route).getWeb3j(), 
 																			   credentials,
+																			   chainId,
 																			   new NoOpProcessor(web3jServiceClientFactory.getWeb3jMap(route).getWeb3j()))
 															.sendTransaction(gasPrice, 
 																			 gasLimit, 
