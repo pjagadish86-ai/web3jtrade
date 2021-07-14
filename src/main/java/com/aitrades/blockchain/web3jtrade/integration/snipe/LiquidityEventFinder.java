@@ -39,7 +39,7 @@ public class LiquidityEventFinder {
 															.addSingleTopic(MINT_EVENT_ENCODER)
 															.addOptionalTopics(routerAddress))
 				   .flowable()
-				   .subscribeOn(Schedulers.io())
+				   .subscribeOn(Schedulers.trampoline())
 				   .blockingSingle();
 		} catch (IOException e) {
 			e.printStackTrace();

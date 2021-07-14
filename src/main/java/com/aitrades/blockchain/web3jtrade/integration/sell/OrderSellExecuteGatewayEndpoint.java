@@ -21,7 +21,7 @@ import com.aitrades.blockchain.web3jtrade.repository.TradeOverviewRepository;
 import com.aitrades.blockchain.web3jtrade.service.DexContractStaticCodeValuesService;
 import com.fasterxml.jackson.databind.ObjectReader;
 import com.google.common.collect.Lists;
-
+//TODO: SnipeOrderSell should be treated in different way
 public class OrderSellExecuteGatewayEndpoint {
 	
 	@Autowired
