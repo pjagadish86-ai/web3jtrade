@@ -796,6 +796,16 @@ public class TradingEnabledEventChecker extends Contract {
         return executeRemoteCallTransaction(function);
     }
 
+    
+    public RemoteFunctionCall<TransactionReceipt> customEnabledTradeCheckFunc(String funcName) {
+        final org.web3j.abi.datatypes.Function function = new org.web3j.abi.datatypes.Function(
+        		funcName, 
+                Arrays.<Type>asList(), 
+                Collections.<TypeReference<?>>emptyList());
+        return executeRemoteCallTransaction(function);
+    }
+    
+    
     public RemoteFunctionCall<TransactionReceipt> excludeFromFee(String account) {
         final org.web3j.abi.datatypes.Function function = new org.web3j.abi.datatypes.Function(
                 FUNC_EXCLUDEFROMFEE, 

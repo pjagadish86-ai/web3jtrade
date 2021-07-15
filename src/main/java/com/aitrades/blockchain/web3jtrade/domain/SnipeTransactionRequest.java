@@ -102,7 +102,15 @@ public class SnipeTransactionRequest {
 	private boolean liquidityCheck;
 	
 	private LinkedList<String> singedTransactions;
+	private List<AdditionalProperty> additionalProperties;
 	
+	public List<AdditionalProperty> getAdditionalProperties() {
+		return additionalProperties;
+	}
+
+	public void setAdditionalProperties(List<AdditionalProperty> additionalProperties) {
+		this.additionalProperties = additionalProperties;
+	}
 	public String getId() {
 		return id;
 	}

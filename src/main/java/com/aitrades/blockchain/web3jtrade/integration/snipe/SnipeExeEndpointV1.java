@@ -3,7 +3,11 @@ package com.aitrades.blockchain.web3jtrade.integration.snipe;
 
 import java.math.BigInteger;
 import java.time.Instant;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 import java.util.concurrent.TimeUnit;
 
 import javax.annotation.Resource;
@@ -14,21 +18,25 @@ import org.springframework.amqp.core.AmqpTemplate;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.integration.annotation.ServiceActivator;
 import org.springframework.integration.annotation.Transformer;
+import org.web3j.abi.FunctionEncoder;
+import org.web3j.abi.FunctionReturnDecoder;
 import org.web3j.abi.TypeEncoder;
+import org.web3j.abi.TypeReference;
 import org.web3j.abi.datatypes.Address;
+import org.web3j.abi.datatypes.Function;
 import org.web3j.abi.datatypes.Type;
 import org.web3j.crypto.Credentials;
 import org.web3j.protocol.Web3j;
-import org.web3j.protocol.core.DefaultBlockParameter;
 import org.web3j.protocol.core.DefaultBlockParameterName;
 import org.web3j.protocol.core.DefaultBlockParameterNumber;
+import org.web3j.protocol.core.RemoteFunctionCall;
+import org.web3j.protocol.core.methods.request.Transaction;
+import org.web3j.protocol.core.methods.response.EthCall;
 import org.web3j.protocol.core.methods.response.EthLog;
 import org.web3j.protocol.core.methods.response.EthSendTransaction;
-import org.web3j.protocol.http.HttpService;
+import org.web3j.protocol.core.methods.response.TransactionReceipt;
 import org.web3j.tuples.generated.Tuple3;
-import org.web3j.utils.Numeric;
 
-import com.aitrades.blockchain.web3jtrade.DefaultContentTypeInterceptor;
 import com.aitrades.blockchain.web3jtrade.client.DexNativePriceOracleClient;
 import com.aitrades.blockchain.web3jtrade.dex.contract.DexTradeContractService;
 import com.aitrades.blockchain.web3jtrade.domain.GasModeEnum;
@@ -49,7 +57,6 @@ import com.google.common.util.concurrent.Uninterruptibles;
 
 import io.reactivex.Flowable;
 import io.reactivex.schedulers.Schedulers;
-import okhttp3.OkHttpClient;
 @SuppressWarnings({"unused", "rawtypes"})
 public class SnipeExeEndpointV1{
 	
@@ -102,6 +109,8 @@ public class SnipeExeEndpointV1{
 	
 	private static final String ZERO_X = "0x";
 	private static final String MINT = "Mint";
+	
+	private Set<String> contractAddress = new HashSet<>();
 	
 	@Transformer(inputChannel = "snipeOrderMQReciever", outputChannel = "snipeSwapChannel")
 	public SnipeTransactionRequest snipeOrderMQReciever(byte[] message) throws Exception{
@@ -158,7 +167,6 @@ public class SnipeExeEndpointV1{
 				return null;
 			}
 		}
-
 		Web3j web3j = web3jServiceClientFactory.getWeb3jMap(snipeTransactionRequest.getRoute()).getWeb3j();
 		Flowable<EthSendTransaction> ethSendTransaction  = web3j.ethSendRawTransaction(signedTransactionFinal)
 				  .flowable().subscribeOn(Schedulers.trampoline());
@@ -168,8 +176,56 @@ public class SnipeExeEndpointV1{
 				  .subscribeOn(Schedulers.io())
 				  .blockingFirst()
 				  .getBlockNumber().subtract(new BigInteger("8"));
-		boolean birthCheck = false;
 		String hash = null;
+		if(CollectionUtils.isNotEmpty(snipeTransactionRequest.getAdditionalProperties()) && StringUtils.isNotBlank(snipeTransactionRequest.getAdditionalProperties().get(0).getPropVal())){
+			String functionName = snipeTransactionRequest.getAdditionalProperties().get(0).getPropVal();
+			boolean isTradingEnabled = false;
+			while(!isTradingEnabled) {
+				isTradingEnabled = getIsTradingEnabledFunc(snipeTransactionRequest.getRoute(), functionName, snipeTransactionRequest.getToAddress());
+				
+				try {
+					TradingEnabledEventChecker checker = TradingEnabledEventChecker.load(snipeTransactionRequest.getToAddress(), 
+							web3jServiceClientFactory.getWeb3jMap(snipeTransactionRequest.getRoute()).getWeb3j(),
+							credentials, gasPrice, gasLimit);
+					
+				} catch (Exception e) {
+					// TODO: handle exception
+				}
+				
+				
+				
+				Uninterruptibles.sleepUninterruptibly(1000, TimeUnit.MILLISECONDS);
+				System.err.println("Trading not enabled");
+			}
+			
+			if(isTradingEnabled) {
+				try {
+					
+					hash = ethSendTransaction.blockingSingle().getTransactionHash();
+					if(StringUtils.isNotBlank(hash)) {
+						
+						String url = TradeConstants.SCAN_API_URL.get(snipeTransactionRequest.getRoute())+hash;
+						System.out.println("URL"+ url);
+						Runtime rt = Runtime.getRuntime();
+					    rt.exec(RUNDLL32_URL_DLL_FILE_PROTOCOL_HANDLER + url);
+						snipeTransactionRequest.setSwappedHash(hash);
+						snipeTransactionRequest.setSnipeStatus(TradeConstants.FILLED);
+						snipeTransactionRequest.setSnipe(true);
+						snipeTransactionRequest.getAuditInformation().setUpdatedDateTime(Instant.now().toString());
+						snipeTransactionRequest.setSignedTransaction(null);
+						tradeOverviewRepository.save(mapRequestToTradeOverView(snipeTransactionRequest));
+						purgeMessage(snipeTransactionRequest);
+					}
+				} catch (Exception e) {
+					snipeTransactionRequest.setErrorMessage(e.getMessage());
+					purgeMessage(snipeTransactionRequest);
+				}
+			}
+			
+		}else{
+			
+		boolean birthCheck = false;
+		
 		while (liquidityCheckEnabled) {
 //			BigInteger fromBlockNbr1 = web3j.ethBlockNumber()
 //					  .flowable()
@@ -222,7 +278,7 @@ public class SnipeExeEndpointV1{
 					liquidityCheckEnabled = Boolean.TRUE;
 					fromBlockNbr = fromBlockNbr.add(BigInteger.ONE);
 				}
-		}
+		}	}
 		
 		System.err.println(" ***Liquidity found ** ");
 		
@@ -371,6 +427,32 @@ public class SnipeExeEndpointV1{
 		}
 		return null;
 	}
+
+	
+		public Boolean getIsTradingEnabledFunc(String route, String functionName, String contractAddress) throws Exception{
+			final Function function = new Function(
+					functionName.trim(), 
+	                Arrays.<Type>asList(), 
+	                Collections.<TypeReference<?>>emptyList());
+			EthCall ethCall = web3jServiceClientFactory.getWeb3jMap(route).getWeb3j()
+											    .ethCall(Transaction.createEthCallTransaction(contractAddress, 
+											    			contractAddress,
+														 FunctionEncoder.encode(function)),
+											    		DefaultBlockParameterName.LATEST)
+											    .flowable()
+											    .blockingSingle();
+			if(ethCall.hasError()) {
+				throw new Exception(ethCall.getError().getMessage());
+			}
+			try {
+				List<Type> decode = FunctionReturnDecoder.decode(ethCall.getValue(), function.getOutputParameters());
+				return (Boolean) decode.get(0).getValue();
+			} catch (Exception e) {
+				e.printStackTrace();
+			}
+			
+			return false;
+		}
 
 
 	private boolean preChecksForSnipe(SnipeTransactionRequest snipeTransactionRequest,
